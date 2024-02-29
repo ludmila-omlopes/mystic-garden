@@ -1,358 +1,139 @@
 'use client'
-import { useState } from 'react'
-import {
-  useExploreProfiles,
-  useExplorePublications,
-  ExploreProfilesOrderByType,
-  ExplorePublicationsOrderByType,
-  ExplorePublicationType,
-  LimitType
-} from '@lens-protocol/react-web'
 
-import {
-  Loader2, ListMusic, Newspaper,
-  PersonStanding, Shapes,
-  MessageSquare, Repeat2, Heart, Grab, ArrowRight
-} from "lucide-react"
+import { useState, useEffect } from 'react';
+import { useProfiles, useExploreProfiles, ExploreProfilesOrderByType, LimitType, profileId } from '@lens-protocol/react-web';
 import { Button } from '@/components/ui/button'
-import { cn } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import ReactMarkdown from 'react-markdown'
 
-enum PublicationMetadataMainFocusType {
-  Article = "ARTICLE",
-  Audio = "AUDIO",
-  CheckingIn = "CHECKING_IN",
-  Embed = "EMBED",
-  Event = "EVENT",
-  Image = "IMAGE",
-  Link = "LINK",
-  Livestream = "LIVESTREAM",
-  Mint = "MINT",
-  ShortVideo = "SHORT_VIDEO",
-  Space = "SPACE",
-  Story = "STORY",
-  TextOnly = "TEXT_ONLY",
-  ThreeD = "THREE_D",
-  Transaction = "TRANSACTION",
-  Video = "VIDEO"
-}
+import {
+  Loader2,
+  PersonStanding
+} from "lucide-react"
 
-export default function Home() {
-  const [view, setView] = useState('profiles')
-  const [dashboardType, setDashboardType] = useState('dashboard')
-  let { data: profiles, error: profileError, loading: loadingProfiles } = useExploreProfiles({
-    limit: LimitType.TwentyFive,
-    orderBy: ExploreProfilesOrderByType.MostFollowers
-  }) as any
+export default function SearchPage() {
 
-  let { data: musicPubs, loading: loadingMusicPubs } = useExplorePublications({
-    limit: LimitType.TwentyFive,
-    orderBy: ExplorePublicationsOrderByType.TopCommented,
-    where: {
-      publicationTypes: [ExplorePublicationType.Post],
-      metadata: {
-        mainContentFocus: [PublicationMetadataMainFocusType.Audio]
-      }
-    }
-  }) as any
-
-  let { data: publications, loading: loadingPubs } = useExplorePublications({
-    limit: LimitType.TwentyFive,
-    orderBy: ExplorePublicationsOrderByType.LensCurated,
-    where: {
-      publicationTypes: [ExplorePublicationType.Post],
-    }
-  }) as any
+const [searchType, setSearchType] = useState('id');
+const [searchValue, setSearchValue] = useState('5'); 
 
 
-  profiles = profiles?.filter(p => p.metadata?.picture?.optimized?.uri)
+const { data: profiles, loading: loadingProfiles } = useProfiles({
+  where: {
+    profileIds: searchType === 'id' ? [profileId('0x0' + parseInt(searchValue).toString(16))] : [],
+  },
+});
 
-  publications = publications?.filter(p => {
-    if (p.metadata && p.metadata.asset) {
-      if (p.metadata.asset.image) return true
-      return false
-    }
-    return true
-  })
-  
-  return (
-    <main className="
-      px-6 py-14
-      sm:px-10
-    ">
-      <div>
-        <a target="_blank" rel="no-opener" href="https://lens.xyz">
-        <div className="cursor-pointer flex items-center bg-secondary text-foreground rounded-lg py-1 px-3 mb-2 max-w-[288px]">
-          <p className='mr-2'>📚</p>
-          <p className="text-sm">
-          Learn more about Lens Protocol.
-          </p>
-          <ArrowRight className='ml-2' size={14} />
-        </div>
-        </a>
-        <h1 className="text-5xl font-bold mt-3">
-          Social Explorer
-        </h1>
-        <p className="mt-4 max-w-[750px] text-lg text-muted-foreground sm:text-xl">
-          An application boilerplate built with a modern stack. Simple to get started building your first social app. Leveraging ShadCN, Lens Protocol, Next.js, and WalletConnect.
-        </p>
-      </div>
+const { data: profileByHandle, loading: loadingProfileByHandle } = useProfiles({
+  where: {
+    handles: searchType === 'handle' ? [searchValue] : [],
+  },
+});
+
+const loading = loadingProfiles || loadingProfileByHandle;
+
+const profile = profiles?.[0] || profileByHandle?.[0]; 
+
+
+return (
+  <main className="
+    px-6 py-14
+    sm:px-10
+  ">
+      <h1 className="text-5xl font-bold mt-3">
+        Profile Searcher
+      </h1>        
+      <p className="mt-4 max-w-[750px] text-lg text-muted-foreground sm:text-xl">
+        Lens Profile and Handle searcher.
+      </p>
 
       <div className="mt-[70px] flex ml-2">
-        <div>
-          <Button
-            variant="ghost"
-            onClick={() => setDashboardType('dashboard')}
-            className={
-            `${dashboardType !== 'dashboard' ? 'opacity-60' : '' }`
-          }>My dashboard</Button>
-        </div>
-        <div className="ml-4">
-        <Button
-          variant="ghost"
-          onClick={() => setDashboardType('algorithms')}
-          className={
-            `${dashboardType !== 'recommendation algorithms' ? 'opacity-50' : '' }`
-          }>Choose your algorithm</Button>
-        </div>
+      <Button variant="ghost" onClick={() => setSearchType('id')} className={searchType !== 'id' ? 'opacity-60' : ''}>Search by ID</Button>
+      <Button variant="ghost" onClick={() => setSearchType('handle')} className={searchType !== 'handle' ? 'opacity-60' : ''}>Search by Handle</Button>
       </div>
 
-      {
-        dashboardType === 'algorithms' && (
-          <div className='md:flex min-h-[300px] mt-3 px-6'>
-            <p>Choose your algorithm coming soon...</p>
-        </div>
-        )
-      }
-      {
-        dashboardType === 'dashboard' && (      <div className='md:flex min-h-[300px] mt-3'>
-        <div className="border border rounded-tl rounded-bl md:w-[230px] pt-3 px-2 pb-8 flex-col flex">
-          <p className='font-medium ml-4 mb-2 mt-1'>Social Views</p>
-          <Button
-            onClick={() => setView('profiles')}
-           variant={view === 'profiles' ? 'secondary': 'ghost'} className="justify-start mb-1">
-            <PersonStanding size={16} />
-            <p className="text-sm ml-2">Profiles</p>
-          </Button>
-          <Button
-            onClick={() => setView('publications')}
-            variant={view === 'publications' ? 'secondary': 'ghost'} className="justify-start mb-1">
-            <Newspaper size={16} />
-            <p className="text-sm ml-2">Publications</p>
-          </Button>
-          <Button
-            onClick={() => setView('music')}
-            variant={view === 'music' ? 'secondary': 'ghost'} 
-            className="justify-start mb-1">
-            <ListMusic size={16} />
-            <p className="text-sm ml-2">Music</p>
-          </Button>
-          <Button
-            onClick={() => setView('collect')}
-            variant={view === 'collect' ? 'secondary': 'ghost'} 
-            className="justify-start mb-1">
-            <Shapes size={16} />
-            <p className="text-sm ml-2">Collect</p>
-          </Button>
-        </div>
-        <div
-          className="
-          sm:border-t sm:border-r sm:border-b
-          rounded-tr rounded-br flex flex-1 pb-4">
-          {
-            view === 'profiles' && (
-              <div className="flex flex-1 flex-wrap p-4">
-                {
-                  loadingProfiles && (
-                    <div className="
-                      flex flex-1 justify-center items-center
-                    ">
-                      <Loader2 className="h-12 w-12 animate-spin" />
-                    </div>
-                  )
-                }
-                {
-                  profiles?.map(profile => (
-                    <a
-                      key={profile.id}
-                      className="
-                      lg:w-1/4 sm:w-1/2 p-4 cursor-pointer"
-                      rel="no-opener"
-                      target="_blank"
-                      href={`https://share.lens.xyz/u/${profile.handle.namespace}/${profile.handle.localName}`}>
-                      <div className="space-y-3">
-                          <div className="overflow-hidden rounded-md">
-                            <img
-                              className="h-auto w-auto object-cover transition-all hover:scale-105 aspect-square"
-                              src={profile.metadata?.picture?.optimized?.uri
-                            } />
-                          </div>
-                          <div className="space-y-1 text-sm">
-                            <h3 className="font-medium leading-none">{profile.handle.localName}.{profile.handle.namespace}</h3>
-                            <p className="text-xs text-muted-foreground">{profile.metadata?.displayName}</p>
-                          </div>
-                      </div>
-                    </a>
-                  ))
-                }
-              </div>
-            )
-          }
-          {
-            view === 'publications' && (
-              <div className="flex flex-1 flex-wrap flex-col">
-                {
-                  loadingPubs && (
-                    <div className="
-                      flex flex-1 justify-center items-center
-                    ">
-                      <Loader2 className="h-12 w-12 animate-spin" />
-                    </div>
-                  )
-                }
-                {
-                  publications?.map(publication => (
-                    <div
-                      className="border-b"
-                      key={publication.id}
-                      onClick={() => window.open(`https://share.lens.xyz/p/${publication.id}`, '_blank')}
-                    >
-                      <div
-                      className="
-                      space-y-3 mb-4 pt-6 pb-2
-                      sm:px-6 px-2
+    <div className="mt-4">
+      <input type="text" onChange={e => setSearchValue(e.target.value)} placeholder={`Filter by ${searchType}`} className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+    </div>
+
+    {
+        <div className='md:flex min-h-[300px] mt-3'>
+          <div className="sm:border-t sm:border-r sm:border-b rounded-tr rounded-br flex flex-1 pb-4">
+            {
+                <div className="flex flex-1 flex-wrap p-4">
+                  {
+                    loading && (
+                      <div className="
+                        flex flex-1 justify-center items-center
                       ">
-                        <div className="flex">
-                          <Avatar>
-                            <AvatarImage src={publication.by?.metadata?.picture?.optimized?.uri} />
-                            <AvatarFallback>{publication.by.handle.localName.slice(0, 2)}</AvatarFallback>
-                          </Avatar>
-                          <div className="ml-4">
-                               <h3 className="mb-1 font-medium leading-none">{publication.by.handle.localName}.{publication.by.handle.namespace}</h3>
-                              <p className="text-xs text-muted-foreground">{publication.by.metadata?.displayName}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <img
-                            className={cn(`
-                            max-w-full sm:max-w-[500px]
-                            rounded-2xl h-auto object-cover transition-all hover:scale-105
-                            `)}
-                            src={publication.__typename === 'Post' ? publication.metadata?.asset?.image?.optimized?.uri : ''}
-                          />
-                          <ReactMarkdown className="
-                          mt-4 break-words
-                          ">
-                            {publication.metadata.content.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '[LINK]($1)')}
-                          </ReactMarkdown>
-                        </div>
-                        <div>
-                          <Button className="rounded-full mr-1"  variant="secondary" >
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            {publication.stats.comments}
-                          </Button>
-                          <Button className="rounded-full mr-1" variant="secondary">
-                            <Repeat2 className="mr-2 h-4 w-4" />
-                            {publication.stats.mirrors}
-                          </Button>
-                          <Button className="rounded-full mr-1" variant="secondary">
-                            <Heart className="mr-2 h-4 w-4" />
-                            {publication.stats.upvotes}
-                          </Button>
-                          <Button className="rounded-full mr-1" variant="secondary">
-                            <Grab className="mr-2 h-4 w-4" />
-                            {publication.stats.collects}
-                          </Button>
-                        </div>
+                        <Loader2 className="h-12 w-12 animate-spin" />
                       </div>
-                    </div>
-                  ))
-                }
-              </div>
-            )
-          }
-          {
-            view === 'music' && (
-              <div className="flex flex-1 flex-wrap flex-col">
-                {
-                  loadingMusicPubs && (
-                    <div className="
-                      flex flex-1 justify-center items-center
-                    ">
-                      <Loader2 className="h-12 w-12 animate-spin" />
-                    </div>
-                  )
-                }
-                {
-                  musicPubs?.map(publication => (
-                    <div
-                      className="border-b"
-                      key={publication.id}
-                      onClick={() => window.open(`https://share.lens.xyz/p/${publication.id}`, '_blank')}
-                    >
-                      <div className="space-y-3 mb-4 p-4">
-                        <div className="flex">
-                          <Avatar>
-                            <AvatarImage src={publication.by?.metadata?.picture?.optimized?.uri} />
-                            <AvatarFallback>{publication.by.handle.fullHandle.slice(0, 2)}</AvatarFallback>
-                          </Avatar>
-                          <div className="ml-4">
-                              <h3 className="mb-1 font-medium leading-none">{publication.by.handle.localName}.{publication.by.handle.namespace}</h3>
-                            <p className="text-xs text-muted-foreground">{publication.by.handle.fullName}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <img
-                             className={cn(`
-                             max-w-full sm:max-w-[500px] mb-3
-                             rounded-2xl h-auto object-cover transition-all hover:scale-105
-                             `)}
-                            src={publication.__typename === 'Post' ?
-                            publication.metadata?.asset?.cover?.optimized?.uri ?
-                            publication.metadata?.asset?.cover?.optimized?.uri :
-                            publication.metadata?.asset?.cover?.optimized?.raw?.uri : ''}
-                          />
-                          <audio controls>
-                            <source
-                              type={publication.metadata?.asset?.audio?.optimized?.mimeType}
-                              src={publication.metadata?.asset?.audio?.optimized?.uri}
-                            />
-                          </audio>
-                          <ReactMarkdown className="
-                          mt-4 break-words
-                          ">
-                            {publication.metadata.content.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '[LINK]($1)')}
-                          </ReactMarkdown>
-                        </div>
-                        <div>
-                          <Button className="rounded-full mr-1"  variant="secondary" >
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            {publication.stats.comments}
-                          </Button>
-                          <Button className="rounded-full mr-1" variant="secondary">
-                            <Repeat2 className="mr-2 h-4 w-4" />
-                            {publication.stats.mirrors}
-                          </Button>
-                          <Button className="rounded-full mr-1" variant="secondary">
-                            <Heart className="mr-2 h-4 w-4" />
-                            {publication.stats.upvotes}
-                          </Button>
-                          <Button className="rounded-full mr-1" variant="secondary">
-                            <Grab className="mr-2 h-4 w-4" />
-                            {publication.stats.collects}
-                          </Button>
-                        </div>
+                    )
+                  }
+                  {
+                    profile && (
+                      <div key={profile.id} className="lg:w-1/4 sm:w-1/2 p-4">
+                        {profile.handle ? (
+                          <>
+                            <a
+                              rel="no-opener"
+                              target="_blank"
+                              href={`https://hey.xyz/u/${profile.handle.localName}`}
+                            >
+                              <div className="overflow-hidden rounded-md">
+                                <div className="aspect-square">
+                                  <img
+                                    className="h-auto w-auto object-cover transition-all hover:scale-105"
+                                    src={profile.metadata?.picture?.optimized?.uri}
+                                  />
+                                </div>
+                              </div>
+                            </a>
+                            <div className="space-y-1 text-sm mt-2">
+                              <h3 className="font-medium leading-none text-lg">Name: {profile.metadata?.displayName}</h3>
+                              <p className="font-medium leading-none">Handle: @{profile.handle.localName}</p>
+                              <p className="font-medium leading-none">Profile Hex Id:  { profile.id }</p>
+                              <p className="font-medium leading-none">Profile Id:  #{parseInt(profile.id).toString()}</p>
+                              <div className="flex space-x-2">
+                                <img
+                                  src="https://opensea.io/static/images/logos/opensea-logo.svg"
+                                  alt="OpenSea Logo"
+                                  className="h-6 w-6"
+                                />
+                                <a
+                                  href={`https://opensea.io/assets/matic/0xdb46d1dc155634fbc732f92e853b10b288ad5a1d/${parseInt(profile.id).toString()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-medium leading-none text-blue-500 hover:underline"
+                                >
+                                  Profile NFT
+                                </a>
+                              </div>
+                              <div className="flex space-x-2">
+                                <img
+                                  src="https://opensea.io/static/images/logos/opensea-logo.svg"
+                                  alt="OpenSea Logo"
+                                  className="h-6 w-6"
+                                />
+                                <a
+                                  href={`https://opensea.io/assets/matic/0xe7e7ead361f3aacd73a61a9bd6c10ca17f38e945/${BigInt(`${profile.handle.id}`).toString()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-medium leading-none text-blue-500 hover:underline"
+                                >
+                                  Handle NFT
+                                </a>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <p>This profile doesn't have a linked handle.</p>
+                        )}
                       </div>
-                    </div>
-                  ))
-                }
-              </div>
-            )
-          }
+                    )
+                  }
+                </div>
+            }      
+          </div>
         </div>
-      </div>)
-      }
-    </main>
-  )
+    }
+  </main>
+)
 }

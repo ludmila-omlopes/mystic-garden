@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@lens-protocol/metadata": "^1.0.5",
+    "@lens-protocol/metadata": ">=1.0.5",
     "@lens-protocol/react-web": "^2.0.0-alpha.19",
     "@lens-protocol/wagmi": "^3.0.0-alpha.22",
     "@radix-ui/react-avatar": "^1.0.3",
