@@ -38,10 +38,10 @@ return (
     sm:px-10
   ">
       <h1 className="text-5xl font-bold mt-3">
-        Profile Searcher
+        Lens Profile Checker
       </h1>        
       <p className="mt-4 max-w-[750px] text-lg text-muted-foreground sm:text-xl">
-        Lens Profile and Handle searcher.
+        Confused about the hole Lens Profile and Handle NFTs? No worries! Use this tool to find out linked handle and profiles. For Profile id use the number you see on OpenSea. For handle, use the format lens/username.
       </p>
 
       <div className="mt-[70px] flex ml-2">
