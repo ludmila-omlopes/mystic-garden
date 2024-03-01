@@ -81,7 +81,7 @@ return (
                                 <div className="aspect-square">
                                   <img
                                     className="h-auto w-auto object-cover transition-all hover:scale-105"
-                                    src={profile.metadata?.picture?.optimized?.uri}
+                                    src={profile.metadata?.picture?.__typename === 'ImageSet' ? profile.metadata?.picture?.optimized?.uri : undefined}
                                   />
                                 </div>
                               </div>
@@ -124,7 +124,7 @@ return (
                             </div>
                           </>
                         ) : (
-                          <p>This profile doesn't have a linked handle.</p>
+                          <p>This profile does not have a linked handle.</p>
                         )}
                       </div>
                     )
