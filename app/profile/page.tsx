@@ -12,18 +12,18 @@ import { useAccount } from 'wagmi'
 export default function ProfilePage() {
   const { address } = useAccount()
   const { data: profiles } = useProfiles({ where: { profileIds: [/* user's profile ID here */] } });
-  const { data: handlesData } = useOwnedHandles({ for: address });
+  const { data: handlesData } = useOwnedHandles({ for: address ?? ''});
   const [selectedHandle, setSelectedHandle] = useState('');
   const { execute: exLogin, data: loginData } = useLogin();
   const { execute: exLogout, loading: loadingLogout  } = useLogout();
-  const { data: managedProfiles, loading: loadingProfiles } = useProfilesManaged({ for: address });
+  const { data: managedProfiles, loading: loadingProfiles } = useProfilesManaged({ for: address ?? '' });
   const [isLoggedIn, setIsLoggedIn] = useState(!!loginData);
   const { execute: exUnlink, error: errorUnlink, loading: loadingUnlink } = useUnlinkHandle();
   const { execute: exLink, error: errorLink, loading: loadingLink } = useLinkHandle();
 
   const login = (profileId: ProfileId) => {
     exLogin({
-      address: address,
+      address: address ?? '',
       profileId: profileId,
     }).then(() => setIsLoggedIn(true));
   };
@@ -91,7 +91,9 @@ export default function ProfilePage() {
         <Button onClick={logout}>Logout</Button>
       ) : (
         <Dialog>
-          <DialogTrigger as={Button}>Login</DialogTrigger>
+          <DialogTrigger>
+            <Button>Login</Button>
+          </DialogTrigger>
           <DialogContent>
             {loadingProfiles ? (
               <div>Loading profiles...</div>

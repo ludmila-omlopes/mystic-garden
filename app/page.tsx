@@ -16,7 +16,7 @@ export default function SearchPage() {
   const { data: profiles, loading: loadingProfiles } = useProfiles({ where: { profileIds: searchType === 'id' ? [profileId('0x0' + parseInt(searchValue).toString(16))] : [], } });
   const { data: profileByHandle, loading: loadingProfileByHandle } = useProfiles({ where: { handles: searchType === 'handle' ? [searchValue] : [], } });
   const loading = loadingProfiles || loadingProfileByHandle;
-  const { data: handlesData, loading: loadingHandles } = useOwnedHandles({ for: profile?.ownedBy?.address });
+  const { data: handlesData, loading: loadingHandles } = useOwnedHandles({ for: profile?.ownedBy?.address ?? '' });
 
   useEffect(() => {
     let newProfile = profiles?.[0] || profileByHandle?.[0];
@@ -33,7 +33,7 @@ export default function SearchPage() {
     <main className="px-6">
       <h1 className="text-3xl font-bold">Lens Profile Checker</h1>
       <p className="text-base text-gray-600">
-        Find linked handle and profiles for Lens Protocol. Use the Profile ID as seen on OpenSea for ID searches, or the format 'lens/username' for handle searches.
+        Find linked handle and profiles for Lens Protocol. Use the Profile ID as seen on OpenSea for ID searches, or the format &apos;lens/username&apos; for handle searches.
       </p>
 
       <div className="flex gap-2 mt-4">
