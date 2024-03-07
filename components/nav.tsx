@@ -24,6 +24,15 @@ export function Nav() {
       <div
         className='py-3 px-8 flex flex-1 items-center p'
       >
+        <Link href="/" className='mr-5 flex items-center'>
+          <Droplets className="opacity-85" size={19} />
+          <p className={`ml-2 mr-4 text-lg font-semibold`}>Lens Dashboard</p>
+        </Link>
+
+        <Link href="/" className={`mr-5 text-sm ${pathname !== '/' && 'opacity-50'}`}>
+          <p>Home</p>
+        </Link>
+
         {
           address && (
             <Link href="/profile" className={`mr-5 text-sm ${pathname !== '/profile' && 'opacity-60'}`}>
@@ -37,6 +46,14 @@ export function Nav() {
         sm:items-center
         pl-8 pb-3 sm:p-0
       '>
+        {
+          !address && (
+            <Button onClick={() => open()} variant="secondary" className="mr-4">
+          Connect Wallet
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+          )
+        }
         {
           address && (
             <Button onClick={disconnect} variant="secondary" className="mr-4">
