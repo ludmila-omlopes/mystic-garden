@@ -32,6 +32,9 @@ export function Nav() {
         <Link href="/" className={`mr-5 text-sm ${pathname !== '/' && 'opacity-50'}`}>
           <p>Home</p>
         </Link>
+        <Link href="/gallery" className={`mr-5 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
+          <p>Bonsai Gallery</p>
+        </Link>
 
         {
           address && (

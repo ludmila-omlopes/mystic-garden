@@ -1,0 +1,69 @@
+import * as React from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import ReactMarkdown from 'react-markdown';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from "@/components/ui/badge";
+import { FiPlayCircle } from 'react-icons/fi';
+import { Button } from '@/components/ui/button';
+import Link from "next/link";
+
+export default function GalleryPost({ publication }) {
+    const maxLength = 100; // Set the maximum length of the text before it gets truncated
+
+    const content = publication.metadata.content.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '');
+    const isTooLong = content.length > maxLength;
+  
+    const displayContent = isTooLong ? content.slice(0, maxLength) + '...' : content;
+
+    const tag = publication.metadata.__typename.replace('MetadataV3', '');
+
+    const isAudio = publication.metadata.__typename === 'AudioMetadataV3';
+    let imageSource = '';
+
+    if (publication.metadata.asset) {
+    if (isAudio && publication.metadata.asset.cover) {
+        imageSource = publication.metadata.asset.cover.optimized.uri;
+    } else if (publication.metadata.asset.image) {
+        imageSource = publication.metadata.asset.image.optimized.uri;
+    }
+    }
+
+  return (
+    <Card className="border-b mb-4" key={publication.id}>
+      <CardHeader>
+        <div className="flex items-center space-x-4">
+          <Avatar>
+            <AvatarImage src={publication.by?.metadata?.picture?.optimized?.uri} />
+            <AvatarFallback>{publication.by.handle.localName.slice(0, 2)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 className="font-medium leading-none">{publication.by.metadata?.displayName}</h3>
+            <p className="text-xs text-muted-foreground mb-1">{publication.by.handle.localName}</p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div>
+            <div className="relative">
+                <img
+                    className="max-w-full sm:max-w-[500px] rounded-2xl h-auto object-cover transition hover:scale-105"
+                    src={imageSource}
+                />
+                {isAudio && (
+                    <FiPlayCircle className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl text-white" />
+                )}
+            </div>
+            <div className="mt-4 mb-4"><Badge>{tag}</Badge></div>
+          <ReactMarkdown className="mt-4 mb-4 break-words text-sm">
+            {displayContent}
+          </ReactMarkdown>         
+        </div>
+        <Button asChild style={{ width: '100%' }}>
+            <Link href={`https://share.lens.xyz/p/${publication.id}`} rel="noopener noreferrer" target="_blank">
+                Visit Post
+            </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
