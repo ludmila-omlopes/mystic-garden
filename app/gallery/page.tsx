@@ -125,7 +125,7 @@ const handleTagChange = (tagValue: string) => {
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
               {tags.map(tag => (
                 <SelectItem 
                   value={tag.value} 
