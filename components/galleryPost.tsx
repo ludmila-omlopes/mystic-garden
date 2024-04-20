@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { FiPlayCircle } from 'react-icons/fi';
 import { Button } from '@/components/ui/button';
 import Link from "next/link";
+import { useOpenAction, OpenActionKind } from '@lens-protocol/react-web';
 
 export default function GalleryPost({ publication }) {
     const maxLength = 100; // Set the maximum length of the text before it gets truncated
@@ -27,6 +28,12 @@ export default function GalleryPost({ publication }) {
         imageSource = publication.metadata.asset.image.optimized.uri;
     }
     }
+
+    const { execute } = useOpenAction({
+      action: {
+        kind: OpenActionKind.COLLECT,
+      },
+    });
 
   return (
     <Card className="border-b mb-4" key={publication.id}>
@@ -59,8 +66,8 @@ export default function GalleryPost({ publication }) {
           </ReactMarkdown>         
         </div>
         <Button asChild style={{ width: '100%' }}>
-            <Link href={`https://share.lens.xyz/p/${publication.id}`} rel="noopener noreferrer" target="_blank">
-                Visit Post
+        <Link href={`/gallery/${publication.id}`}>
+                Details
             </Link>
         </Button>
       </CardContent>
