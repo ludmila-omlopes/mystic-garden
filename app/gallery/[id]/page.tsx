@@ -30,17 +30,21 @@ function GalleryPostDetails({ params }) {
     },
   });
 
-  const postDetails = post as Post;
-  let imageSource = '';
+  let postDetails: Post | undefined;
+  if (post) {
+    postDetails = post as Post;
+    }
+  let imageSource: string | undefined;
   let isAudio = false;
 
-  if (postDetails && postDetails.metadata) {
+  //TODO: mudar tudo isso pra switch case
+  if (postDetails && postDetails.metadata && 'asset' in postDetails.metadata) {
     isAudio = postDetails.metadata.__typename === 'AudioMetadataV3';
     if (postDetails.metadata.asset) {
-      if (isAudio && postDetails.metadata.asset.cover) {
-        imageSource = postDetails.metadata.asset.cover.optimized.uri;
-      } else if (postDetails.metadata.asset.image) {
-        imageSource = postDetails.metadata.asset.image.optimized.uri;
+      if (isAudio && 'cover' in postDetails.metadata.asset && postDetails.metadata.asset.cover) {
+        imageSource = postDetails.metadata.asset.cover.optimized?.uri;
+      } else if ('image' in postDetails.metadata.asset && postDetails.metadata.asset.image) {
+        imageSource = postDetails.metadata.asset.image.optimized?.uri;
       }
     }
   }
@@ -49,9 +53,9 @@ function GalleryPostDetails({ params }) {
 
 //TODO: cobrir o caso de "follow to collect"
   if (postDetails && postDetails.openActionModules) {
-  for (let module of postDetails.openActionModules) {
-    if (module.__typename === "SimpleCollectOpenActionSettings" || module.__typename === "MultirecipientFeeCollectOpenActionSettings" && module.amount.value > 0) {
-      postPrice = Math.floor(module.amount.value);
+  for (let actionModule of postDetails.openActionModules) {
+    if (actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings" && Number(actionModule.amount.value) > 0) {
+      postPrice = Math.floor(Number(actionModule.amount.value));
       break;
     }
   }
@@ -65,6 +69,11 @@ function GalleryPostDetails({ params }) {
 
   const collect = async () => {
     setIsLoading(true);
+    if (!post) {
+      console.error('Post is undefined');
+      setIsLoading(false);
+      return;
+    }
     const result = await execute({ publication: post });
   
     if (result.isFailure()) {
@@ -98,6 +107,7 @@ function GalleryPostDetails({ params }) {
     objectFit: 'contain' as 'contain', // This will ensure that the image is scaled properly
   };
 
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -107,54 +117,65 @@ function GalleryPostDetails({ params }) {
   }
 
   return (
-    <div className={`flex ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
-      <div style={imageContainerStyle}>
-        <img
-          src={imageSource}
-          alt={`Artwork titled ${postDetails.metadata?.name}`}
-          style={imageStyle}
-        />
-      </div>
-      <div className="flex-shrink-0 w-full max-w-md p-4">
-        <Card>
-          <CardHeader>
-            <Avatar>
-              <AvatarImage src={postDetails.by?.metadata?.picture?.optimized?.uri} />
-              <AvatarFallback>{postDetails.by.handle.localName.slice(0, 2)}</AvatarFallback>
-            </Avatar>
-          </CardHeader>
-          <CardContent>
-            <CardTitle>{postDetails.by.metadata?.displayName}</CardTitle>
-            <CardDescription>{postDetails.by.handle.localName}</CardDescription>
-            <Tabs defaultValue="tab1">
-              <TabsList>
-                <TabsTrigger value="tab1">Description</TabsTrigger>
-                <TabsTrigger value="tab2">Details</TabsTrigger>
-                <TabsTrigger value="tab3">History</TabsTrigger>
-              </TabsList>
-              <TabsContent value="tab1">
-                <ReactMarkdown>{postDetails.metadata?.content}</ReactMarkdown>
-              </TabsContent>
-              <TabsContent value="tab2">
-                {/* Additional details content */}
-              </TabsContent>
-              <TabsContent value="tab3">
-                {/* Bid history content */}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-          <CardFooter>
-          <div>
-    <p>Price: {postPrice ? `${postPrice} BONSAI` : 'Not for sale'}</p>
-    {/* TODO: desabilitar o botão não é suficiente. O método precisa ser protegido, senão vai dar erro */}
-    <Button style={{ width: '100%' }} onClick={collect} disabled={isCollected}>
-    {isLoading ? 'Loading...' : isCollected ? 'Sold' : 'Collect'}
-    </Button>
-  </div>
-    </CardFooter>
-        </Card>
-      </div>
+    postDetails ? (
+      <div className={`flex ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+        <div style={imageContainerStyle}>
+          <img
+            src={imageSource}
+            alt={`Artwork titled 'Name Here'`}
+            style={imageStyle}
+          />
+        </div>
+        <div className="flex-shrink-0 w-full max-w-md p-4">
+          <Card>
+            <CardHeader>
+              <Avatar>
+              <AvatarImage src={postDetails.by?.metadata?.picture && 'optimized' in postDetails.by.metadata.picture ? postDetails.by.metadata.picture.optimized?.uri : undefined} />
+                <AvatarFallback>{postDetails.by?.handle?.localName.slice(0, 2)}</AvatarFallback>
+              </Avatar>
+            </CardHeader>
+            <CardContent>
+              <CardTitle>{postDetails.by.metadata?.displayName}</CardTitle>
+              <CardDescription>{postDetails.by?.handle?.localName}</CardDescription>
+              <Tabs defaultValue="tab1">
+                <TabsList>
+                  <TabsTrigger value="tab1">Description</TabsTrigger>
+                  <TabsTrigger value="tab2">Details</TabsTrigger>
+                  <TabsTrigger value="tab3">History</TabsTrigger>
+                </TabsList>
+                <TabsContent value="tab1">
+                <ReactMarkdown>
+  {
+    'content' in postDetails.metadata 
+      ? postDetails.metadata.content 
+      : 'Content not available'
+  }
+</ReactMarkdown>
+                </TabsContent>
+                <TabsContent value="tab2">
+                  {/* Additional details content */}
+                </TabsContent>
+                <TabsContent value="tab3">
+                  {/* Bid history content */}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+            <CardFooter>
+            <div>
+      <p>Price: {postPrice ? `${postPrice} BONSAI` : 'Not for sale'}</p>
+      {/* TODO: desabilitar o botão não é suficiente. O método precisa ser protegido, senão vai dar erro */}
+      <Button style={{ width: '100%' }} onClick={collect} disabled={isCollected}>
+      {isLoading ? 'Loading...' : isCollected ? 'Sold' : 'Collect'}
+      </Button>
     </div>
+      </CardFooter>
+          </Card>
+        </div>
+      </div>
+    ) : (
+      // You can return a loading spinner or some placeholder content here
+      <div>Loading...</div>
+    )
   );
 }
 
