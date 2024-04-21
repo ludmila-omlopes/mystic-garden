@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { FiPlayCircle } from 'react-icons/fi';
 import { Button } from '@/components/ui/button';
 import Link from "next/link";
-import { useOpenAction, OpenActionKind } from '@lens-protocol/react-web';
 
 export default function GalleryPost({ publication }) {
     const maxLength = 100; // Set the maximum length of the text before it gets truncated
@@ -18,22 +17,16 @@ export default function GalleryPost({ publication }) {
 
     const tag = publication.metadata.__typename.replace('MetadataV3', '');
 
-    const isAudio = publication.metadata.__typename === 'AudioMetadataV3';
+    const isPlayable = publication.metadata.__typename === 'AudioMetadataV3' || publication.metadata.__typename === 'VideoMetadataV3';
     let imageSource = '';
 
     if (publication.metadata.asset) {
-    if (isAudio && publication.metadata.asset.cover) {
+    if (isPlayable && publication.metadata.asset.cover) {
         imageSource = publication.metadata.asset.cover.optimized.uri;
     } else if (publication.metadata.asset.image) {
         imageSource = publication.metadata.asset.image.optimized.uri;
     }
     }
-
-    const { execute } = useOpenAction({
-      action: {
-        kind: OpenActionKind.COLLECT,
-      },
-    });
 
   return (
     <Card className="border-b mb-4" key={publication.id}>
@@ -56,7 +49,7 @@ export default function GalleryPost({ publication }) {
                     className="max-w-full sm:max-w-[500px] rounded-2xl h-auto object-cover transition hover:scale-105"
                     src={imageSource}
                 />
-                {isAudio && (
+                {isPlayable && (
                     <FiPlayCircle className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl text-white" />
                 )}
             </div>

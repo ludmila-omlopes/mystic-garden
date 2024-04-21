@@ -45,6 +45,7 @@ export default function GalleryPage() {
     { value: 'Audio', label: 'Audio' },
     { value: 'Image', label: 'Image' },
     { value: 'Text', label: 'Text' },
+    { value: 'Video', label: 'Video' },
     // Add more tags as needed
   ];
 
