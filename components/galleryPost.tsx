@@ -28,6 +28,18 @@ export default function GalleryPost({ publication }) {
     }
     }
 
+    let postPrice: number | null = null;
+    if (publication && publication.openActionModules) {
+    for (let actionModule of publication.openActionModules) {
+      if (actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings" && Number(actionModule.amount.value) > 0) {
+        postPrice = Math.floor(Number(actionModule.amount.value));
+        break;
+      }
+    }
+  }
+
+  const formattedPrice = postPrice ? `${postPrice} BONSAI` : 'Not for sale';
+
   return (
     <Card className="border-b mb-4" key={publication.id}>
       <CardHeader>
@@ -54,6 +66,9 @@ export default function GalleryPost({ publication }) {
                 )}
             </div>
             <div className="mt-4 mb-4"><Badge>{tag}</Badge></div>
+            <div className="mt-4 mb-4 text-lg font-bold">
+              {formattedPrice}
+            </div>
           <ReactMarkdown className="mt-4 mb-4 break-words text-sm">
             {displayContent}
           </ReactMarkdown>         

@@ -98,9 +98,7 @@ function GalleryPostDetails({ params }) {
     setIsCollected(true);
     setIsLoading(false);
     alert('Post collected!');
-  };
-
-  let postPrice: number | null = null;
+  };  
 
   let content: string | undefined;
   if (post && 'metadata' in post && post.metadata && 'content' in post.metadata) {
@@ -108,6 +106,8 @@ function GalleryPostDetails({ params }) {
   }
 
 //TODO: cobrir o caso de "follow to collect"
+
+  let postPrice: number | null = null;
   if (post && post.openActionModules) {
   for (let actionModule of post.openActionModules) {
     if (actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings" && Number(actionModule.amount.value) > 0) {
@@ -117,72 +117,74 @@ function GalleryPostDetails({ params }) {
   }
 }
 
-const mediaSource = getMediaSource(post);
-const isPlayable = post ? post.metadata?.__typename === 'AudioMetadataV3' || post.metadata?.__typename === 'VideoMetadataV3' : false;
+  const formattedPrice = postPrice ? `${postPrice} BONSAI` : 'Not for sale';
 
-useEffect(() => {
-  if (Hls.isSupported() && videoRef.current && isPlayable && mediaSource?.src) {
-    const hls = new Hls();
-    hls.loadSource(mediaSource?.src);
-    hls.attachMedia(videoRef.current);
-    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-      videoRef.current && videoRef.current.play();
-    });
-  }
-}, [mediaSource, isPlayable]);
+  const mediaSource = getMediaSource(post);
+  const isPlayable = post ? post.metadata?.__typename === 'AudioMetadataV3' || post.metadata?.__typename === 'VideoMetadataV3' : false;
 
-const formattedPrice = postPrice ? `${postPrice} BONSAI` : 'Not for sale';
+  useEffect(() => {
+    if (Hls.isSupported() && videoRef.current && isPlayable && mediaSource?.src) {
+      const hls = new Hls();
+      hls.loadSource(mediaSource?.src);
+      hls.attachMedia(videoRef.current);
+      hls.on(Hls.Events.MANIFEST_PARSED, function() {
+        videoRef.current && videoRef.current.play();
+      });
+    }
+  }, [mediaSource, isPlayable]);
 
-if (loading) return <div>Loading...</div>;
-if (error) return <div>Error: {error.message}</div>;
-if (!post) return <div>Post not found!</div>;
 
-return (
-  <div className="flex flex-col lg:flex-row items-start justify-center bg-gray-900 text-white">
-    <div className="flex-1 p-4 lg:ml-8">
-  {mediaSource?.type === 'image' ? (
-    <img src={mediaSource.src} alt="Artwork" className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
-  ) : mediaSource?.type === 'video' ? (
-    <video src={mediaSource?.src} controls className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
-  ) : mediaSource?.type === 'audio' ? (
-    <div className="flex flex-col items-center">
-      <img src={mediaSource.cover} alt="Cover" className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
-      <audio src={mediaSource?.src} controls className="w-full" />
-    </div> 
-  ) : null}
-</div>
-    <div className="flex-1 p-4 lg:ml-8">
-      <Card>
-        <CardHeader>
-          <Avatar>
-          <AvatarImage src={(post.by?.metadata?.picture && 'optimized' in post.by.metadata.picture) ? post.by.metadata.picture?.optimized?.uri : undefined} />
-            <AvatarFallback>{post?.by?.handle?.localName.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-        </CardHeader>
-        <CardContent className="text-left">
-          <CardTitle>{post?.by.metadata?.displayName}</CardTitle>
-          <CardDescription>{post?.by?.handle?.localName}</CardDescription>
-          <ReactMarkdown>{content || 'Content not available'}</ReactMarkdown>
-        </CardContent>
-        <CardFooter className="flex-col items-start">
-          <div>
-            <span className="text-sm text-gray-500">Price</span>
-            <div className="text-2xl font-bold">{formattedPrice}</div>
-          </div>
-          <Button className="w-full" onClick={collect} disabled={isCollected || isLoading}>
-            {isLoading ? 'Loading...' : isCollected ? 'Collected' : 'Buy now'}
-          </Button>
-          <Button variant="outline"
-        className="w-full mt-4"
-        onClick={() => window.open(`https://share.lens.xyz/p/${post.id}`, '_blank')}
-      >
-        More Details
-      </Button>
-        </CardFooter>
-      </Card>
-    </div>
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!post) return <div>Post not found!</div>;
+
+  return (
+    <div className="flex flex-col lg:flex-row items-start justify-center bg-gray-900 text-white">
+      <div className="flex-1 p-4 lg:ml-8">
+    {mediaSource?.type === 'image' ? (
+      <img src={mediaSource.src} alt="Artwork" className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
+    ) : mediaSource?.type === 'video' ? (
+      <video src={mediaSource?.src} controls className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
+    ) : mediaSource?.type === 'audio' ? (
+      <div className="flex flex-col items-center">
+        <img src={mediaSource.cover} alt="Cover" className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
+        <audio src={mediaSource?.src} controls className="w-full" />
+      </div> 
+    ) : null}
   </div>
-);
+      <div className="flex-1 p-4 lg:ml-8">
+        <Card>
+          <CardHeader>
+            <Avatar>
+            <AvatarImage src={(post.by?.metadata?.picture && 'optimized' in post.by.metadata.picture) ? post.by.metadata.picture?.optimized?.uri : undefined} />
+              <AvatarFallback>{post?.by?.handle?.localName.slice(0, 2)}</AvatarFallback>
+            </Avatar>
+          </CardHeader>
+          <CardContent className="text-left">
+            <CardTitle>{post?.by.metadata?.displayName}</CardTitle>
+            <CardDescription>{post?.by?.handle?.localName}</CardDescription>
+            <ReactMarkdown>{content || 'Content not available'}</ReactMarkdown>
+          </CardContent>
+          <CardFooter className="flex-col items-start">
+            <div>
+              <span className="text-sm text-gray-500">Price</span>
+              <div className="text-2xl font-bold">{formattedPrice}</div>
+            </div>
+            <Button className="w-full" onClick={collect} disabled={isCollected || isLoading}>
+              {isLoading ? 'Loading...' : isCollected ? 'Collected' : 'Buy now'}
+            </Button>
+            <Button variant="outline"
+          className="w-full mt-4"
+          onClick={() => window.open(`https://share.lens.xyz/p/${post.id}`, '_blank')}
+        >
+          More Details
+        </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
+  );
 }
 
 

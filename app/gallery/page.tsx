@@ -22,9 +22,50 @@ export default function GalleryPage() {
   const [error, setError] = useState<Error | null>(null);
   const [index, setIndex] = useState(2);
   const [hasMore, setHasMore] = useState(true);
-  const [publications, setPublications] = useState<AnyPublication[]>([]);
+  const [publications, setPublications] = useState<Post[]>([]);
   const [selectedTag, setSelectedTag] = useState('all');
   type Tag = { value: string; label: string; } | null;
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
+
+  function sortPosts(posts: Post[], sortOrder: 'asc' | 'desc' | undefined) {
+    if (sortOrder !== 'asc' && sortOrder !== 'desc') {
+      return posts;
+    }
+
+    return [...posts].sort((a, b) => {
+      let aPrice: number | null = null;
+      let bPrice: number | null = null;
+  
+      if (a && a.openActionModules) {
+        for (let actionModule of a.openActionModules) {
+          if ((actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings") && Number(actionModule.amount.value) > 0) {
+            aPrice = Math.floor(Number(actionModule.amount.value));
+            break;
+          }
+        }
+      }
+  
+      if (b && b.openActionModules) {
+        for (let actionModule of b.openActionModules) {
+          if ((actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings") && Number(actionModule.amount.value) > 0) {
+            bPrice = Math.floor(Number(actionModule.amount.value));
+            break;
+          }
+        }
+      }
+  
+      if (aPrice === null) {
+        return 1;
+      }
+  
+      if (bPrice === null) {
+        return -1;
+      }
+  
+      return sortOrder === 'asc' ? aPrice - bPrice : bPrice - aPrice;
+    });
+  }
+
   
   useEffect(() => {
     fetch('https://lensboard-data.onrender.com/api/get1editionsBonsai')
@@ -41,6 +82,15 @@ export default function GalleryPage() {
       });
   }, []);
 
+  const handleSortOrderChange = (value: string) => {
+    if (value === 'asc' || value === 'desc') {
+      setSortOrder(value);
+    } else {
+      // Handle unexpected value
+      console.error(`Unexpected sortOrder: ${value}`);
+    }
+  };
+
   const tags = [
     { value: 'Audio', label: 'Audio' },
     { value: 'Image', label: 'Image' },
@@ -49,21 +99,18 @@ export default function GalleryPage() {
     // Add more tags as needed
   ];
 
-  // Filter Logic
-  /*const filteredPosts = useMemo(() => {
-    return selectedTag 
-      ? (publications as Post[])?.filter(publication => publication.metadata.__typename.replace('MetadataV3', '') === selectedTag.value) 
-      : (publications as Post[]);
-  }, [selectedTag, publications]);*/
-
   const handleTagChange = (value) => {
-    setSelectedTag(value);
+    if (tags.some(tag => tag.value === value)) {
+      setSelectedTag(value);
+    }
   };
 
   useEffect(() => {
     setPublications([]);
     setIndex(0);
   }, [selectedTag]);
+
+  
 
 
   //const testPublicationId: PublicationId[] = ['0x011e55-0x0702', '0x011e55-0x060e', '0x011e55-0x0628', '0x011e55-0x0642', '0x011e55-0x06fc', '0x011e55-0x0646', '0x0182d8-0x0150', '0x01837b-0x80', '0x018924-0x171c', '0x2d0e-0x04c7', '0x0159-0x03fe', '0x01ed11-0x5c', '0x01ee54-0x0210', '0x01ee54-0x0391', '0x01ee54-0x0332', '0x01ee54-0x028b', '0x01ee54-0x03d5', '0x01ee54-0x0274', '0x01ead2-0x0260', '0x011e55-0x060e', '0x011e55-0x0628', '0x011e55-0x0642', '0x011e55-0x06fc', '0x011e55-0x0646', '0x0182d8-0x0150', '0x01837b-0x80', '0x018924-0x171c', '0x2d0e-0x04c7', '0x0159-0x03fe', '0x01ed11-0x5c', '0x01ee54-0x0210', '0x01ee54-0x0391', '0x01ee54-0x0332', '0x01ee54-0x028b', '0x01ee54-0x03d5', '0x01ee54-0x0274', '0x01ead2-0x0260', '0x011e55-0x060e', '0x011e55-0x0628', '0x011e55-0x0642']
@@ -77,25 +124,31 @@ export default function GalleryPage() {
   });
 
   useEffect(() => {
-    if (!loading2) {
-      if (error2) {
-        console.log(error2);
-      } else {
-        const filteredData = selectedTag !== 'all' 
-        ? data.filter((publication: any) => (publication as Post).metadata?.__typename.replace('MetadataV3', '').includes(selectedTag))
-        : data;
-        setPublications((prevPublications) => [...prevPublications, ...filteredData]);
-        setHasMore(filteredData.length > 0);
-        setIndex((prevIndex) => prevIndex + 1);
-      }
+    if (!loading2 && data) {
+      const filteredData = selectedTag !== 'all' 
+      ? data.filter((publication: any) => (publication as Post).metadata?.__typename.replace('MetadataV3', '').includes(selectedTag))
+      : data;
+  
+      // Ensure that filteredData is of type Post[]
+      const posts = filteredData.filter((publication: AnyPublication): publication is Post => publication.__typename === 'Post');
+  
+      setPublications((prevPublications) => [...prevPublications, ...posts]);
+      setHasMore(posts.length > 0);
+      setIndex((prevIndex) => prevIndex + 1);
     }
-  }, [loading2, error2, data]);
+  }, [data]);
 
   const fetchMoreData = () => {
     if (next && publications.length - index * ITEMS_PER_PAGE < ITEMS_PER_API_CALL) {
       next();
     }
   };
+
+  /*const fetchMoreData = () => {
+    if (next) {
+      next();
+    }
+  };*/
 
   return (
     <div className="flex justify-center">
@@ -122,6 +175,15 @@ export default function GalleryPage() {
             </SelectGroup>
           </SelectContent>
         </Select>
+        <Select value={sortOrder} onValueChange={handleSortOrderChange}>
+        <SelectTrigger className="w-[280px]">
+            <SelectValue placeholder="Order by Price" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="asc">Price: Low to High</SelectItem>
+            <SelectItem value="desc">Price: High to Low</SelectItem>
+          </SelectContent>
+        </Select>
         </div>
 
         <InfiniteScroll
@@ -132,7 +194,7 @@ export default function GalleryPage() {
         >
         <div className="flex justify-center">
           <div className="grid grid-cols-1 gap-4 max-w-xl mx-auto">
-            {!loading && !error && publications?.map(publication => (
+            {!loading && !error && sortPosts(publications, sortOrder)?.map(publication => (
               <GalleryPost key={publication.id} publication={publication} />
             ))}
           </div>
