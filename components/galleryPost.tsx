@@ -21,7 +21,7 @@ export default function GalleryPost({ publication }) {
     let imageSource = '';
 
     if (publication.metadata?.asset?.video) {
-      imageSource = publication.metadata.asset?.video?.thumbnail?.optimized?.uri;
+        imageSource = publication.metadata.asset?.cover?.optimized?.uri;
     } else if (publication.metadata?.asset?.image) {
       imageSource = publication.metadata.asset?.image.optimized?.uri;
     }

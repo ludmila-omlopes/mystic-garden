@@ -68,8 +68,8 @@ function GalleryPostDetails({ params }) {
   const [isLoading, setIsLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { address } = useAccount()
-  const { data: loginData } = useLogin();
-  const { isLoggedIn, setIsLoggedIn, userData, setUserData } = useLoginState();
+  //const { data: loginData } = useLogin();
+  const { isLoggedIn, setIsLoggedIn, profileId, setProfileId } = useLoginState();
 
   const { execute } = useOpenAction({
     action: {
@@ -87,8 +87,8 @@ function GalleryPostDetails({ params }) {
     if(!address) {
       alert('Connect your wallet first');
       return; }
-      else if(!loginData) {
-        alert('Login in first');
+      else if(!isLoggedIn) {
+        alert('Login first');
         return;
       }
     if (!post) {
@@ -171,7 +171,7 @@ function GalleryPostDetails({ params }) {
           </CardHeader>
           <CardContent className="text-left">
             <CardTitle>{post?.by.metadata?.displayName}</CardTitle>
-            <div>Teste: {userData}</div>
+            <div>Teste: {profileId}</div>
             <CardDescription>{post?.by?.handle?.localName}</CardDescription>
             <ReactMarkdown>{content || 'Content not available'}</ReactMarkdown>
           </CardContent>

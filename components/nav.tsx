@@ -1,14 +1,13 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { useWeb3Modal } from '@web3modal/wagmi/react'
-import { useAccount } from 'wagmi'
-import { disconnect } from '@wagmi/core'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
-import { ModeToggle } from '@/components/dropdown'
-import { ChevronRight, Droplets, LogOut } from "lucide-react"
-import { useEffect, useState, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { useWeb3Modal } from '@web3modal/wagmi/react';
+import { useAccount, useDisconnect } from 'wagmi';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { ModeToggle } from '@/components/dropdown';
+import { ChevronRight, Droplets, LogOut } from "lucide-react";
+import { useCallback } from 'react';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
@@ -16,19 +15,14 @@ import { ProfileId, useLogin, useLogout, useProfilesManaged } from '@lens-protoc
 import { useLoginState } from '@/app/loginStateProvider';
 
 export function Nav() {
-  const { open } = useWeb3Modal()
-  const { address } = useAccount()
-  const pathname = usePathname()
-  const { execute: exLogin, data: loginData } = useLogin();
-  const { execute: exLogout, loading: loadingLogout  } = useLogout();
+  const { open } = useWeb3Modal();
+  const { address } = useAccount();
+  const { disconnect } = useDisconnect();
+  const pathname = usePathname();
+  const { execute: exLogin } = useLogin();
+  const { execute: exLogout } = useLogout();
   const { data: managedProfiles, loading: loadingProfiles } = useProfilesManaged({ for: address ?? '' });
-  const { isLoggedIn, setIsLoggedIn, userData, setUserData } = useLoginState(); // Use the hook to get the login state and functions
-
-  //const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    setIsLoggedIn(!!loginData);
-  }, [loginData]);
+  const { isLoggedIn, setIsLoggedIn, profileId, setProfileId } = useLoginState();
 
   const login = useCallback((profileId: ProfileId) => {
     if (!address) {
@@ -38,17 +32,22 @@ export function Nav() {
     exLogin({
       address: address,
       profileId: profileId,
-    }).then((userData) => {
+    }).then(() => {
       setIsLoggedIn(true);
-      setUserData(userData); // Set the user data after login
+      setProfileId(profileId); // Set only the profileId
+    }).catch(error => {
+      console.error('Login failed:', error);
     });
-  }, [address, exLogin, setUserData]);
+  }, [address, exLogin, setIsLoggedIn, setProfileId]);
 
-  //todo: limpar o userdata
   const logout = useCallback(() => {
-    exLogout().then(() => setIsLoggedIn(false));
-    window.location.reload();
-  }, [exLogout]);
+    exLogout().then(() => {
+      setIsLoggedIn(false);
+      setProfileId(null); // Clear the profileId
+    }).catch(error => {
+      console.error('Logout failed:', error);
+    });
+  }, [exLogout, setIsLoggedIn, setProfileId]);
 
   return (
     <nav className='
@@ -127,7 +126,7 @@ export function Nav() {
           </DialogContent>
         </Dialog>
       )}
-<Button onClick={disconnect} variant="secondary" className="ml-8 mr-4">
+<Button onClick={() => disconnect()} variant="secondary" className="ml-8 mr-4">
   Disconnect
   <LogOut className="h-4 w-4 ml-3" />
 </Button>
