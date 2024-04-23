@@ -171,7 +171,6 @@ function GalleryPostDetails({ params }) {
           </CardHeader>
           <CardContent className="text-left">
             <CardTitle>{post?.by.metadata?.displayName}</CardTitle>
-            <div>Teste: {profileId}</div>
             <CardDescription>{post?.by?.handle?.localName}</CardDescription>
             <ReactMarkdown>{content || 'Content not available'}</ReactMarkdown>
           </CardContent>
