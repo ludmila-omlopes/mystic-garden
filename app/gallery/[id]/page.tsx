@@ -4,12 +4,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { usePublication, Post } from '@lens-protocol/react-web';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useTheme } from 'next-themes';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
-import { useOpenAction, OpenActionKind} from '@lens-protocol/react-web';
+import { useOpenAction, OpenActionKind, useLogin} from '@lens-protocol/react-web';
 import Hls from 'hls.js';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useAccount } from 'wagmi';
+import { useLoginState } from '@/app/loginStateProvider';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio', src: string, cover?: string } | null {
   if (!post?.metadata) {
@@ -66,7 +67,9 @@ function GalleryPostDetails({ params }) {
   const [isCollected, setIsCollected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-
+  const { address } = useAccount()
+  const { data: loginData } = useLogin();
+  const { isLoggedIn, setIsLoggedIn, userData, setUserData } = useLoginState();
 
   const { execute } = useOpenAction({
     action: {
@@ -81,16 +84,21 @@ function GalleryPostDetails({ params }) {
   }, [post]);
 
   const collect = async () => {
-    setIsLoading(true);
+    if(!address) {
+      alert('Connect your wallet first');
+      return; }
+      else if(!loginData) {
+        alert('Login in first');
+        return;
+      }
     if (!post) {
-      console.error('Post is undefined');
-      setIsLoading(false);
+      alert('Post is undefined');
       return;
     }
     const result = await execute({ publication: post });
 
     if (result.isFailure()) {
-      console.error('There was an error broadcasting the transaction', result.error.message);
+      alert('There was an error broadcasting the transaction'+ result.error.message);
       setIsLoading(false);
       return;
     }
@@ -163,6 +171,7 @@ function GalleryPostDetails({ params }) {
           </CardHeader>
           <CardContent className="text-left">
             <CardTitle>{post?.by.metadata?.displayName}</CardTitle>
+            <div>Teste: {userData}</div>
             <CardDescription>{post?.by?.handle?.localName}</CardDescription>
             <ReactMarkdown>{content || 'Content not available'}</ReactMarkdown>
           </CardContent>

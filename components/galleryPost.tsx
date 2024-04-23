@@ -20,12 +20,10 @@ export default function GalleryPost({ publication }) {
     const isPlayable = publication.metadata.__typename === 'AudioMetadataV3' || publication.metadata.__typename === 'VideoMetadataV3';
     let imageSource = '';
 
-    if (publication.metadata.asset) {
-    if (isPlayable && publication.metadata.asset.cover) {
-        imageSource = publication.metadata.asset.cover.optimized.uri;
-    } else if (publication.metadata.asset.image) {
-        imageSource = publication.metadata.asset.image.optimized.uri;
-    }
+    if (publication.metadata?.asset?.video) {
+      imageSource = publication.metadata.asset?.video?.thumbnail?.optimized?.uri;
+    } else if (publication.metadata?.asset?.image) {
+      imageSource = publication.metadata.asset?.image.optimized?.uri;
     }
 
     let postPrice: number | null = null;

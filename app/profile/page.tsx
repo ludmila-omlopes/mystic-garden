@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
-import { Loader2 } from 'lucide-react';
 import { useAccount } from 'wagmi'
 
 export default function ProfilePage() {
