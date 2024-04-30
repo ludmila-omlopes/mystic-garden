@@ -21,6 +21,7 @@ const ProfilePage = ({ params }) => {
   const { data: profile, error: profileError, loading: profileLoading } = useProfile({ forProfileId: profileId });
 
   const profileAvatarUri = (profile?.metadata?.picture && 'optimized' in profile.metadata.picture) ? profile.metadata?.picture?.optimized?.uri  : '';
+  //todo: create fallback for cover image
 
   useEffect(() => {
     const url = new URL('https://lensboard-data.onrender.com/api/get1editionsBonsaiByCreator');

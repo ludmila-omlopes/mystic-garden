@@ -11,6 +11,7 @@ import Hls from 'hls.js';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAccount } from 'wagmi';
 import { useLoginState } from '@/app/loginStateProvider';
+import Link from 'next/link';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio', src: string, cover?: string } | null {
   if (!post?.metadata) {
@@ -162,18 +163,22 @@ function GalleryPostDetails({ params }) {
     ) : null}
   </div>
       <div className="flex-1 p-4 lg:ml-8">
-        <Card>
-          <CardHeader>
-            <Avatar>
+      <Card>
+    <CardHeader>
+      <Link href={`/${post?.by?.id}`}>
+          <Avatar>
             <AvatarImage src={(post.by?.metadata?.picture && 'optimized' in post.by.metadata.picture) ? post.by.metadata.picture?.optimized?.uri : undefined} />
-              <AvatarFallback>{post?.by?.handle?.localName.slice(0, 2)}</AvatarFallback>
-            </Avatar>
-          </CardHeader>
-          <CardContent className="text-left">
-            <CardTitle>{post?.by.metadata?.displayName}</CardTitle>
-            <CardDescription>{post?.by?.handle?.localName}</CardDescription>
-            <ReactMarkdown>{content || 'Content not available'}</ReactMarkdown>
-          </CardContent>
+            <AvatarFallback>{post?.by?.handle?.localName.slice(0, 2)}</AvatarFallback>
+          </Avatar>
+      </Link>
+    </CardHeader>
+    <CardContent className="text-left">
+      <Link href={`/${post?.by?.id}`}>
+          <CardTitle>{post?.by.metadata?.displayName}</CardTitle>
+          <CardDescription>{post?.by?.handle?.localName}</CardDescription>
+      </Link>
+      <ReactMarkdown>{content || 'Content not available'}</ReactMarkdown>
+    </CardContent>
           <CardFooter className="flex-col items-start">
             <div>
               <span className="text-sm text-gray-500">Price</span>

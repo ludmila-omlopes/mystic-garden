@@ -61,14 +61,14 @@ export function Nav() {
       >
         <Link href="/" className='mr-5 flex items-center'>
           <Droplets className="opacity-85" size={19} />
-          <p className={`ml-2 mr-4 text-lg font-semibold`}>Lens Dashboard</p>
+          <p className={`ml-2 mr-4 text-lg font-semibold`}>Mystic Garden</p>
         </Link>
 
         <Link href="/" className={`mr-5 text-sm ${pathname !== '/' && 'opacity-50'}`}>
           <p>Home</p>
         </Link>
         <Link href="/gallery" className={`mr-5 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
-          <p>Bonsai Gallery</p>
+          <p>Gallery</p>
         </Link>
 
         {
