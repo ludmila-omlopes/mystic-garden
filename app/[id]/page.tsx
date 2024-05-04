@@ -4,8 +4,10 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { useProfile, usePublications, Post, PublicationId } from '@lens-protocol/react-web';
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import { TabsClean, TabsCleanList, TabsCleanContent, TabsCleanTrigger } from '@/components/ui/tabs-clean';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Import Avatar components
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import InfiniteScroll from "react-infinite-scroll-component";
 import Link from 'next/link';
 
 
@@ -105,7 +107,7 @@ const ProfilePage = ({ params }) => {
   }
 
   return (
-    <div className={`min-h-screen bg-cover ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
+    <div className="min-h-screen bg-cover">
     <div className="relative overflow-hidden">
       <img src={profile.metadata?.coverPicture?.optimized?.uri} alt="Cover" className="object-cover w-full h-64" />
     </div>
@@ -124,61 +126,65 @@ const ProfilePage = ({ params }) => {
         <p className="mt-4">{profile.metadata?.bio}</p>
       </div>
     </div>
-      <Tabs defaultValue="created">
-        <TabsList className="flex border-b">
-          <TabsTrigger
-            value="created"
-            className={`${selectedTab === 'created' ? 'border-b-2 border-blue-500' : ''} flex-1 py-2 text-center`}
-            onClick={() => setSelectedTab('created')}
-          >
-            Created
-          </TabsTrigger>
-          <TabsTrigger
-            value="collected"
-            className={`${selectedTab === 'collected' ? 'border-b-2 border-blue-500' : ''} flex-1 py-2 text-center`}
-            onClick={() => setSelectedTab('collected')}
-          >
-            Collected
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="created" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 p-4">
-  {posts?.map((publication) => (
-    <Link href={`/gallery/${publication.id}`} key={publication.id} passHref>
-    <Card key={publication.id} className="flex flex-col">
-        <CardContent  className='grid gap-4'>
-          {renderMedia(publication)}
-          <div>
-            <span className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Buy Now</span>
-            <div className="flex items-center">
-              <span className="text-lg font-semibold text-gray-900 dark:text-gray-300">{formatPrice(publication)}</span>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className='justify-between'>
-          <div className="flex items-center">
-            <Avatar className="w-6 h-6 mr-2">
-              <AvatarImage src={profileAvatarUri} alt={profile.handle?.localName} />
-              <AvatarFallback>{profile.handle?.localName.slice(0,2)}</AvatarFallback>
-            </Avatar>
-            <span className="text-xs font-light"> {profile.handle?.localName}</span>
-          </div>
-          <div className="flex items-center">
-            <Avatar className="w-6 h-6 mr-2">
-              <AvatarImage src={profileAvatarUri} alt="@Owner" />
-              <AvatarFallback>{profile.handle?.localName.slice(0,2)}</AvatarFallback>
-            </Avatar>
-            <span className="text-xs font-light"> {profile.handle?.localName}</span>
-          </div>
-        </CardFooter>
-      </Card>
-      </Link>
-          ))}
-      </TabsContent>
-        <TabsContent value="collected" className="grid grid-cols-3 gap-4 p-4">
-          Coming Soon...
-        </TabsContent>
-      </Tabs>
-    </div>
+    <TabsClean defaultValue="created" className='px-12'>
+      <TabsCleanList className="flex">
+        <TabsCleanTrigger
+          value="created"
+          className={`mx-2 py-2 px-4 text-sm font-medium uppercase tracking-wide transition-colors duration-300 ease-in-out ${
+            selectedTab === 'created' ? 'text-blue-700 dark:text-blue-300 border-b-2 border-blue-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+          }`}
+          onClick={() => setSelectedTab('created')}
+        >
+          Created
+        </TabsCleanTrigger>
+        <TabsCleanTrigger
+          value="collected"
+          className={`mx-2 py-2 px-4 text-sm font-medium uppercase tracking-wide transition-colors duration-300 ease-in-out ${
+            selectedTab === 'collected' ? 'text-blue-700 dark:text-blue-300 border-b-2 border-blue-500' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+          }`}
+          onClick={() => setSelectedTab('collected')}
+        >
+          Collected
+        </TabsCleanTrigger>
+      </TabsCleanList>
+      <TabsCleanContent value="created" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 p-4">
+        {posts?.map((publication) => (
+        <Link href={`/gallery/${publication.id}`} key={publication.id} passHref>
+        <Card key={publication.id} className="flex flex-col">
+            <CardContent  className='grid gap-4'>
+              {renderMedia(publication)}
+              <div>
+                <span className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Buy Now</span>
+                <div className="flex items-center">
+                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-300">{formatPrice(publication)}</span>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className='justify-between'>
+              <div className="flex items-center">
+                <Avatar className="w-6 h-6 mr-2">
+                  <AvatarImage src={profileAvatarUri} alt={profile.handle?.localName} />
+                  <AvatarFallback>{profile.handle?.localName.slice(0,2)}</AvatarFallback>
+                </Avatar>
+                <span className="text-xs font-light"> {profile.handle?.localName}</span>
+              </div>
+              <div className="flex items-center">
+                <Avatar className="w-6 h-6 mr-2">
+                  <AvatarImage src={profileAvatarUri} alt="@Owner" />
+                  <AvatarFallback>{profile.handle?.localName.slice(0,2)}</AvatarFallback>
+                </Avatar>
+                <span className="text-xs font-light"> {profile.handle?.localName}</span>
+              </div>
+            </CardFooter>
+          </Card>
+          </Link>
+        ))}
+      </TabsCleanContent>
+      <TabsCleanContent value="collected" className="grid grid-cols-3 gap-4 p-4">
+        Coming Soon...
+      </TabsCleanContent>
+    </TabsClean>
+  </div>
   );
 };
   

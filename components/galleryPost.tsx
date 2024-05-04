@@ -42,10 +42,12 @@ export default function GalleryPost({ publication }) {
     <Card className="border-b mb-4" key={publication.id}>
       <CardHeader>
         <div className="flex items-center space-x-4">
+        <Link href={`/${publication?.by?.id}`}>
           <Avatar>
             <AvatarImage src={publication.by?.metadata?.picture?.optimized?.uri} />
             <AvatarFallback>{publication.by.handle.localName.slice(0, 2)}</AvatarFallback>
           </Avatar>
+        </Link>
           <div>
             <h3 className="font-medium leading-none">{publication.by.metadata?.displayName}</h3>
             <p className="text-xs text-muted-foreground mb-1">{publication.by.handle.localName}</p>

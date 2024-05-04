@@ -150,8 +150,8 @@ export default function GalleryPage() {
   return (
     <div className="flex justify-center">
         <main>
-        <h1 className="text-4xl font-bold text-center py-2">Bonsai Gallery</h1>
-        <div className="text-xl text-center py-1">Featuring 1/1 art from Lens artists</div>
+        <h1 className="text-4xl font-bold text-center py-2">Welcome to Mystic Garden</h1>
+        <div className="text-xl text-center py-1"></div>
         
         <div className="my-4">
         <Select onValueChange={handleTagChange}>
