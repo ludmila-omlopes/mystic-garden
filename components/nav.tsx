@@ -13,6 +13,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { ProfileId, useLogin, useLogout, useProfilesManaged } from '@lens-protocol/react-web';
 import { useLoginState } from '@/app/loginStateProvider';
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 
 export function Nav() {
   const { open } = useWeb3Modal();
@@ -50,27 +51,40 @@ export function Nav() {
   }, [exLogout, setIsLoggedIn, setProfileId]);
 
   return (
-    <nav className='
-    border-b flex
-    flex-col sm:flex-row
-    items-start sm:items-center
-    sm:pr-10
-    '>
-      <div
-        className='py-3 px-8 flex flex-1 items-center p'
-      >
+    <nav className='border-b flex flex-row items-start sm:items-center sm:pr-10 px-4 sm:px-0'>
+      <div className='py-3 px-8 flex flex-1 items-center p sm:hidden'>
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button variant="outline">Menu</Button>
+          </DrawerTrigger>
+          <DrawerContent className='px-2'>
+            <Link href="/" className={`block py-2 text-sm ${pathname !== '/' && 'opacity-50'}`}>
+              Home
+            </Link>
+           {/*  <Link href="/gallery" className={`block py-2 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
+              Gallery
+            </Link>*/ }
+            {address && (
+              <Link href="/profile" className={`block py-2 text-sm ${pathname !== '/profile' && 'opacity-60'}`}>
+                Profile
+              </Link>
+            )}
+          </DrawerContent>
+        </Drawer>
+      </div>
+      <div className='py-3 px-8 flex flex-1 items-center p hidden sm:flex sm:items-center'>
         <Link href="/" className='mr-5 flex items-center'>
           <Droplets className="opacity-85" size={19} />
           <p className={`ml-2 mr-4 text-lg font-semibold`}>Mystic Garden</p>
         </Link>
-
+  
         <Link href="/" className={`mr-5 text-sm ${pathname !== '/' && 'opacity-50'}`}>
           <p>Home</p>
         </Link>
-        <Link href="/gallery" className={`mr-5 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
+        {/*  <Link href="/gallery" className={`mr-5 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
           <p>Gallery</p>
-        </Link>
-
+        </Link> */ }
+  
         {
           address && (
             <Link href="/profile" className={`mr-5 text-sm ${pathname !== '/profile' && 'opacity-60'}`}>
@@ -79,11 +93,7 @@ export function Nav() {
           )
         }
       </div>
-      <div className='
-        flex
-        sm:items-center
-        pl-8 pb-3 sm:p-0
-      '>
+      <div className='flex sm:items-center pl-8 py-3 sm:p-0'>
         {
     address && (
       <>

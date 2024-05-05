@@ -12,44 +12,57 @@ import Link from 'next/link';
 
 
 const ProfilePage = ({ params }) => {
-  //const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 40;
   const { theme } = useTheme();
-  const profileId = params.id;
+  const profileHandle = "lens/" + params.id;
   const [selectedTab, setSelectedTab] = useState('created');
+  //const [publications, setPublications] = useState<Post[]>([]);
+  const [isLoadingPublications, setLoadingPublications] = useState(false);
 
   const [publicationIds, setPublicationIds] = useState<PublicationId[]>([]);
-  //const [index, setIndex] = useState(0);
 
-  const { data: profile, error: profileError, loading: profileLoading } = useProfile({ forProfileId: profileId });
+  const { data: profile, error: profileError, loading: profileLoading } = useProfile({ forHandle: profileHandle });
 
   const profileAvatarUri = (profile?.metadata?.picture && 'optimized' in profile.metadata.picture) ? profile.metadata?.picture?.optimized?.uri  : '';
   //todo: create fallback for cover image
 
-  useEffect(() => {
-    const url = new URL('https://lensboard-data.onrender.com/api/get1editionsBonsaiByCreator');
-    url.search = new URLSearchParams({ profileId }).toString();
-    fetch(url.toString())
-      .then(response => response.json())
-      .then(data => {
-        if (data.result) {
-          console.log(data.result)
-          const result = JSON.parse(data.result);
-          const publicationsList = result.publicationsList as PublicationId[];
-          setPublicationIds(publicationsList);
-        }
-      })
-      .catch(error => console.log('Error:', error));
-  }, [profileId]);
-  
-  const { data: publications, loading: publicationsLoading, error: publicationsError } = usePublications({
-    where: {
-      publicationIds: publicationIds && publicationIds.length > 0 ? publicationIds : [],
-    },
-  }); 
+  console.log(profileHandle);
 
-  const posts = publications as Post[];
-  const isLoading = profileLoading || publicationsLoading || publicationIds.length == 0;
-  const error = profileError || publicationsError;
+  useEffect(() => {
+    if (profile?.id) {
+      const url = new URL('https://lensboard-data.onrender.com/api/get1editionsBonsaiByCreator');
+      url.search = new URLSearchParams({ profileId: profile.id }).toString();
+      fetch(url.toString())
+        .then(response => response.json())
+        .then(data => {
+          if (data.result) {
+            const result = JSON.parse(data.result);
+            const publicationsList = result.publicationsList as PublicationId[];
+            setPublicationIds(publicationsList);
+          }
+        })
+        .catch(error => console.log('Error:', error));
+    }
+  }, [profile]);
+
+  const publicationsQueryParams = {
+    where: {
+      publicationIds: publicationIds.slice(0, ITEMS_PER_PAGE),
+    }
+  };
+
+  const { data: publications, loading: publicationsLoading, error: publicationsError } = usePublications(publicationsQueryParams);
+
+
+  /*const { data, loading: loading2, error: error2, next } = usePublications({
+    where: {
+      publicationIds: publicationIds.slice(index * ITEMS_PER_PAGE, (index + 1) * ITEMS_PER_PAGE),
+    },
+  });*/
+
+  //const posts = publications as Post[];
+  const isLoading = profileLoading;
+  const error = profileError;
 
   const renderMedia = (publication) => {
     // Ensure the parent container has a fixed aspect ratio
@@ -94,6 +107,7 @@ const ProfilePage = ({ params }) => {
   };
 
   // If the profile data or publications are not yet loaded, show a loading indicator
+
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading profile...</div>;
   }
@@ -148,7 +162,12 @@ const ProfilePage = ({ params }) => {
         </TabsCleanTrigger>
       </TabsCleanList>
       <TabsCleanContent value="created" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 p-4">
-        {posts?.map((publication) => (
+            { publicationIds.length === 0 && !isLoadingPublications ? (
+              <div>No art has been created yet.</div>
+            ) : isLoadingPublications ? (
+              <div>Loading publications...</div>
+            ) : (
+              publications?.map((publication) => (
         <Link href={`/gallery/${publication.id}`} key={publication.id} passHref>
         <Card key={publication.id} className="flex flex-col">
             <CardContent  className='grid gap-4'>
@@ -178,7 +197,7 @@ const ProfilePage = ({ params }) => {
             </CardFooter>
           </Card>
           </Link>
-        ))}
+        )))}
       </TabsCleanContent>
       <TabsCleanContent value="collected" className="grid grid-cols-3 gap-4 p-4">
         Coming Soon...

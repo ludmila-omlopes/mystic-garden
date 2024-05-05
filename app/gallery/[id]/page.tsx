@@ -165,7 +165,7 @@ function GalleryPostDetails({ params }) {
       <div className="flex-1 p-4 lg:ml-8">
       <Card>
     <CardHeader>
-      <Link href={`/${post?.by?.id}`}>
+      <Link href={`/${post?.by?.handle?.localName}`}>
           <Avatar>
             <AvatarImage src={(post.by?.metadata?.picture && 'optimized' in post.by.metadata.picture) ? post.by.metadata.picture?.optimized?.uri : undefined} />
             <AvatarFallback>{post?.by?.handle?.localName.slice(0, 2)}</AvatarFallback>
@@ -173,7 +173,7 @@ function GalleryPostDetails({ params }) {
       </Link>
     </CardHeader>
     <CardContent className="text-left">
-      <Link href={`/${post?.by?.id}`}>
+      <Link href={`/${post?.by?.handle?.localName}`}>
           <CardTitle>{post?.by.metadata?.displayName}</CardTitle>
           <CardDescription>{post?.by?.handle?.localName}</CardDescription>
       </Link>

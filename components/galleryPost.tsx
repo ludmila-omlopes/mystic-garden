@@ -42,7 +42,7 @@ export default function GalleryPost({ publication }) {
     <Card className="border-b mb-4" key={publication.id}>
       <CardHeader>
         <div className="flex items-center space-x-4">
-        <Link href={`/${publication?.by?.id}`}>
+        <Link href={`/${publication?.by?.handle.localName}`}>
           <Avatar>
             <AvatarImage src={publication.by?.metadata?.picture?.optimized?.uri} />
             <AvatarFallback>{publication.by.handle.localName.slice(0, 2)}</AvatarFallback>
@@ -57,13 +57,14 @@ export default function GalleryPost({ publication }) {
       <CardContent>
         <div>
             <div className="relative">
-                <img
-                    className="max-w-full sm:max-w-[500px] rounded-2xl h-auto object-cover transition hover:scale-105"
-                    src={imageSource}
-                />
+            <Link href={`/gallery/${publication.id}`}>
+              <div className="relative aspect-w-1 aspect-h-1">
+                <img className="max-w-full sm:max-w-full rounded-2xl object-cover transition hover:scale-105 w-full" src={imageSource} />
+              </div>
                 {isPlayable && (
                     <FiPlayCircle className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl text-white" />
                 )}
+                </Link>
             </div>
             <div className="mt-4 mb-4"><Badge>{tag}</Badge></div>
             <div className="mt-4 mb-4 text-lg font-bold">

@@ -66,7 +66,6 @@ export default function GalleryPage() {
     });
   }
 
-  
   useEffect(() => {
     fetch('https://lensboard-data.onrender.com/api/get1editionsBonsai')
       .then(response => response.json())

@@ -10,9 +10,7 @@ import { useAccount } from 'wagmi'
 
 export default function ProfilePage() {
   const { address } = useAccount()
-  const { data: profiles } = useProfiles({ where: { profileIds: [/* user's profile ID here */] } });
   const { data: handlesData } = useOwnedHandles({ for: address ?? ''});
-  const [selectedHandle, setSelectedHandle] = useState('');
   const { execute: exLogin, data: loginData } = useLogin();
   const { execute: exLogout, loading: loadingLogout  } = useLogout();
   const { data: managedProfiles, loading: loadingProfiles } = useProfilesManaged({ for: address ?? '' });

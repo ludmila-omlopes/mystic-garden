@@ -141,39 +141,32 @@ export default function GalleryPage() {
     }
   };
 
-  /*const fetchMoreData = () => {
-    if (next) {
-      next();
-    }
-  };*/
-
   return (
-    <div className="flex justify-center">
-        <main>
-        <h1 className="text-4xl font-bold text-center py-2">Welcome to Mystic Garden</h1>
-        <div className="text-xl text-center py-1"></div>
-        
-        <div className="my-4">
-        <Select onValueChange={handleTagChange}>
-          <SelectTrigger className="w-[280px]">
-            <SelectValue placeholder="Filter by tag" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-            <SelectItem value="all">All</SelectItem>
-              {tags.map(tag => (
-                <SelectItem 
-                  value={tag.value} 
-                  key={tag.value}
-                >
-                  {tag.label}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+    <div className="flex flex-col sm:flex-row justify-center items-center m-4">
+    <main className="w-full sm:w-auto">
+      <h1 className="text-4xl font-bold text-center py-2">Welcome to Mystic Garden</h1>
+      <div className="text-xl text-center py-1"></div>
+      <div className="my-4 flex flex-col sm:flex-row justify-start items-start sm:items-center">
+        <div className="mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto">
+          <Select onValueChange={handleTagChange}>
+            <SelectTrigger className="w-full sm:w-[280px]">
+              <SelectValue placeholder="Filter by tag" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="all">All</SelectItem>
+                {tags.map(tag => (
+                  <SelectItem value={tag.value} key={tag.value}>
+                    {tag.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+      </div>
+      <div className="mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto">
         <Select value={sortOrder} onValueChange={handleSortOrderChange}>
-        <SelectTrigger className="w-[280px]">
+        <SelectTrigger className="w-full sm:w-[280px]">
             <SelectValue placeholder="Order by Price" />
           </SelectTrigger>
           <SelectContent>
@@ -181,8 +174,8 @@ export default function GalleryPage() {
             <SelectItem value="desc">Price: High to Low</SelectItem>
           </SelectContent>
         </Select>
-        </div>
-
+      </div>
+    </div>
         <InfiniteScroll
         dataLength={publicationIds.length}
         next={fetchMoreData}
@@ -190,14 +183,13 @@ export default function GalleryPage() {
         loader={<button>Loading...</button>}
         >
         <div className="flex justify-center">
-          <div className="grid grid-cols-1 gap-4 max-w-xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {!loading && !error && sortPosts(publications, sortOrder)?.map(publication => (
               <GalleryPost key={publication.id} publication={publication} />
             ))}
           </div>
         </div>
         </InfiniteScroll>
-
     </main>
     </div>
   );
