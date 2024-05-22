@@ -133,7 +133,7 @@ export default function GalleryPage() {
       setHasMore(posts.length > 0);
       setIndex((prevIndex) => prevIndex + 1);
     }
-  }, [data]);
+  }, [data, loading2, selectedTag]);
 
   const fetchMoreData = () => {
     if (next && publications.length - index * ITEMS_PER_PAGE < ITEMS_PER_API_CALL) {
@@ -145,7 +145,7 @@ export default function GalleryPage() {
     <div className="flex flex-col sm:flex-row justify-center items-center m-4">
     <main className="w-full sm:w-auto">
       <h1 className="text-4xl font-bold text-center py-2">Welcome to Mystic Garden</h1>
-      <div className="text-xl text-center py-1"></div>
+      <div className="text-xl text-center py-1 mx-auto sm:w-1/2 lg:w-1/3 text-gray-600 italic">Our sanctuary of art and magic is currently in the process of blooming. Please bear with us as we cultivate the perfect experience for you. 🌿🌸</div>
       <div className="my-4 flex flex-col sm:flex-row justify-start items-start sm:items-center">
         <div className="mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto">
           <Select onValueChange={handleTagChange}>

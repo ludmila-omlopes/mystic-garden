@@ -132,7 +132,7 @@ export default function GalleryPage() {
       setHasMore(posts.length > 0);
       setIndex((prevIndex) => prevIndex + 1);
     }
-  }, [data]);
+  }, [data, loading2, selectedTag]);
 
   const fetchMoreData = () => {
     if (next && publications.length - index * ITEMS_PER_PAGE < ITEMS_PER_API_CALL) {

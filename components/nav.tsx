@@ -11,8 +11,7 @@ import { useCallback, useState, useEffect } from 'react';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
-import { ProfileId, useLogin, useLogout, useProfilesManaged, useProfiles } from '@lens-protocol/react-web';
-import { useLoginState } from '@/app/loginStateProvider';
+import { ProfileId, useLogin, useLogout, useProfilesManaged, useProfiles, useSession } from '@lens-protocol/react-web';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { debounce } from 'lodash'; // Import lodash debounce function
 import SearchProfiles from './searchProfiles';
@@ -22,10 +21,10 @@ export function Nav() {
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
   const pathname = usePathname();
-  const { execute: exLogin } = useLogin();
+  const { execute: exLogin, data: loginData } = useLogin();
   const { execute: exLogout } = useLogout();
   const { data: managedProfiles, loading: loadingProfiles } = useProfilesManaged({ for: address ?? '' });
-  const { isLoggedIn, setIsLoggedIn, profileId, setProfileId } = useLoginState();
+  const { data: sessionData, error: sessionError, loading: sessionLoading } = useSession();
   const [openSearch, setOpenSearch] = useState(false);
   const [searchInput, setSearchInput] = useState('');
 
@@ -38,21 +37,17 @@ export function Nav() {
       address: address,
       profileId: profileId,
     }).then(() => {
-      setIsLoggedIn(true);
-      setProfileId(profileId); // Set only the profileId
     }).catch(error => {
       console.error('Login failed:', error);
     });
-  }, [address, exLogin, setIsLoggedIn, setProfileId]);
+  }, [address, exLogin]);
 
   const logout = useCallback(() => {
     exLogout().then(() => {
-      setIsLoggedIn(false);
-      setProfileId(null); // Clear the profileId
     }).catch(error => {
       console.error('Logout failed:', error);
     });
-  }, [exLogout, setIsLoggedIn, setProfileId]);
+  }, [exLogout]);
 
   const { data: profiles, loading: searchLoading, error: searchError } = useProfiles({
     where: {
@@ -89,11 +84,9 @@ export function Nav() {
            {/*  <Link href="/gallery" className={`block py-2 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
               Gallery
             </Link>*/ }
-            {address && (
-              <Link href="/profile" className={`block py-2 text-sm ${pathname !== '/profile' && 'opacity-60'}`}>
-                Profile
-              </Link>
-            )}
+            <Link href="/gallery/mint" className={`block py-2 text-sm ${pathname !== '/gallery/mint' && 'opacity-50'}`}>
+              Create New
+            </Link>
           </DrawerContent>
         </Drawer>
       </div>    
@@ -109,20 +102,16 @@ export function Nav() {
         {/*  <Link href="/gallery" className={`mr-5 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
           <p>Gallery</p>
         </Link> */ }
-        {
-          address && (
-            <Link href="/profile" className={`mr-5 text-sm ${pathname !== '/profile' && 'opacity-60'}`}>
-              <p>Profile</p>
+        <Link href="/gallery/mint" className={`mr-5 text-sm ${pathname !== '/gallery/mint' && 'opacity-60'}`}>
+              Create New
             </Link>
-          )
-        }
       <SearchProfiles />
       </div>
       <div className='flex sm:items-center pl-8 py-3 sm:p-0'>
         {
     address && (
       <>
-        {isLoggedIn ? (
+        {sessionData?.authenticated ? (
         <Button onClick={logout}>Logout</Button>
       ) : (
         <Dialog>
@@ -161,21 +150,10 @@ export function Nav() {
           </DialogContent>
         </Dialog>
       )}
-<Button onClick={() => disconnect()} variant="secondary" className="ml-8 mr-4">
-  Disconnect
-  <LogOut className="h-4 w-4 ml-3" />
-</Button>
       </>
     )
   }
-  {
-    !address && (
-      <Button onClick={() => open()} variant="secondary" className="mr-4">
-        Connect Wallet
-        <ChevronRight className="h-4 w-4" />
-      </Button>
-    )
-  }
+  <w3m-button />
         <ModeToggle />
       </div>
     </nav>

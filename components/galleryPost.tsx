@@ -20,11 +20,12 @@ export default function GalleryPost({ publication }) {
     const isPlayable = publication.metadata.__typename === 'AudioMetadataV3' || publication.metadata.__typename === 'VideoMetadataV3';
     let imageSource = '';
 
-    if (publication.metadata?.asset?.video) {
+    if (publication.metadata?.asset?.video || publication.metadata?.asset?.audio) {
         imageSource = publication.metadata.asset?.cover?.optimized?.uri;
     } else if (publication.metadata?.asset?.image) {
       imageSource = publication.metadata.asset?.image.optimized?.uri;
-    }
+    } else
+      imageSource = ""  //Todo - criar um fallback
 
     let postPrice: number | null = null;
     if (publication && publication.openActionModules) {

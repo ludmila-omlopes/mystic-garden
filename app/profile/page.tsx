@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import { useProfiles, useOwnedHandles, useUnlinkHandle, useLinkHandle, useLogin, useLogout, useProfilesManaged, ProfileId } from '@lens-protocol/react-web';
+import { useProfiles, useSession, useOwnedHandles, useUnlinkHandle, SessionType, useLinkHandle, useLogin, useLogout, useProfilesManaged, ProfileId } from '@lens-protocol/react-web';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -14,19 +14,19 @@ export default function ProfilePage() {
   const { execute: exLogin, data: loginData } = useLogin();
   const { execute: exLogout, loading: loadingLogout  } = useLogout();
   const { data: managedProfiles, loading: loadingProfiles } = useProfilesManaged({ for: address ?? '' });
-  const [isLoggedIn, setIsLoggedIn] = useState(!!loginData);
   const { execute: exUnlink, error: errorUnlink, loading: loadingUnlink } = useUnlinkHandle();
   const { execute: exLink, error: errorLink, loading: loadingLink } = useLinkHandle();
-
+  const { data: sessionData, error: sessionError, loading: sessionLoading } = useSession();
+  
   const login = (profileId: ProfileId) => {
     exLogin({
       address: address ?? '',
       profileId: profileId,
-    }).then(() => setIsLoggedIn(true));
+    });
   };
 
   const logout = () => {
-    exLogout().then(() => setIsLoggedIn(false));
+    exLogout();
     window.location.reload();
   };
 
@@ -76,74 +76,42 @@ export default function ProfilePage() {
     // the transaction is fully processed
   };
 
-  return (
-    <main className="p-6">
-       {loginData?.metadata?.picture?.__typename === 'ImageSet' && (
-      <Avatar className="mr-4 w-24 h-24">
-        <AvatarImage src={loginData.metadata.picture.optimized?.uri} />
-      </Avatar>
-    )}
-      <h1 className="text-5xl font-bold mt-3">Lens Profile</h1>
-      {isLoggedIn ? (
-        <Button onClick={logout}>Logout</Button>
-      ) : (
-        <Dialog>
-          <DialogTrigger>
-            <Button>Login</Button>
-          </DialogTrigger>
-          <DialogContent>
-            {loadingProfiles ? (
-              <div>Loading profiles...</div>
-            ) : (
-              managedProfiles?.map(profile => (
-                <Card
-                  key={profile.id}
-                  onClick={() => login(profile.id)}
-                  className="w-full text-left cursor-pointer hover:bg-gray-600"
-                >
-                  <div className="flex items-center space-x-4">
-                    <Avatar>
-                      <AvatarImage
-                        src={
-                          profile.metadata?.picture?.__typename === 'ImageSet'
-                            ? profile.metadata?.picture?.optimized?.uri
-                            : undefined
-                        }
-                        alt={profile.handle?.localName}
-                      />
-                      <AvatarFallback>{profile.handle?.localName?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h2 className="font-bold">{profile.handle?.localName}</h2>
-                    </div>
-                  </div>
-                </Card>
-              ))
-            )}
-          </DialogContent>
-        </Dialog>
-      )}
-      {loginData && (
-        <>
-          <h2 className="text-3xl font-bold mt-6">Owned Handles</h2>
-          <section className="mt-4">
-            <h2 className="text-2xl font-bold">Your Handles</h2>
-            <div className="mt-2">
-              {handlesData?.map(handle => (
-                <Card key={handle.id} className={`mt-2 p-2 ${handle.fullHandle === loginData.handle?.fullHandle ? 'bg-blue-100 dark:bg-blue-900' : ''}`}>
-                  <p>{handle.fullHandle}</p>
-                  {handle.fullHandle === loginData.handle?.fullHandle && (
-                    <Button onClick={() => unlink(handle)}>Unlink</Button>
-                  )}
-                  {handle.fullHandle !== loginData.handle?.fullHandle && (
-                    <Button onClick={() => link(handle)}>Link</Button>
-                  )}
-                </Card>
-              ))}
-            </div>
-          </section>
-        </>
-      )}
-    </main>
-  );
+  switch (sessionData?.type) {
+    case SessionType.Anonymous:
+      // data is a AnonymousSession
+      return (
+        <main className="p-6">
+          <Avatar className="mr-4 w-24 h-24">
+            <AvatarImage src="/path/to/your/fallback/image.png" />
+          </Avatar>
+          <p>Anonymous Session</p>
+        </main>
+      );
+    case SessionType.JustWallet:
+      // data is a WalletOnlySession
+      return (
+      <main className="p-6">
+          <Avatar className="mr-4 w-24 h-24">
+            <AvatarImage src="/path/to/your/fallback/image.png" />
+          </Avatar>
+          <p>Wallet-Only Session</p>
+        </main>  
+      );
+    case SessionType.WithProfile:
+      // data is a ProfileSession
+      return (
+        <main className="p-6">
+          {sessionData.profile?.metadata?.picture?.__typename === 'ImageSet' && (
+            <Avatar className="mr-4 w-24 h-24">
+              <AvatarImage src={sessionData.profile.metadata.picture.optimized?.uri} />
+            </Avatar>
+          )}
+          <h1 className="text-5xl font-bold mt-3">Your Profile</h1>
+          <p className="text-lg text-gray-500 dark:text-gray-400">Coming Soon...</p>
+        </main>
+      );
+  
+    default:
+      return <p>Something went wrong.</p>;
+  }
     }

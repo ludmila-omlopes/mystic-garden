@@ -1,11 +1,12 @@
 'use client'
 
-import { LensProvider as Provider, LensConfig, production } from '@lens-protocol/react-web';
+import { LensProvider as Provider, LensConfig, production, development } from '@lens-protocol/react-web';
 import { bindings as wagmiBindings } from '@lens-protocol/wagmi';
+import { wagmiConfig } from './web3modal-provider';
 
 const lensConfig: LensConfig = {
-  bindings: wagmiBindings(),
-  environment: production,
+  bindings: wagmiBindings(wagmiConfig),
+  environment: process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? production : development,
 };
 
 export function LensProvider({

@@ -146,7 +146,7 @@ const darkThemeStyles = {
       value={selectedOption}
       onChange={handleChange}
       options={options}
-      placeholder="Search and select a profile..."
+      placeholder="Search a profile..."
       onInputChange={value => setSearchTerm(value)}
       isLoading={loading}
       styles={themeStyles}

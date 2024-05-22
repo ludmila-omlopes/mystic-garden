@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import { usePublication, Post } from '@lens-protocol/react-web';
+import { usePublication, Post, useSession } from '@lens-protocol/react-web';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import ReactMarkdown from 'react-markdown';
@@ -10,8 +10,8 @@ import { useOpenAction, OpenActionKind, useLogin} from '@lens-protocol/react-web
 import Hls from 'hls.js';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAccount } from 'wagmi';
-import { useLoginState } from '@/app/loginStateProvider';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio', src: string, cover?: string } | null {
   if (!post?.metadata) {
@@ -70,7 +70,7 @@ function GalleryPostDetails({ params }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { address } = useAccount()
   //const { data: loginData } = useLogin();
-  const { isLoggedIn, setIsLoggedIn, profileId, setProfileId } = useLoginState();
+  const { data: sessionData, error: sessionError, loading: sessionLoading } = useSession();
 
   const { execute } = useOpenAction({
     action: {
@@ -88,7 +88,7 @@ function GalleryPostDetails({ params }) {
     if(!address) {
       alert('Connect your wallet first');
       return; }
-      else if(!isLoggedIn) {
+      else if(!sessionData?.authenticated) {
         alert('Login first');
         return;
       }
@@ -112,6 +112,12 @@ function GalleryPostDetails({ params }) {
   let content: string | undefined;
   if (post && 'metadata' in post && post.metadata && 'content' in post.metadata) {
     content = post.metadata.content;
+  }
+
+  let postTitle: string;
+  postTitle = '';
+  if (post && 'metadata' in post && post.metadata && 'marketplace' in post.metadata && post.metadata.marketplace && 'name' in post.metadata.marketplace) {
+    postTitle = post.metadata.marketplace?.name?.valueOf() || '';
   }
 
 //TODO: cobrir o caso de "follow to collect"
@@ -152,12 +158,12 @@ function GalleryPostDetails({ params }) {
     <div className="flex flex-col lg:flex-row items-start justify-center bg-gray-900 text-white">
       <div className="flex-1 p-4 lg:ml-8">
     {mediaSource?.type === 'image' ? (
-      <img src={mediaSource.src} alt="Artwork" className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
+      <Image src={mediaSource.src} alt="Artwork" width={500} height={500} className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
     ) : mediaSource?.type === 'video' ? (
       <video src={mediaSource?.src} controls className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
     ) : mediaSource?.type === 'audio' ? (
       <div className="flex flex-col items-center">
-        <img src={mediaSource.cover} alt="Cover" className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
+        <Image src={mediaSource?.cover ? mediaSource?.cover : ""} alt="Cover" width={500} height={500} className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
         <audio src={mediaSource?.src} controls className="w-full" />
       </div> 
     ) : null}
@@ -177,6 +183,7 @@ function GalleryPostDetails({ params }) {
           <CardTitle>{post?.by.metadata?.displayName}</CardTitle>
           <CardDescription>{post?.by?.handle?.localName}</CardDescription>
       </Link>
+      <ReactMarkdown>{postTitle || ''}</ReactMarkdown>
       <ReactMarkdown>{content || 'Content not available'}</ReactMarkdown>
     </CardContent>
           <CardFooter className="flex-col items-start">
