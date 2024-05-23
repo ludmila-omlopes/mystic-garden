@@ -11,7 +11,6 @@ import Hls from 'hls.js';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAccount } from 'wagmi';
 import Link from 'next/link';
-import Image from 'next/image';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio', src: string, cover?: string } | null {
   if (!post?.metadata) {
@@ -158,12 +157,12 @@ function GalleryPostDetails({ params }) {
     <div className="flex flex-col lg:flex-row items-start justify-center bg-gray-900 text-white">
       <div className="flex-1 p-4 lg:ml-8">
     {mediaSource?.type === 'image' ? (
-      <Image src={mediaSource.src} alt="Artwork" width={500} height={500} className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
+      <img src={mediaSource.src} alt="Artwork" width={500} height={500} className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
     ) : mediaSource?.type === 'video' ? (
       <video src={mediaSource?.src} controls className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
     ) : mediaSource?.type === 'audio' ? (
       <div className="flex flex-col items-center">
-        <Image src={mediaSource?.cover ? mediaSource?.cover : ""} alt="Cover" width={500} height={500} className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
+        <img src={mediaSource?.cover ? mediaSource?.cover : ""} alt="Cover" width={500} height={500} className="h-auto lg:max-w-3xl lg:max-h-[90vh]" />
         <audio src={mediaSource?.src} controls className="w-full" />
       </div> 
     ) : null}
