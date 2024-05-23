@@ -9,7 +9,7 @@ const nextConfig = {
           },
           {
             protocol: 'https',
-            hostname: 'gw.ipfs-lens.dev',
+            hostname: '**.gw.ipfs-lens.dev',
             pathname: '**',
           },
         ],
