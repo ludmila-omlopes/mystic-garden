@@ -1,77 +1,79 @@
-'use client'
+'use client';
 
-import { useEffect, useMemo, useState } from 'react'
-import { usePublications, PublicationId, PublicationType, LimitType, Post, AnyPublication, PublicationMetadataMainFocusType } from '@lens-protocol/react-web';
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import GalleryPost from '@/components/galleryPost'
-
-  import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select"
+import axios from "axios";
+import { usePublications, PublicationId, Post, AnyPublication } from '@lens-protocol/react-web';
+import GalleryPost from '@/components/galleryPost';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function GalleryPage() {
-  const ITEMS_PER_PAGE = 10;
-  const ITEMS_PER_API_CALL = 40;
+  const ITEMS_PER_PAGE = 20;
   const [publicationIds, setPublicationIds] = useState<PublicationId[]>([]);
+  const [publications, setPublications] = useState<Post[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [index, setIndex] = useState(0);
+  const [selectedTag, setSelectedTag] = useState('all');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [index, setIndex] = useState(2);
-  const [hasMore, setHasMore] = useState(true);
-  const [publications, setPublications] = useState<Post[]>([]);
-  const [selectedTag, setSelectedTag] = useState('all');
-  type Tag = { value: string; label: string; } | null;
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
 
-  function sortPosts(posts: Post[], sortOrder: 'asc' | 'desc' | undefined) {
-    if (sortOrder !== 'asc' && sortOrder !== 'desc') {
-      return posts;
+  const whereCondition = useMemo(() => ({
+    where: {
+      publicationIds: publicationIds.slice(index * ITEMS_PER_PAGE, (index + 1) * ITEMS_PER_PAGE),
+    },
+  }), [publicationIds, index]);
+
+  const { data, loading: loading2, error: error2, next } = usePublications(whereCondition);
+
+  const tags = [
+    { value: 'Audio', label: 'Audio' },
+    { value: 'Image', label: 'Image' },
+    { value: 'Text', label: 'Text' },
+    { value: 'Video', label: 'Video' },
+  ];
+
+  const handleSortOrderChange = (value: string) => {
+    if (value === 'asc' || value === 'desc') {
+      setSortOrder(value);
+    } else {
+      console.error(`Unexpected sortOrder: ${value}`);
     }
+  };
 
+  const handleTagChange = (value) => {
+    if (tags.some(tag => tag.value === value)) {
+      console.log()
+      setSelectedTag(value);
+    }
+  };
+
+  const sortPosts = (posts: Post[], sortOrder: 'asc' | 'desc' | undefined) => {
+    if (!sortOrder) return posts;
     return [...posts].sort((a, b) => {
-      let aPrice: number | null = null;
-      let bPrice: number | null = null;
-  
-      if (a && a.openActionModules) {
-        for (let actionModule of a.openActionModules) {
-          if ((actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings") && Number(actionModule.amount.value) > 0) {
-            aPrice = Math.floor(Number(actionModule.amount.value));
-            break;
+      const getPrice = (post: Post) => {
+        if (post && post.openActionModules) {
+          for (let actionModule of post.openActionModules) {
+            if ((actionModule.__typename === 'SimpleCollectOpenActionSettings' || actionModule.__typename === 'MultirecipientFeeCollectOpenActionSettings') && Number(actionModule.amount.value) > 0) {
+              return Math.floor(Number(actionModule.amount.value));
+            }
           }
         }
-      }
-  
-      if (b && b.openActionModules) {
-        for (let actionModule of b.openActionModules) {
-          if ((actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings") && Number(actionModule.amount.value) > 0) {
-            bPrice = Math.floor(Number(actionModule.amount.value));
-            break;
-          }
-        }
-      }
-  
-      if (aPrice === null) {
-        return 1;
-      }
-  
-      if (bPrice === null) {
-        return -1;
-      }
-  
+        return null;
+      };
+      const aPrice = getPrice(a);
+      const bPrice = getPrice(b);
+      if (aPrice === null) return 1;
+      if (bPrice === null) return -1;
       return sortOrder === 'asc' ? aPrice - bPrice : bPrice - aPrice;
     });
-  }
+  };
 
-  
   useEffect(() => {
-    fetch('https://lensboard-data.onrender.com/api/get1editionsBonsai')
-      .then(response => response.json())
-      .then(data => {
-        const result = JSON.parse(data.result);
+    axios
+      .get('https://lensboard-data.onrender.com/api/get1editionsBonsai')
+      .then(response => {
+        const result = JSON.parse(response.data.result);
         const publicationsList = result.publicationsList as PublicationId[];
         setPublicationIds(publicationsList);
         setLoading(false);
@@ -82,115 +84,76 @@ export default function GalleryPage() {
       });
   }, []);
 
-  const handleSortOrderChange = (value: string) => {
-    if (value === 'asc' || value === 'desc') {
-      setSortOrder(value);
-    } else {
-      // Handle unexpected value
-      console.error(`Unexpected sortOrder: ${value}`);
-    }
-  };
-
-  const tags = [
-    { value: 'Audio', label: 'Audio' },
-    { value: 'Image', label: 'Image' },
-    { value: 'Text', label: 'Text' },
-    { value: 'Video', label: 'Video' },
-    // Add more tags as needed
-  ];
-
-  const handleTagChange = (value) => {
-    if (tags.some(tag => tag.value === value)) {
-      setSelectedTag(value);
-    }
-  };
-
-  useEffect(() => {
-    setPublications([]);
-    setIndex(0);
-  }, [selectedTag]);
-
-  //const testPublicationId: PublicationId[] = ['0x011e55-0x0702', '0x011e55-0x060e', '0x011e55-0x0628', '0x011e55-0x0642', '0x011e55-0x06fc', '0x011e55-0x0646', '0x0182d8-0x0150', '0x01837b-0x80', '0x018924-0x171c', '0x2d0e-0x04c7', '0x0159-0x03fe', '0x01ed11-0x5c', '0x01ee54-0x0210', '0x01ee54-0x0391', '0x01ee54-0x0332', '0x01ee54-0x028b', '0x01ee54-0x03d5', '0x01ee54-0x0274', '0x01ead2-0x0260', '0x011e55-0x060e', '0x011e55-0x0628', '0x011e55-0x0642', '0x011e55-0x06fc', '0x011e55-0x0646', '0x0182d8-0x0150', '0x01837b-0x80', '0x018924-0x171c', '0x2d0e-0x04c7', '0x0159-0x03fe', '0x01ed11-0x5c', '0x01ee54-0x0210', '0x01ee54-0x0391', '0x01ee54-0x0332', '0x01ee54-0x028b', '0x01ee54-0x03d5', '0x01ee54-0x0274', '0x01ead2-0x0260', '0x011e55-0x060e', '0x011e55-0x0628', '0x011e55-0x0642']
-
-  //Fetching logic
-
-  const { data, loading: loading2, error: error2, next } = usePublications({
-    where: {
-      publicationIds: publicationIds.slice(index * ITEMS_PER_PAGE, (index + 1) * ITEMS_PER_PAGE),
-    },
-  });
-
   useEffect(() => {
     if (!loading2 && data) {
       const filteredData = selectedTag !== 'all' 
-      ? data.filter((publication: any) => (publication as Post).metadata?.__typename.replace('MetadataV3', '').includes(selectedTag))
-      : data;
-  
-      // Ensure that filteredData is of type Post[]
+        ? data.filter((publication: any) => (publication as Post).metadata?.__typename.replace('MetadataV3', '').includes(selectedTag))
+        : data;
       const posts = filteredData.filter((publication: AnyPublication): publication is Post => publication.__typename === 'Post');
-  
       setPublications((prevPublications) => [...prevPublications, ...posts]);
       setHasMore(posts.length > 0);
-      setIndex((prevIndex) => prevIndex + 1);
     }
   }, [data, loading2, selectedTag]);
 
-  const fetchMoreData = () => {
-    if (next && publications.length - index * ITEMS_PER_PAGE < ITEMS_PER_API_CALL) {
+  const fetchMoreData = useCallback(() => {
+    if (next && hasMore) {
+      setIndex(prevIndex => prevIndex + 1);
       next();
     }
-  };
+  }, [next]);
 
   return (
     <div className="flex flex-col sm:flex-row justify-center items-center m-4">
-    <main className="w-full sm:w-auto">
-      <h1 className="text-4xl font-bold text-center py-2">Welcome to Mystic Garden</h1>
-      <div className="text-xl text-center py-1 mx-auto sm:w-1/2 lg:w-1/3 text-gray-600 italic">Our sanctuary of art and magic is currently in the process of blooming. Please bear with us as we cultivate the perfect experience for you. 🌿🌸</div>
-      <div className="my-4 flex flex-col sm:flex-row justify-start items-start sm:items-center">
-        <div className="mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto">
-          <Select onValueChange={handleTagChange}>
-            <SelectTrigger className="w-full sm:w-[280px]">
-              <SelectValue placeholder="Filter by tag" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="all">All</SelectItem>
-                {tags.map(tag => (
-                  <SelectItem value={tag.value} key={tag.value}>
-                    {tag.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-      </div>
-      <div className="mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto">
-        <Select value={sortOrder} onValueChange={handleSortOrderChange}>
-        <SelectTrigger className="w-full sm:w-[280px]">
-            <SelectValue placeholder="Order by Price" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">Price: Low to High</SelectItem>
-            <SelectItem value="desc">Price: High to Low</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-        <InfiniteScroll
-        dataLength={publicationIds.length}
-        next={fetchMoreData}
-        hasMore={hasMore}
-        loader={<button>Loading...</button>}
-        >
-        <div className="flex justify-center">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {!loading && !error && sortPosts(publications, sortOrder)?.map(publication => (
-              <GalleryPost key={publication.id} publication={publication} />
-            ))}
+      <main className="w-full sm:w-auto">
+        <h1 className="text-4xl font-bold text-center py-2">Welcome to Mystic Garden</h1>
+        <div className="text-xl text-center py-1 mx-auto sm:w-1/2 lg:w-1/3 text-gray-600 italic">
+          Our sanctuary of art and magic is currently in the process of blooming. Please bear with us as we cultivate the perfect experience for you. 🌿🌸
+        </div>
+        <div className="my-4 flex flex-col sm:flex-row justify-start items-start sm:items-center">
+          <div className="mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto">
+            <Select onValueChange={handleTagChange}>
+              <SelectTrigger className="w-full sm:w-[280px]">
+                <SelectValue placeholder="Filter by tag" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all">All</SelectItem>
+                  {tags.map(tag => (
+                    <SelectItem value={tag.value} key={tag.value}>
+                      {tag.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto">
+            <Select value={sortOrder} onValueChange={handleSortOrderChange}>
+              <SelectTrigger className="w-full sm:w-[280px]">
+                <SelectValue placeholder="Order by Price" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="asc">Price: Low to High</SelectItem>
+                <SelectItem value="desc">Price: High to Low</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
+        <InfiniteScroll
+          dataLength={publications.length}
+          next={fetchMoreData}
+          hasMore={hasMore}
+          loader={<div>Loading...</div>}
+        >
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {!loading && !error && sortPosts(publications, sortOrder)?.map(publication => (
+                <GalleryPost key={publication.id} publication={publication} />
+              ))}
+            </div>
+          </div>
         </InfiniteScroll>
-    </main>
+      </main>
     </div>
   );
 }

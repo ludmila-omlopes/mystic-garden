@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { Button } from '@/components/ui/button';
 import { useWeb3Modal } from '@web3modal/wagmi/react';
@@ -56,7 +56,7 @@ export function Nav() {
   });
 
   const search = useCallback(() => {
-    setOpenSearch((open) => !open)
+    setOpenSearch((open) => !open);
 },[]);
 
   const debouncedSearch = useCallback(debounce(setSearchInput, 300), []);
@@ -71,7 +71,7 @@ export function Nav() {
 
   return (
     <nav className='border-b flex flex-row items-start sm:items-center sm:pr-10 px-4 sm:px-0'>
-      { /* Mobile Menu: Drawer*/ } 
+      {/* Mobile Menu: Drawer */}
       <div className='py-3 px-8 flex flex-1 items-center p sm:hidden'>
         <Drawer>
           <DrawerTrigger asChild>
@@ -81,16 +81,16 @@ export function Nav() {
             <Link href="/" className={`block py-2 text-sm ${pathname !== '/' && 'opacity-50'}`}>
               Home
             </Link>
-           {/*  <Link href="/gallery" className={`block py-2 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
+            {/* <Link href="/gallery" className={`block py-2 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
               Gallery
-            </Link>*/ }
+            </Link> */}
             <Link href="/gallery/mint" className={`block py-2 text-sm ${pathname !== '/gallery/mint' && 'opacity-50'}`}>
               Create New
             </Link>
           </DrawerContent>
         </Drawer>
-      </div>    
-    { /* Desktop Menu - Nav bar */ } 
+      </div>
+      {/* Desktop Menu - Nav bar */}
       <div className='py-3 px-8 flex flex-1 items-center p hidden sm:flex sm:items-center'>
         <Link href="/" className='mr-5 flex items-center'>
           <Droplets className="opacity-85" size={19} />
@@ -99,63 +99,61 @@ export function Nav() {
         <Link href="/" className={`mr-5 text-sm ${pathname !== '/' && 'opacity-50'}`}>
           <p>Home</p>
         </Link>
-        {/*  <Link href="/gallery" className={`mr-5 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
+        {/* <Link href="/gallery" className={`mr-5 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
           <p>Gallery</p>
-        </Link> */ }
+        </Link> */}
         <Link href="/gallery/mint" className={`mr-5 text-sm ${pathname !== '/gallery/mint' && 'opacity-60'}`}>
-              Create New
-            </Link>
-      <SearchProfiles />
+          Create New
+        </Link>
+        <SearchProfiles />
       </div>
       <div className='flex sm:items-center pl-8 py-3 sm:p-0'>
-        {
-    address && (
-      <>
-        {sessionData?.authenticated ? (
-        <Button onClick={logout}>Logout</Button>
-      ) : (
-        <Dialog>
-          <DialogTrigger>
-            <Button>Login</Button>
-          </DialogTrigger>
-          <DialogContent>
-            {loadingProfiles ? (
-              <div>Loading profiles...</div>
+        {address && (
+          <>
+            {sessionData?.authenticated ? (
+              <Button onClick={logout}>Logout</Button>
             ) : (
-              managedProfiles?.map(profile => (
-                <Card
-                  key={profile.id}
-                  onClick={() => login(profile.id)}
-                  className="w-full text-left cursor-pointer hover:bg-gray-600"
-                >
-                  <div className="flex items-center space-x-4">
-                    <Avatar>
-                      <AvatarImage
-                        src={
-                          profile.metadata?.picture?.__typename === 'ImageSet'
-                            ? profile.metadata?.picture?.optimized?.uri
-                            : undefined
-                        }
-                        alt={profile.handle?.localName}
-                      />
-                      <AvatarFallback>{profile.handle?.localName?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h2 className="font-bold">{profile.handle?.localName}</h2>
-                    </div>
-                  </div>
-                </Card>
-              ))
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>Login</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  {loadingProfiles ? (
+                    <div>Loading profiles...</div>
+                  ) : (
+                    managedProfiles?.map(profile => (
+                      <Card
+                        key={profile.id}
+                        onClick={() => login(profile.id)}
+                        className="w-full text-left cursor-pointer hover:bg-gray-600"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <Avatar>
+                            <AvatarImage
+                              src={
+                                profile.metadata?.picture?.__typename === 'ImageSet'
+                                  ? profile.metadata?.picture?.optimized?.uri
+                                  : undefined
+                              }
+                              alt={profile.handle?.localName}
+                            />
+                            <AvatarFallback>{profile.handle?.localName?.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h2 className="font-bold">{profile.handle?.localName}</h2>
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </DialogContent>
+              </Dialog>
             )}
-          </DialogContent>
-        </Dialog>
-      )}
-      </>
-    )
-  }
-  <w3m-button />
+          </>
+        )}
+        <w3m-button />
         <ModeToggle />
       </div>
     </nav>
-  )
+  );
 }
