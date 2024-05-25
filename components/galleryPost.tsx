@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { FiPlayCircle } from 'react-icons/fi';
 import { Button } from '@/components/ui/button';
 import Link from "next/link";
+//import { FALLBACK_IMAGE_URL } from '../constants';
 
 export default function GalleryPost({ publication }) {
     const maxLength = 100; // Set the maximum length of the text before it gets truncated
@@ -17,6 +18,8 @@ export default function GalleryPost({ publication }) {
 
     const tag = publication.metadata.__typename.replace('MetadataV3', '');
 
+    const fallbackImage = '/images/fallback-image.png';
+
     const isPlayable = publication.metadata.__typename === 'AudioMetadataV3' || publication.metadata.__typename === 'VideoMetadataV3';
     let imageSource = '';
 
@@ -25,7 +28,7 @@ export default function GalleryPost({ publication }) {
     } else if (publication.metadata?.asset?.image) {
       imageSource = publication.metadata.asset?.image.optimized?.uri;
     } else
-      imageSource = ""  //Todo - criar um fallback
+      imageSource = fallbackImage  //Todo - criar um fallback
 
     let postPrice: number | null = null;
     if (publication && publication.openActionModules) {

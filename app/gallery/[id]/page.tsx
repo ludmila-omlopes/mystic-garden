@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import { useOpenAction, OpenActionKind } from '@lens-protocol/react-web';
 import Hls from 'hls.js';
 import { useAccount } from 'wagmi';
-import axios from 'axios';
+import Link from "next/link";
+import { getTitle } from '@/utils/utils';
+import ReactMarkdown from 'react-markdown';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio', src: string, cover?: string } | null {
   if (!post?.metadata) {
@@ -16,7 +18,25 @@ function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio', src: s
   }
 
   switch (post.metadata.__typename) {
-    // Additional cases here...
+    //todo: criar uma forma de tratar o textonly
+    case 'ArticleMetadataV3':
+    case 'CheckingInMetadataV3':
+    case 'EmbedMetadataV3':
+    case 'EventMetadataV3':
+    case 'LinkMetadataV3':
+    case 'LiveStreamMetadataV3':
+    case 'MintMetadataV3':
+    case 'SpaceMetadataV3': 
+    case 'TransactionMetadataV3':
+    case 'ThreeDMetadataV3':
+      const firstAttachment = post.metadata.attachments?.[0];
+      if (firstAttachment?.__typename === 'PublicationMetadataMediaAudio') {
+        return { type: 'image', src: firstAttachment.cover?.optimized?.uri || '' };
+      }
+      if (firstAttachment?.__typename === 'PublicationMetadataMediaVideo') {
+        return { type: 'video', src: firstAttachment.video?.optimized?.uri || '' };
+      }
+      return { type: 'image', src: firstAttachment?.image?.optimized?.uri || '' };
     case 'AudioMetadataV3':
       return { 
         type: 'audio', 
@@ -27,6 +47,15 @@ function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio', src: s
       return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || '' };
     case 'ImageMetadataV3':
       return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || '' };
+    case 'StoryMetadataV3':
+      const asset = post.metadata.asset?.[0];
+      if (asset?.__typename === 'PublicationMetadataMediaAudio') {
+        return { type: 'image', src: asset.cover?.optimized?.uri || '' };
+      }
+      if (asset?.__typename === 'PublicationMetadataMediaVideo') {
+        return { type: 'video', src: asset.video?.optimized?.uri || '' };
+      }
+      return { type: 'image', src: asset?.image?.optimized?.uri || '' };
     default:
       return { type: 'image', src: '' };
   }
@@ -37,7 +66,7 @@ function GalleryPostDetails({ params }) {
   const post = data as Post;
   const [isCollected, setIsCollected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [moreNfts, setMoreNfts] = useState([]);
+  const [isSaleEnded, setIsSaleEnded] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { address } = useAccount();
   const { data: sessionData } = useSession();
@@ -47,18 +76,28 @@ function GalleryPostDetails({ params }) {
     },
   });
 
-  /*useEffect(() => {
+  useEffect(() => {
     if (post && post.__typename === 'Post' && post?.stats.collects > 0) {
       setIsCollected(true);
     }
 
-    // Fetch more NFTs by the same artist
-    if (post?.by?.profileId) {
-      axios.get(`/api/nfts/artist/${post.by.profileId}`).then(response => {
-        setMoreNfts(response.data);
-      });
+    //adaptar e modularizar para esquemas mais complexos de open actions
+
+    if (post && post.openActionModules) {
+      for (let actionModule of post.openActionModules) {
+        if (
+          actionModule.__typename === "SimpleCollectOpenActionSettings" ||
+          actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings"
+        ) {
+          const endsAt = actionModule.endsAt;
+          if (endsAt && new Date(endsAt) < new Date()) {
+            setIsSaleEnded(true);
+            break;
+          }
+        }
+      }
     }
-  }, [post]);*/
+  }, [post]);
 
   const collect = async () => {
     if (!address) {
@@ -85,12 +124,8 @@ function GalleryPostDetails({ params }) {
     alert('Post collected!');
   };
 
-  let content: string | undefined;
-  if (post && 'metadata' in post && post.metadata && 'content' in post.metadata) {
-    content = post.metadata.content;
-  }
+  const postTitle = getTitle(post);
 
-  let postTitle = post?.metadata?.marketplace?.name || '';
   let postPrice: number | null = null;
   if (post && post.openActionModules) {
     for (let actionModule of post.openActionModules) {
@@ -102,6 +137,7 @@ function GalleryPostDetails({ params }) {
   }
 
   const formattedPrice = postPrice ? `${postPrice} BONSAI` : 'Not for sale';
+
   const mediaSource = getMediaSource(post);
   const isPlayable = post ? post.metadata?.__typename === 'AudioMetadataV3' || post.metadata?.__typename === 'VideoMetadataV3' : false;
 
@@ -110,15 +146,15 @@ function GalleryPostDetails({ params }) {
       const hls = new Hls();
       hls.loadSource(mediaSource?.src);
       hls.attachMedia(videoRef.current);
-      hls.on(Hls.Events.MANIFEST_PARSED, function() {
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
         videoRef.current && videoRef.current.play();
       });
     }
   }, [mediaSource, isPlayable]);
 
-  let pictureUri = '/placeholder-avatar.jpg';
-    if (post?.by?.metadata?.picture?.__typename == "ImageSet") {
-      pictureUri = post?.by?.metadata?.picture?.optimized?.uri || "";
+  let avatarPictureUri; // default picture
+    if (post.by?.metadata?.picture && 'optimized' in post.by?.metadata?.picture) {
+      avatarPictureUri = post.by?.metadata?.picture?.optimized?.uri;
     }
 
   if (loading) return <div>Loading...</div>;
@@ -133,7 +169,7 @@ function GalleryPostDetails({ params }) {
             <img src={mediaSource.src} alt="NFT Image" className="rounded-xl object-cover aspect-square" />
           )}
           {mediaSource?.type === 'video' && (
-            <video src={mediaSource.src} controls className="rounded-xl object-cover aspect-square" ref={videoRef} />
+            <video src={mediaSource?.src} controls className="rounded-xl object-cover aspect-square" />
           )}
           {mediaSource?.type === 'audio' && (
             <div className="flex flex-col items-center">
@@ -144,10 +180,12 @@ function GalleryPostDetails({ params }) {
         </div>
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-2">
-            <Avatar>
-              <AvatarImage alt={post.by?.metadata?.displayName || "Art by Mystic Garden"} src={pictureUri || '/placeholder-avatar.jpg'} />
-              <AvatarFallback>{post.by?.metadata?.displayName?.charAt(0) || 'A'}</AvatarFallback>
-            </Avatar>
+            <Link href={`/${post?.by?.handle?.localName}`}>
+              <Avatar>
+                <AvatarImage alt={post.by?.metadata?.displayName || "Art by Mystic Garden"} src={avatarPictureUri || '/placeholder-avatar.jpg'} />
+                <AvatarFallback>{post.by?.metadata?.displayName?.charAt(0) || 'A'}</AvatarFallback>
+              </Avatar>
+            </Link>
             <div>
               <h3 className="text-lg font-semibold">{post.by?.metadata?.displayName || post.by?.handle?.localName}</h3>
               <p className="text-gray-500 dark:text-gray-400">Digital Artist</p>
@@ -155,81 +193,25 @@ function GalleryPostDetails({ params }) {
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">{postTitle}</h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              {content || 'This NFT is a unique digital artwork created by the artist.'}
-            </p>
+            <ReactMarkdown className="text-gray-500 dark:text-gray-400">
+              {'content' in post.metadata? post.metadata?.content : 'This artist has not provided a description.'}
+            </ReactMarkdown>
           </div>
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-4">
-              {/*
-              <div>
-                <h3 className="text-lg font-semibold">Current Owner</h3>
-                <p className="text-gray-500 dark:text-gray-400">{address}</p>
-              </div>
-        */}
               <div>
                 <h3 className="text-lg font-semibold">Price</h3>
                 <p className="text-gray-500 dark:text-gray-400">{formattedPrice}</p>
               </div>
             </div>
             <Separator className="my-4" />
-            <Button size="lg" onClick={collect} disabled={isCollected || isLoading}>
-              {isLoading ? 'Loading...' : isCollected ? 'Sold Out' : 'Purchase'}
+            <Button size="lg" onClick={collect} disabled={isCollected || isLoading || isSaleEnded}>
+              {isLoading ? 'Loading...' : isCollected ? 'Sold Out' : isSaleEnded ? 'Sale Ended' : 'Purchase'}
             </Button>
           </div>
         </div>
       </div>
-      {/* <section className="max-w-6xl mx-auto py-12 px-4 md:px-6">
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">More by {post.by?.metadata?.displayName}</h2>
-            <p className="text-gray-500 dark:text-gray-400">
-              Explore other captivating NFT artworks by the digital artist, {post.by?.metadata?.displayName}.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {moreNfts.map(nft => (
-              <div className="flex flex-col gap-4" key={nft.id}>
-                <img
-                  alt={nft.title}
-                  className="rounded-xl object-cover aspect-square"
-                  height="400"
-                  src={nft.image}
-                  width="400"
-                />
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">{nft.title}</h3>
-                  <p className="text-gray-500 dark:text-gray-400">{nft.description}</p>
-                  <div className="flex items-center gap-2">
-                    <BitcoinIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <span className="text-gray-500 dark:text-gray-400">{nft.price} ETH</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-          </section>*/ }
     </>
-  );
-}
-
-function BitcoinIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M11.767 19.089c4.924.868 6.14-6.025 1.216-6.894m-1.216 6.894L5.86 18.047m5.908 1.042-.347 1.97m1.563-8.864c4.924.869 6.14-6.025 1.215-6.893m-1.215 6.893-3.94-.694m5.155-6.2L8.29 4.26m5.908 1.042.348-1.97M7.48 20.364l3.126-17.727" />
-    </svg>
   );
 }
 
