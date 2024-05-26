@@ -9,6 +9,7 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { getTitle } from '@/utils/utils';
 import { FaPlay } from 'react-icons/fa';
+import { FALLBACK_IMAGE_URL} from '../constants';
 
 const ProfilePage = ({ params }) => {
   const ITEMS_PER_PAGE = 40;
@@ -52,7 +53,7 @@ const ProfilePage = ({ params }) => {
     switch (publication.metadata.__typename) {
       case 'ImageMetadataV3':
         return (
-          <img src={publication.metadata.asset?.image?.optimized?.uri} alt="Post" className={mediaContainerClass} />
+          <img src={publication.metadata.asset?.image?.optimized?.uri} alt="Art Image" className={mediaContainerClass} />
         );
       case 'VideoMetadataV3':
       case 'AudioMetadataV3':
@@ -65,11 +66,9 @@ const ProfilePage = ({ params }) => {
           </div>
         );
       default:
-        return (
-          <div className={mediaContainerClass}>
-            Content {/* A default fallback */}
-          </div>
-        );
+          return (
+            <img src={ FALLBACK_IMAGE_URL } alt="Art Image" className={mediaContainerClass} />
+          );
     }
   };
 
