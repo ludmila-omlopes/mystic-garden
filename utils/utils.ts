@@ -16,7 +16,7 @@ export const getTitle = (publication) => {
   const title = publication.metadata.marketplace?.name;
   const description = publication.metadata.content;
 
-  if (title && !title.toLowerCase().startsWith("image by") && !title.toLowerCase().startsWith("video by") && !title.toLowerCase().startsWith("post by")) {
+  if (title && !title.toLowerCase().startsWith("image by") && !title.toLowerCase().startsWith("video by") && !title.toLowerCase().startsWith("post by") && !title.toLowerCase().startsWith("text by")) {
     return truncateText(title, MAX_TITLE_LENGTH);
   }
 

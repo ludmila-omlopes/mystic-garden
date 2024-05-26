@@ -12,56 +12,31 @@ import Link from "next/link";
 import { getTitle } from '@/utils/utils';
 import ReactMarkdown from 'react-markdown';
 
-function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio', src: string, cover?: string } | null {
+function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover?: string } | null {
+  const fallbackImage = '/images/fallback-image.png';
+
   if (!post?.metadata) {
     return null;
   }
 
   switch (post.metadata.__typename) {
-    //todo: criar uma forma de tratar o textonly
-    case 'ArticleMetadataV3':
-    case 'CheckingInMetadataV3':
-    case 'EmbedMetadataV3':
-    case 'EventMetadataV3':
-    case 'LinkMetadataV3':
-    case 'LiveStreamMetadataV3':
-    case 'MintMetadataV3':
-    case 'SpaceMetadataV3': 
-    case 'TransactionMetadataV3':
-    case 'ThreeDMetadataV3':
-      const firstAttachment = post.metadata.attachments?.[0];
-      if (firstAttachment?.__typename === 'PublicationMetadataMediaAudio') {
-        return { type: 'image', src: firstAttachment.cover?.optimized?.uri || '' };
-      }
-      if (firstAttachment?.__typename === 'PublicationMetadataMediaVideo') {
-        return { type: 'video', src: firstAttachment.video?.optimized?.uri || '' };
-      }
-      return { type: 'image', src: firstAttachment?.image?.optimized?.uri || '' };
     case 'AudioMetadataV3':
       return { 
         type: 'audio', 
-        src: post.metadata.asset?.audio?.optimized?.uri || '',
-        cover: post.metadata.asset?.cover?.optimized?.uri || ''
+        src: post.metadata.asset?.audio?.optimized?.uri || fallbackImage,
+        cover: post.metadata.asset?.cover?.optimized?.uri || fallbackImage
       };
     case 'VideoMetadataV3':
-      return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || '' };
+      return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || fallbackImage };
     case 'ImageMetadataV3':
-      return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || '' };
-    case 'StoryMetadataV3':
-      const asset = post.metadata.asset?.[0];
-      if (asset?.__typename === 'PublicationMetadataMediaAudio') {
-        return { type: 'image', src: asset.cover?.optimized?.uri || '' };
-      }
-      if (asset?.__typename === 'PublicationMetadataMediaVideo') {
-        return { type: 'video', src: asset.video?.optimized?.uri || '' };
-      }
-      return { type: 'image', src: asset?.image?.optimized?.uri || '' };
+      return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || fallbackImage };
     default:
-      return { type: 'image', src: '' };
+      return { type: 'text', src: fallbackImage };
   }
 }
 
 function GalleryPostDetails({ params }) {
+  const fallbackImage = '/images/fallback-image.png';
   const { data, error, loading } = usePublication({ forId: params.id });
   const post = data as Post;
   const [isCollected, setIsCollected] = useState(false);
@@ -80,8 +55,6 @@ function GalleryPostDetails({ params }) {
     if (post && post.__typename === 'Post' && post?.stats.collects > 0) {
       setIsCollected(true);
     }
-
-    //adaptar e modularizar para esquemas mais complexos de open actions
 
     if (post && post.openActionModules) {
       for (let actionModule of post.openActionModules) {
@@ -152,49 +125,58 @@ function GalleryPostDetails({ params }) {
     }
   }, [mediaSource, isPlayable]);
 
-  let avatarPictureUri; // default picture
-    if (post.by?.metadata?.picture && 'optimized' in post.by?.metadata?.picture) {
-      avatarPictureUri = post.by?.metadata?.picture?.optimized?.uri;
-    }
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!post) return <div>Post not found!</div>;
+
+  const displayName = post?.by?.metadata?.displayName || 'Unknown Artist';
+  const handleName = post?.by?.handle?.localName || 'unknown';
+
+  const profilePictureUri = post.by?.metadata?.picture?.__typename === 'ImageSet' 
+    ? post.by.metadata.picture.optimized?.uri 
+    : post.by?.metadata?.picture?.__typename === 'NftImage' 
+    ? post.by.metadata.picture.image?.optimized?.uri 
+    : '/placeholder-avatar.jpg';
+
+  const content = post.metadata.__typename !== 'EventMetadataV3' 
+    ? post.metadata.content
+    : "";
 
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto py-12 px-4 md:px-6">
         <div className="flex flex-col gap-4">
-          {mediaSource?.type === 'image' && (
-            <img src={mediaSource.src} alt="NFT Image" className="rounded-xl object-cover aspect-square" />
-          )}
+          {(mediaSource?.type === 'image' || mediaSource?.type === 'text') && (
+            <img src={mediaSource.src || fallbackImage} alt="NFT Image test" className="rounded-xl object-cover aspect-square" />
+          )
+          }
           {mediaSource?.type === 'video' && (
-            <video src={mediaSource?.src} controls className="rounded-xl object-cover aspect-square" />
+            <video src={mediaSource?.src || '/images/fallback-image.jpg'} controls className="rounded-xl object-cover aspect-square" />
           )}
           {mediaSource?.type === 'audio' && (
             <div className="flex flex-col items-center">
-              <img src={mediaSource?.cover || ''} alt="Cover" className="rounded-xl object-cover aspect-square" />
-              <audio src={mediaSource.src} controls className="w-full" />
+              <img src={mediaSource?.cover || '/images/fallback-image.jpg'} alt="Cover" className="rounded-xl object-cover aspect-square" />
+              <audio src={mediaSource.src || '/images/fallback-image.jpg'} controls className="w-full" />
             </div>
           )}
         </div>
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-2">
-            <Link href={`/${post?.by?.handle?.localName}`}>
+            <Link href={`/${handleName}`}>
               <Avatar>
-                <AvatarImage alt={post.by?.metadata?.displayName || "Art by Mystic Garden"} src={avatarPictureUri || '/placeholder-avatar.jpg'} />
-                <AvatarFallback>{post.by?.metadata?.displayName?.charAt(0) || 'A'}</AvatarFallback>
+                <AvatarImage alt={displayName} src={profilePictureUri} />
+                <AvatarFallback>{handleName.slice(0, 2)}</AvatarFallback>
               </Avatar>
             </Link>
             <div>
-              <h3 className="text-lg font-semibold">{post.by?.metadata?.displayName || post.by?.handle?.localName}</h3>
-              <p className="text-gray-500 dark:text-gray-400">Digital Artist</p>
+              <h3 className="text-lg font-semibold">{displayName}</h3>
+              <p className="text-gray-500 dark:text-gray-400">{"@"+handleName}</p>
             </div>
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">{postTitle}</h1>
             <ReactMarkdown className="text-gray-500 dark:text-gray-400">
-              {'content' in post.metadata? post.metadata?.content : 'This artist has not provided a description.'}
+              {content || 'This NFT is a unique digital artwork created by the artist.'}
             </ReactMarkdown>
           </div>
           <div className="flex flex-col gap-4">
