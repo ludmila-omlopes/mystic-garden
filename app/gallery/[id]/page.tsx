@@ -11,9 +11,10 @@ import { useAccount } from 'wagmi';
 import Link from "next/link";
 import { getTitle } from '@/utils/utils';
 import ReactMarkdown from 'react-markdown';
+import { FALLBACK_IMAGE_URL } from '../../constants';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover?: string } | null {
-  const fallbackImage = '/images/fallback-image.png';
+  //const fallbackImage = '/images/fallback-image.png';
 
   if (!post?.metadata) {
     return null;
@@ -23,15 +24,15 @@ function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text
     case 'AudioMetadataV3':
       return { 
         type: 'audio', 
-        src: post.metadata.asset?.audio?.optimized?.uri || fallbackImage,
-        cover: post.metadata.asset?.cover?.optimized?.uri || fallbackImage
+        src: post.metadata.asset?.audio?.optimized?.uri || FALLBACK_IMAGE_URL,
+        cover: post.metadata.asset?.cover?.optimized?.uri || FALLBACK_IMAGE_URL
       };
     case 'VideoMetadataV3':
-      return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || fallbackImage };
+      return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || FALLBACK_IMAGE_URL };
     case 'ImageMetadataV3':
-      return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || fallbackImage };
+      return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || FALLBACK_IMAGE_URL };
     default:
-      return { type: 'text', src: fallbackImage };
+      return { type: 'text', src: FALLBACK_IMAGE_URL };
   }
 }
 

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { FiPlayCircle } from 'react-icons/fi';
 import { Button } from '@/components/ui/button';
 import Link from "next/link";
+import { FALLBACK_IMAGE_URL } from '../app/constants';
 
 export default function GalleryPost({ publication }) {
     const maxLength = 100; // Set the maximum length of the text before it gets truncated
@@ -17,17 +18,15 @@ export default function GalleryPost({ publication }) {
 
     const tag = publication.metadata.__typename.replace('MetadataV3', '');
 
-    const fallbackImage = '/images/fallback-image.png';
-
     const isPlayable = publication.metadata.__typename === 'AudioMetadataV3' || publication.metadata.__typename === 'VideoMetadataV3';
     let imageSource = '';
 
     if (publication.metadata?.asset?.video || publication.metadata?.asset?.audio) {
-        imageSource = publication.metadata.asset?.cover?.optimized?.uri || fallbackImage;
+        imageSource = publication.metadata.asset?.cover?.optimized?.uri || FALLBACK_IMAGE_URL;
     } else if (publication.metadata?.asset?.image) {
-      imageSource = publication.metadata.asset?.image.optimized?.uri || fallbackImage;
+      imageSource = publication.metadata.asset?.image.optimized?.uri || FALLBACK_IMAGE_URL;
     } else {
-      imageSource = fallbackImage;  // Use fallback image
+      imageSource = FALLBACK_IMAGE_URL;
     }
 
     let postPrice: number | null = null;
@@ -51,7 +50,7 @@ export default function GalleryPost({ publication }) {
           <div className="flex items-center space-x-4">
             <Link href={`/${handleName}`}>
               <Avatar>
-                <AvatarImage src={publication.by?.metadata?.picture?.optimized?.uri || fallbackImage} />
+                <AvatarImage src={publication.by?.metadata?.picture?.optimized?.uri || FALLBACK_IMAGE_URL} />
                 <AvatarFallback>{handleName.slice(0, 2)}</AvatarFallback>
               </Avatar>
             </Link>

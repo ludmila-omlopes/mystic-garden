@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { getTitle } from '@/utils/utils';
-import { FaPlay } from 'react-icons/fa'; // Import play icon
+import { FaPlay } from 'react-icons/fa';
 
 const ProfilePage = ({ params }) => {
   const ITEMS_PER_PAGE = 40;
@@ -90,6 +90,20 @@ const ProfilePage = ({ params }) => {
 
   const isSoldOut = (publication) => {
     return publication && publication.__typename === 'Post' && publication?.stats?.collects > 0;
+  };
+
+  const isSaleEnded = (publication) => {
+    if (publication && publication.openActionModules) {
+      for (let actionModule of publication.openActionModules) {
+        if (actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings") {
+          const endsAt = actionModule.endsAt;
+          if (endsAt && new Date(endsAt) < new Date()) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   };
 
   if (profileLoading) {
@@ -183,9 +197,13 @@ const ProfilePage = ({ params }) => {
                           <div className="text-lg font-bold">{formatPrice(publication)}</div>
                         </div>
                       </div>
-                      {isSoldOut(publication) && (
+                      {isSoldOut(publication) ? (
                         <div className="absolute top-4 right-4 bg-fuchsia-800 text-white px-3 py-1 rounded-md text-sm font-medium">
                           Sold Out
+                        </div>
+                      ) : isSaleEnded(publication) && (
+                        <div className="absolute top-4 right-4 bg-amber-600 text-white px-3 py-1 rounded-md text-sm font-medium">
+                          Sale Ended
                         </div>
                       )}
                     </div>
