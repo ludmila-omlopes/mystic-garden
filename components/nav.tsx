@@ -81,9 +81,9 @@ export function Nav() {
             <Link href="/" className={`block py-2 text-sm ${pathname !== '/' && 'opacity-50'}`}>
               Home
             </Link>
-            {/* <Link href="/gallery" className={`block py-2 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
-              Gallery
-            </Link> */}
+            { <Link href="/explore" className={`block py-2 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
+              Explore
+            </Link> }
             <Link href="/gallery/mint" className={`block py-2 text-sm ${pathname !== '/gallery/mint' && 'opacity-50'}`}>
               Create New
             </Link>
@@ -99,9 +99,9 @@ export function Nav() {
         <Link href="/" className={`mr-5 text-sm ${pathname !== '/' && 'opacity-50'}`}>
           <p>Home</p>
         </Link>
-        {/* <Link href="/gallery" className={`mr-5 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
-          <p>Gallery</p>
-        </Link> */}
+        { <Link href="/explore" className={`mr-5 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
+          <p>Explore</p>
+        </Link> }
         <Link href="/gallery/mint" className={`mr-5 text-sm ${pathname !== '/gallery/mint' && 'opacity-60'}`}>
           Create New
         </Link>
