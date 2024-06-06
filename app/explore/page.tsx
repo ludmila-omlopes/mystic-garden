@@ -85,10 +85,10 @@ export default function Explore() {
 
   return (
     <div className="flex flex-col sm:flex-row justify-center items-center m-4">
-      <main className="w-full sm:w-auto">
+      <main className="w-full sm:w-auto mt-20">  {/* Added mt-20 to add space on top */}
         <h1 className="text-4xl font-bold text-center py-2">Welcome to Mystic Garden</h1>
         <div className="text-xl text-center py-1 mx-auto sm:w-1/2 lg:w-1/3 text-gray-600 italic">
-          Our sanctuary of art and magic is currently in the process of blooming. Please bear with us as we cultivate the perfect experience for you. 🌿🌸
+          Our sanctuary of art and magic is currently in the process of blooming... 🌿🌸
         </div>
         <div className="my-4 flex flex-col sm:flex-row justify-start items-start sm:items-center">
           <div className="mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto flex items-center">
@@ -100,7 +100,7 @@ export default function Explore() {
           dataLength={publications.length}
           next={fetchMoreData}
           hasMore={hasMore}
-          loader={<div>Loading...</div>}
+          loader={<div>...</div>}
         >
           <div className="flex justify-center">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">

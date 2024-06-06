@@ -9,7 +9,6 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0x1087', // christina spinei
     '0xf6b0', // Andres Briceno
     '0x018ccc', // Losi
-    '0x01837b' //zo
+    '0x01837b', //zo
+    '0x042318' //chloee
   ];
-
-  //add chloe, mazemari

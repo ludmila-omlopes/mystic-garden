@@ -8,7 +8,6 @@ import {
   video,
   audio,
   article,
-  PublicationMetadataSchema,
   MediaImageMimeType,
   MediaAudioMimeType,
   MediaVideoMimeType,
@@ -124,16 +123,15 @@ const MintArt = () => {
       },
     };
 
-    if (!file)
-      {
-        return article({
-          ...commonMetadata,
-          content: description,
-        });
-      }
+    if (!file) {
+      return article({
+        ...commonMetadata,
+        content: description,
+      });
+    }
 
-      const extension = file?.name?.split('.')?.pop()?.toLowerCase();
-    
+    const extension = file?.name?.split('.')?.pop()?.toLowerCase();
+
     switch (extension) {
       case 'jpg':
       case 'jpeg':
@@ -180,7 +178,7 @@ const MintArt = () => {
       const currency = bonsaiCurrency;
       const fileUrl = await uploadFile();
 
-      if(!currency) {
+      if (!currency) {
         console.error('Invalid currency');
         setLoading(false);
         return;
@@ -264,7 +262,7 @@ const MintArt = () => {
   const isAuthenticated = sessionData?.authenticated && !sessionLoading && !sessionError;
 
   return (
-    <main className="w-full max-w-4xl mx-auto py-12 md:py-16 px-4 md:px-6">
+    <main className="w-full max-w-4xl mx-auto py-12 md:py-16 px-4 md:px-6 mt-20"> {/* Added mt-20 to add space on top */}
       <div className="grid md:grid-cols-2 gap-8">
         <div className="space-y-6">
           <div>
