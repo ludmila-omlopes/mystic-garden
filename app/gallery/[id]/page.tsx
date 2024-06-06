@@ -15,8 +15,6 @@ import { FALLBACK_IMAGE_URL } from '../../constants';
 import AuctionComponent from '../../../components/AuctionComponent';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover?: string } | null {
-  //const fallbackImage = '/images/fallback-image.png';
-
   if (!post?.metadata) {
     return null;
   }
@@ -146,14 +144,13 @@ function GalleryPostDetails({ params }) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto py-12 px-4 md:px-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto py-12 px-4 md:px-6 mt-20"> {/* Added mt-20 to add space on top */}
         <div className="flex flex-col gap-4">
           {(mediaSource?.type === 'image' || mediaSource?.type === 'text') && (
             <img src={mediaSource.src || fallbackImage} alt="NFT Image test" className="rounded-xl object-cover aspect-square" />
-          )
-          }
+          )}
           {mediaSource?.type === 'video' && (
-            <video src={mediaSource?.src || '/images/fallback-image.jpg'} controls className="rounded-xl object-cover aspect-square" />
+            <video ref={videoRef} src={mediaSource?.src || '/images/fallback-image.jpg'} controls className="rounded-xl object-cover aspect-square" />
           )}
           {mediaSource?.type === 'audio' && (
             <div className="flex flex-col items-center">
