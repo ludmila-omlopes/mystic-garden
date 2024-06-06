@@ -9,9 +9,10 @@ import { useOpenAction, OpenActionKind } from '@lens-protocol/react-web';
 import Hls from 'hls.js';
 import { useAccount } from 'wagmi';
 import Link from "next/link";
-import { getTitle } from '@/utils/utils';
+import { getTitle } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import { FALLBACK_IMAGE_URL } from '../../constants';
+import AuctionComponent from '../../../components/AuctionComponent';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover?: string } | null {
   //const fallbackImage = '/images/fallback-image.png';
@@ -191,6 +192,9 @@ function GalleryPostDetails({ params }) {
             <Button size="lg" onClick={collect} disabled={isCollected || isLoading || isSaleEnded}>
               {isLoading ? 'Loading...' : isCollected ? 'Sold Out' : isSaleEnded ? 'Sale Ended' : 'Purchase'}
             </Button>
+            {/*<div> Auction
+              <AuctionComponent publicationId={post.id} />
+        </div>*/}
           </div>
         </div>
       </div>

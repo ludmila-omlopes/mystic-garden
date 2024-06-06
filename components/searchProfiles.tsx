@@ -3,6 +3,7 @@ import Select from 'react-select';
 import { useTheme } from 'next-themes';
 import { debounce } from 'lodash';
 import { useRouter } from 'next/navigation'; 
+import { getApiEndpoint } from '@/lib/apiEndpoints';
 
 type ProfileResponse = {
   token_id: string;
@@ -46,7 +47,8 @@ function SearchProfiles() {
   const fetchProfiles = async (handle, callback, errorCallback) => {
     if (!handle) return; 
     try {
-        const response = await fetch(`https://lensboard-data.onrender.com/api/listProfileIdsLikeHandle?handle=${encodeURIComponent(handle)}`);
+      const url = getApiEndpoint('listProfileIdsLikeHandle');
+        const response = await fetch(url + `?handle=${encodeURIComponent(handle)}`);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         if (data.result) {

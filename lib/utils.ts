@@ -5,7 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// utils/utils.ts
 const MAX_TITLE_LENGTH = 50; // Set a maximum title length
 
 export const getTitle = (publication) => {

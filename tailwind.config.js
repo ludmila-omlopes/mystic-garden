@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 module.exports = {
   darkMode: "class",
   content: [
@@ -6,14 +6,11 @@ module.exports = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	],
+  ],
   theme: {
     container: {
       center: true,
       padding: "2rem",
-      /*screens: {
-        "2xl": "1400px",
-      },*/
     },
     extend: {
       colors: {
@@ -65,13 +62,27 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
+        "shine-pulse": {
+          "0%": {
+            "background-position": "0% 0%",
+          },
+          "50%": {
+            "background-position": "100% 100%",
+          },
+          to: {
+            "background-position": "0% 0%",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "shine-pulse": "shine-pulse 2s infinite",
       },
     },
   },
-  plugins: [require("tailwindcss-animate"),
-  require('@tailwindcss/aspect-ratio'),],
+  plugins: [
+    require("tailwindcss-animate"),
+    require('@tailwindcss/aspect-ratio'),
+  ],
 }

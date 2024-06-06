@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { usePublications, PublicationId, PublicationType, LimitType, Post, AnyPublication, PublicationMetadataMainFocusType } from '@lens-protocol/react-web';
 import InfiniteScroll from "react-infinite-scroll-component";
 import GalleryPost from '@/components/galleryPost'
+import { getApiEndpoint } from '@/lib/apiEndpoints';
 
   import {
     Select,
@@ -67,7 +68,8 @@ export default function GalleryPage() {
   }
 
   useEffect(() => {
-    fetch('https://lensboard-data.onrender.com/api/get1editionsBonsai')
+    const url = getApiEndpoint('get1editionsBonsai');
+    fetch(url)
       .then(response => response.json())
       .then(data => {
         const result = JSON.parse(data.result);

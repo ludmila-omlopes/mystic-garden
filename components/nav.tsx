@@ -6,15 +6,16 @@ import { useAccount, useDisconnect } from 'wagmi';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ModeToggle } from '@/components/dropdown';
-import { ChevronRight, Droplets, LogOut } from "lucide-react";
-import { useCallback, useState, useEffect } from 'react';
+import { ChevronRight, LogOut } from "lucide-react";
+import { useCallback, useState } from 'react';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
-import { ProfileId, useLogin, useLogout, useProfilesManaged, useProfiles, useSession } from '@lens-protocol/react-web';
-import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
-import { debounce } from 'lodash'; // Import lodash debounce function
+import { ProfileId, useLogin, useLogout, useProfilesManaged, useSession } from '@lens-protocol/react-web';
+import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
 import SearchProfiles from './searchProfiles';
+import MysticIcon from './mysticIcon';
+import { Input } from "@/components/ui/input"
 
 export function Nav() {
   const { open } = useWeb3Modal();
@@ -49,111 +50,196 @@ export function Nav() {
     });
   }, [exLogout]);
 
-  const { data: profiles, loading: searchLoading, error: searchError } = useProfiles({
-    where: {
-      handles: searchInput ? [`lens/${searchInput}`] : [],
-    },
-  });
-
-  const search = useCallback(() => {
-    setOpenSearch((open) => !open);
-},[]);
-
-  const debouncedSearch = useCallback(debounce(setSearchInput, 300), []);
-
-  const handleSearchInput = (event) => {
-    debouncedSearch(event.target.value);
-  };
-
-  const toggleSearch = useCallback(() => {
-    setOpenSearch((open) => !open);
-  }, []);
-
   return (
-    <nav className='border-b flex flex-row items-start sm:items-center sm:pr-10 px-4 sm:px-0'>
-      {/* Mobile Menu: Drawer */}
-      <div className='py-3 px-8 flex flex-1 items-center p sm:hidden'>
-        <Drawer>
-          <DrawerTrigger asChild>
-            <Button variant="outline">Menu</Button>
-          </DrawerTrigger>
-          <DrawerContent className='px-2'>
-            <Link href="/" className={`block py-2 text-sm ${pathname !== '/' && 'opacity-50'}`}>
-              Home
+    <nav className="w-full fixed top-0 left-0 z-50 shadow-md bg-white/80 dark:bg-neutral-950/70">
+      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between w-full md:w-auto">
+          <div className="flex items-center gap-6 text-sm">
+            <Link href="/" className="flex items-center" prefetch={false}>
+              <MysticIcon className="h-8 w-8" />
+              <p className={`ml-2 mr-4 text-lg font-semibold`}>Mystic Garden</p>
             </Link>
-            { <Link href="/explore" className={`block py-2 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
-              Explore
-            </Link> }
-            <Link href="/gallery/mint" className={`block py-2 text-sm ${pathname !== '/gallery/mint' && 'opacity-50'}`}>
-              Create New
-            </Link>
-          </DrawerContent>
-        </Drawer>
-      </div>
-      {/* Desktop Menu - Nav bar */}
-      <div className='py-3 px-8 flex flex-1 items-center p hidden sm:flex sm:items-center'>
-        <Link href="/" className='mr-5 flex items-center'>
-          <Droplets className="opacity-85" size={19} />
-          <p className={`ml-2 mr-4 text-lg font-semibold`}>Mystic Garden</p>
-        </Link>
-        <Link href="/" className={`mr-5 text-sm ${pathname !== '/' && 'opacity-50'}`}>
-          <p>Home</p>
-        </Link>
-        { <Link href="/explore" className={`mr-5 text-sm ${pathname !== '/gallery' && 'opacity-50'}`}>
-          <p>Explore</p>
-        </Link> }
-        <Link href="/gallery/mint" className={`mr-5 text-sm ${pathname !== '/gallery/mint' && 'opacity-60'}`}>
-          Create New
-        </Link>
-        <SearchProfiles />
-      </div>
-      <div className='flex sm:items-center pl-8 py-3 sm:p-0'>
-        {address && (
-          <>
-            {sessionData?.authenticated ? (
-              <Button onClick={logout}>Logout</Button>
-            ) : (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button>Login</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  {loadingProfiles ? (
-                    <div>Loading profiles...</div>
+            <ul className="hidden md:flex items-center gap-6">
+              <li>
+                <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link href="/explore" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
+                  Explore
+                </Link>
+              </li>
+              <li>
+                <Link href="/gallery/mint" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
+                  Create New
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MenuIcon className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="top" className="w-full">
+                <div className="flex flex-col gap-4 p-4">
+                  <SearchProfiles />
+                  <ul className="flex flex-col gap-2">
+                    <li>
+                      <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
+                        Home
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/explore" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
+                        Explore
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/gallery/mint" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
+                        Create New
+                      </Link>
+                    </li>
+                  </ul>
+                  {address ? (
+                    <Button onClick={logout}>Logout</Button>
                   ) : (
-                    managedProfiles?.map(profile => (
-                      <Card
-                        key={profile.id}
-                        onClick={() => login(profile.id)}
-                        className="w-full text-left cursor-pointer hover:bg-gray-600"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <Avatar>
-                            <AvatarImage
-                              src={
-                                profile.metadata?.picture?.__typename === 'ImageSet'
-                                  ? profile.metadata?.picture?.optimized?.uri
-                                  : undefined
-                              }
-                              alt={profile.handle?.localName}
-                            />
-                            <AvatarFallback>{profile.handle?.localName?.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h2 className="font-bold">{profile.handle?.localName}</h2>
-                          </div>
-                        </div>
-                      </Card>
-                    ))
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button>Login</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        {loadingProfiles ? (
+                          <div>Loading profiles...</div>
+                        ) : (
+                          managedProfiles?.map(profile => (
+                            <Card
+                              key={profile.id}
+                              onClick={() => login(profile.id)}
+                              className="w-full text-left cursor-pointer hover:bg-gray-600"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <Avatar>
+                                  <AvatarImage
+                                    src={
+                                      profile.metadata?.picture?.__typename === 'ImageSet'
+                                        ? profile.metadata?.picture?.optimized?.uri
+                                        : undefined
+                                    }
+                                    alt={profile.handle?.localName}
+                                  />
+                                  <AvatarFallback>{profile.handle?.localName?.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <h2 className="font-bold">{profile.handle?.localName}</h2>
+                                </div>
+                              </div>
+                            </Card>
+                          ))
+                        )}
+                      </DialogContent>
+                    </Dialog>
                   )}
-                </DialogContent>
-              </Dialog>
-            )}
-          </>
-        )}
-        <w3m-button />
-        <ModeToggle />
+                  <w3m-button />
+                  <ModeToggle />
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 mt-4 md:mt-0 hidden md:flex">
+          <SearchProfiles />
+          {address && (
+            <>
+              {sessionData?.authenticated ? (
+                <Button onClick={logout}>Logout</Button>
+              ) : (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>Login</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    {loadingProfiles ? (
+                      <div>Loading profiles...</div>
+                    ) : (
+                      managedProfiles?.map(profile => (
+                        <Card
+                          key={profile.id}
+                          onClick={() => login(profile.id)}
+                          className="w-full text-left cursor-pointer hover:bg-gray-600"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <Avatar>
+                              <AvatarImage
+                                src={
+                                  profile.metadata?.picture?.__typename === 'ImageSet'
+                                    ? profile.metadata?.picture?.optimized?.uri
+                                    : undefined
+                                }
+                                alt={profile.handle?.localName}
+                              />
+                              <AvatarFallback>{profile.handle?.localName?.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h2 className="font-bold">{profile.handle?.localName}</h2>
+                            </div>
+                          </div>
+                        </Card>
+                      ))
+                    )}
+                  </DialogContent>
+                </Dialog>
+              )}
+            </>
+          )}
+          <w3m-button />
+          <ModeToggle />
+        </div>
       </div>
     </nav>
+  );
+}
+
+function MenuIcon(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="4" x2="20" y1="12" y2="12" />
+      <line x1="4" x2="20" y1="6" y2="6" />
+      <line x1="4" x2="20" y1="18" y2="18" />
+    </svg>
+  );
+}
+
+function SearchIcon(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
   );
 }
