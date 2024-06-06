@@ -7,9 +7,10 @@ import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
-import { getTitle } from '@/utils/utils';
+import { getTitle } from '@/lib/utils';
 import { FaPlay } from 'react-icons/fa';
 import { FALLBACK_IMAGE_URL} from '../constants';
+import { getApiEndpoint } from '@/lib/apiEndpoints';
 
 const ProfilePage = ({ params }) => {
   const ITEMS_PER_PAGE = 40;
@@ -24,7 +25,9 @@ const ProfilePage = ({ params }) => {
 
   useEffect(() => {
     if (profile?.id) {
-      const url = new URL('https://lensboard-data.onrender.com/api/get1editionsBonsaiByCreator');
+      const endpoint = getApiEndpoint('get1editionsBonsaiByCreator');
+      const url = new URL(endpoint);
+      console.log(profile)
       url.search = new URLSearchParams({ profileId: profile.id }).toString();
       fetch(url.toString())
         .then(response => response.json())
