@@ -104,7 +104,8 @@ export function Nav() {
                       </Link>
                     </li>
                   </ul>
-                  {address ? (
+                  { address ? (               
+                  sessionData?.authenticated ? (
                     <Button onClick={logout}>Logout</Button>
                   ) : (
                     <Dialog>
@@ -142,7 +143,7 @@ export function Nav() {
                         )}
                       </DialogContent>
                     </Dialog>
-                  )}
+                  )) : null}
                   <w3m-button />
                   <ModeToggle />
                 </div>
