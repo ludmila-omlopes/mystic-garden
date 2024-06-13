@@ -1,44 +1,15 @@
 import { LensClient, development, production } from '@lens-protocol/client';
-import { decodeData, encodeData } from '@lens-protocol/client';
+import { decodeData, encodeData, ModuleParam } from '@lens-protocol/client';
 import {isUnknownOpenActionModuleSettings, UnknownOpenActionModuleSettingsFragment } from '@lens-protocol/client';
-
-const lensClient = new LensClient({
-    environment: process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? production : development,
-  });
-
-export async function fetchModuleMetadata(moduleAddress: string) {
-  const result = await lensClient.modules.fetchMetadata({
-    implementation: moduleAddress
-  });
-
-  if (result === null) {
-    console.error('Specified address is not registered');
-    return null;
-  }
-
-  return result.metadata;
-}
-
-export async function getModuleSettings(publicationId: string, moduleAddress: string) {
-  const publication = await lensClient.publication.fetch({
-    forId: publicationId,
-  });
-
-  if(!publication || publication.__typename === 'Mirror'){
-    return null;
-  }
-
-  const settings = publication.openActionModules.find(
-    (module): module is UnknownOpenActionModuleSettingsFragment =>
-      isUnknownOpenActionModuleSettings(module) && module.contract.address === moduleAddress,
-  );
-
-  return settings;
-}
+import { useLazyModuleMetadata, Post } from "@lens-protocol/react-web";
+import { UnknownOpenActionModuleSettings } from "@lens-protocol/react-web";
+import { AuctionInitData } from '@/lib/parseAuctionData';
+import { BigNumber, ethers } from 'ethers';
 
 export async function decodeInitData(settings, metadata) {
+  // decode init data
   const initData = decodeData(
-    JSON.parse(metadata.initializeCalldataABI),
+    JSON.parse(metadata.initializeCalldataABI) as ModuleParam[],
     settings.initializeCalldata
   );
 
@@ -52,26 +23,61 @@ export async function decodeInitData(settings, metadata) {
   return { initData, initResult };
 }
 
-export async function processModuleAction(publicationId: string, moduleAddress: string) {
-  const metadata = await fetchModuleMetadata(moduleAddress);
-  const settings = await getModuleSettings(publicationId, moduleAddress);
+export async function encodeInitData(settings: AuctionInitData, metadata: any) {
+  //aqui tá errado. Esse método vai ser pra criar uma auction.
+  const abi = JSON.parse(metadata.processCalldataABI) as ModuleParam[];
 
-  if (!metadata || !settings) return;
+  const encodeBigNumber = (value: BigNumber) => value.toHexString();
+  const encodeBytes32 = (value: string) => ethers.utils.formatBytes32String(value);
+  const encodeDateTime = (date: Date) => BigNumber.from(Math.floor(date.getTime() / 1000)).toHexString();
 
-  const calldata = encodeData(
-    JSON.parse(metadata.processCalldataABI),
-    [/* data according to ABI spec */]
-  );
-
-  const result = await lensClient.publication.actions.actOn({
-    actOn: {
-      unknownOpenAction: {
-        address: moduleAddress,
-        data: calldata
-      }
+  const calldata = encodeData([
+    { name: "availableSinceTimestamp", type: "uint64" },
+    { name: "duration", type: "uint32" },
+    { name: "minTimeAfterBid", type: "uint32" },
+    { name: "reservePrice", type: "uint256" },
+    { name: "minBidIncrement", type: "uint256" },
+    { name: "referralFee", type: "uint16" },
+    { name: "currency", type: "address" },
+    {
+      name: "recipients",
+      type: "tuple(address,uint16)[]",
+      components: [
+        { name: "recipient", type: "address" },
+        { name: "split", type: "uint16" },
+      ],
     },
-    for: publicationId,
-  });
+    { name: "onlyFollowers", type: "bool" },
+    { name: "tokenName", type: "bytes32" },
+    { name: "tokenSymbol", type: "bytes32" },
+    { name: "tokenRoyalty", type: "uint16" },
+  ], [
+    encodeDateTime(settings.availableSinceTimestamp),
+    settings.duration.toString(),
+    settings.minTimeAfterBid.toString(),
+    encodeBigNumber(settings.reservePrice),
+    encodeBigNumber(settings.minBidIncrement),
+    settings.referralFee.toString(),
+    settings.currency,
+    settings.recipients.map((recipient) => [recipient.recipient, recipient.split.toString()]),
+    settings.onlyFollowers.toString(),
+    encodeBytes32(settings.tokenName),
+    encodeBytes32(settings.tokenSymbol),
+    settings.tokenRoyalty.toString(),
+  ]);
 
-  console.log(result);
+  return calldata;
+}
+
+export async function encodeBidData(metadata: any, bidAmount: BigNumber) {
+  const abi = JSON.parse(metadata.processCalldataABI) as ModuleParam[];
+  const encodeBigNumber = (value: BigNumber) => value.toHexString();
+
+  const calldata = encodeData([
+    { name: "bidAmount", type: "uint256" },
+  ], [
+    encodeBigNumber(bidAmount),
+  ]);
+
+  return calldata;
 }
