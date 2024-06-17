@@ -189,7 +189,7 @@ function GalleryPostDetails({ params }) {
             <Button size="lg" onClick={collect} disabled={isCollected || isLoading || isSaleEnded}>
               {isLoading ? 'Loading...' : isCollected ? 'Sold Out' : isSaleEnded ? 'Sale Ended' : 'Purchase'}
             </Button>
-            <div> Auction
+            <div>
               <AuctionComponent post={post} />
         </div>
           </div>
