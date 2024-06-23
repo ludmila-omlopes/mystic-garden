@@ -9,6 +9,10 @@ import { BigNumber } from 'ethers';
 import { AuctionButton } from './AuctionButton';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from 'date-fns';
+import AuctionClaimButton from './AuctionClaimButton';
+import { useAccount } from 'wagmi';
+import { useSession, SessionType } from '@lens-protocol/react-web';
+
 
 const AuctionComponent = ({ post }: { post: Post }) => {
   const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
@@ -17,6 +21,8 @@ const AuctionComponent = ({ post }: { post: Post }) => {
   const [parsedInitData, setParsedInitData] = useState<AuctionInitData | null>(null);
   const [moduleMetadata, setModuleMetadata] = useState<any | null>(null);
   const [expandedAddress, setExpandedAddress] = useState<string | null>(null);
+  const { address } = useAccount();
+  const { data: sessionData, error: sessionError, loading: sessionLoading } = useSession();
 
   const { execute } = useLazyModuleMetadata();
 
@@ -157,6 +163,9 @@ const AuctionComponent = ({ post }: { post: Post }) => {
             <div className="text-base font-semibold">{parsedInitData.onlyFollowers ? "Yes" : "No"}</div>
           </div>
           <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} data={String(calldata)} publication={post} />
+        </div>
+        <div>
+          <AuctionClaimButton contractAddress={OPEN_ACTION_MODULE_ADDRESS} collectedPubId={post.id} />
         </div>
       </div>
     </section>

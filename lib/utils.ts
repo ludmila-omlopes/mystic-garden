@@ -1,5 +1,14 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import {
+  image,
+  video,
+  audio,
+  article,
+  MediaImageMimeType,
+  MediaAudioMimeType,
+  MediaVideoMimeType,
+} from '@lens-protocol/metadata';
  
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -32,4 +41,112 @@ const truncateText = (text, maxLength) => {
     return text.substring(0, maxLength) + '...';
   }
   return text;
+};
+
+export const uploadFile = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch('/api/uploadFile', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('File upload failed');
+    }
+
+    const data = await response.json();
+    return data.ipfsUri;
+  } catch (error) {
+    console.error('Error uploading file to IPFS:', error);
+    return '';
+  }
+};
+
+export const uploadData = async (metadata: any): Promise<string> => {
+  //todo: substituir log de erro por toast de erro com interrupção
+  try {
+    const response = await fetch('/api/uploadMetadata', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ metadata }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+    return data.receiptId;
+  } catch (error) {
+    console.error('Error uploading data:', error);
+  }
+
+  return '';
+};
+
+export const createMetadata = (fileUrl: string, title: string, description: string, file?: File) => {
+  const commonMetadata = {
+    title: title,
+    content: description,
+    appId: 'mysticgarden',
+    marketplace: {
+      name: title,
+      description: description,
+      external_url: "https://mysticgarden.xyz", //todo: colocar a página do artista
+      image: file ? fileUrl : '',
+    },
+  };
+
+  if (!file) {
+    return article({
+      ...commonMetadata,
+      content: description,
+    });
+  }
+
+  const extension = file?.name?.split('.')?.pop()?.toLowerCase();
+
+  switch (extension) {
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'gif':
+      return image({
+        ...commonMetadata,
+        image: {
+          item: fileUrl,
+          type: file.type as MediaImageMimeType,
+        },
+      });
+    case 'mp4':
+    case 'mkv':
+    case 'avi':
+      return video({
+        ...commonMetadata,
+        video: {
+          item: fileUrl,
+          type: file.type as MediaVideoMimeType,
+        },
+      });
+    case 'mp3':
+    case 'wav':
+    case 'flac':
+      return audio({
+        ...commonMetadata,
+        audio: {
+          item: fileUrl,
+          type: file.type as MediaAudioMimeType,
+        },
+      });
+    default:
+      return article({
+        ...commonMetadata,
+        content: description,
+      });
+  }
 };

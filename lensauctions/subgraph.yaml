@@ -1,0 +1,50 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: AuctionCollectAction
+    network: polygon-amoy
+    source:
+      address: "0xd935e230819AE963626B31f292623106A3dc3B19"
+      abi: AuctionCollectAction
+      startBlock: 6829873
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AuctionCreated
+        - BidPlaced
+        - CollectNFTDeployed
+        - Collected
+        - FeeProcessed
+        - InitializedPublicationAction
+        - ModuleRegistered
+        - OwnershipTransferred
+        - ProcessedPublicationAction
+      abis:
+        - name: AuctionCollectAction
+          file: ./abis/AuctionCollectAction.json
+      eventHandlers:
+        - event: AuctionCreated(indexed uint256,indexed uint256,uint64,uint32,uint32,uint256,uint256,uint16,address,(address,uint16)[],bool,bytes32,bytes32,uint16)
+          handler: handleAuctionCreated
+        - event: BidPlaced(indexed uint256,indexed uint256,uint256[],uint256,address,uint256,address,uint256,uint256)
+          handler: handleBidPlaced
+        - event: CollectNFTDeployed(indexed uint256,indexed uint256,indexed address,uint256)
+          handler: handleCollectNFTDeployed
+        - event: Collected(indexed uint256,indexed uint256,indexed uint256,address,address,uint256,uint256)
+          handler: handleCollected
+        - event: FeeProcessed(indexed uint256,indexed uint256,uint256)
+          handler: handleFeeProcessed
+        - event: InitializedPublicationAction(uint256,uint256,address,bytes)
+          handler: handleInitializedPublicationAction
+        - event: ModuleRegistered()
+          handler: handleModuleRegistered
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: ProcessedPublicationAction(uint256,uint256,address,bytes)
+          handler: handleProcessedPublicationAction
+      file: ./src/auction-collect-action.ts
