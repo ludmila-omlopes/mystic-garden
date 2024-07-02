@@ -1,44 +1,15 @@
 import { LensClient, development, production } from '@lens-protocol/client';
-import { decodeData, encodeData } from '@lens-protocol/client';
+import { decodeData, encodeData, ModuleParam } from '@lens-protocol/react-web';
 import {isUnknownOpenActionModuleSettings, UnknownOpenActionModuleSettingsFragment } from '@lens-protocol/client';
-
-const lensClient = new LensClient({
-    environment: process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? production : development,
-  });
-
-export async function fetchModuleMetadata(moduleAddress: string) {
-  const result = await lensClient.modules.fetchMetadata({
-    implementation: moduleAddress
-  });
-
-  if (result === null) {
-    console.error('Specified address is not registered');
-    return null;
-  }
-
-  return result.metadata;
-}
-
-export async function getModuleSettings(publicationId: string, moduleAddress: string) {
-  const publication = await lensClient.publication.fetch({
-    forId: publicationId,
-  });
-
-  if(!publication || publication.__typename === 'Mirror'){
-    return null;
-  }
-
-  const settings = publication.openActionModules.find(
-    (module): module is UnknownOpenActionModuleSettingsFragment =>
-      isUnknownOpenActionModuleSettings(module) && module.contract.address === moduleAddress,
-  );
-
-  return settings;
-}
+import { useLazyModuleMetadata, Post } from "@lens-protocol/react-web";
+import { UnknownOpenActionModuleSettings } from "@lens-protocol/react-web";
+import { AuctionInitData } from '@/lib/parseAuctionData';
+import { ethers } from 'ethers';
 
 export async function decodeInitData(settings, metadata) {
+  // decode init data
   const initData = decodeData(
-    JSON.parse(metadata.initializeCalldataABI),
+    JSON.parse(metadata.initializeCalldataABI) as ModuleParam[],
     settings.initializeCalldata
   );
 
@@ -52,26 +23,39 @@ export async function decodeInitData(settings, metadata) {
   return { initData, initResult };
 }
 
-export async function processModuleAction(publicationId: string, moduleAddress: string) {
-  const metadata = await fetchModuleMetadata(moduleAddress);
-  const settings = await getModuleSettings(publicationId, moduleAddress);
+export async function encodeInitData(settings: AuctionInitData, metadata: any) {
+  console.log('settings =  ', settings);
+  const abi = JSON.parse(metadata.initializeCalldataABI) as ModuleParam[];
+  const encodeBigInt = (value: bigint) => ethers.BigNumber.from(value).toHexString();
+  const encodeDate = (value: Date) => Math.floor(value.getTime() / 1000).toString();
 
-  if (!metadata || !settings) return;
+  const calldata = encodeData(abi, [
+    encodeDate(settings.availableSinceTimestamp),
+    settings.duration.toString(),
+    settings.minTimeAfterBid.toString(),
+    encodeBigInt(settings.reservePrice),
+    encodeBigInt(settings.minBidIncrement),
+    settings.referralFee.toString(),
+    settings.currency,
+    settings.recipients.map(recipient => [recipient.recipient, recipient.split.toString()]),
+    settings.onlyFollowers,
+    ethers.utils.formatBytes32String(settings.tokenName),
+    ethers.utils.formatBytes32String(settings.tokenSymbol),
+    settings.tokenRoyalty.toString(),
+  ]);
 
-  const calldata = encodeData(
-    JSON.parse(metadata.processCalldataABI),
-    [/* data according to ABI spec */]
-  );
+  return calldata;
+}
 
-  const result = await lensClient.publication.actions.actOn({
-    actOn: {
-      unknownOpenAction: {
-        address: moduleAddress,
-        data: calldata
-      }
-    },
-    for: publicationId,
-  });
+export async function encodeBidData(metadata: any, bidAmount: bigint) {
+  const abi = JSON.parse(metadata.processCalldataABI) as ModuleParam[];
+  const encodeBigInt = (value: bigint) => ethers.BigNumber.from(value).toHexString();
 
-  console.log(result);
+  const calldata = encodeData([
+    { name: "bidAmount", type: "uint256" },
+  ], [
+    encodeBigInt(bidAmount),
+  ]);
+
+  return calldata;
 }

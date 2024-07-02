@@ -1,0 +1,13 @@
+query BidsQuery($profileId: BigInt!, $pubId: BigInt!) {
+  bidPlaceds(where: { profileId: $profileId, pubId: $pubId }) {
+    id
+    profileId
+    pubId
+    referrerProfileIds
+    amount
+    bidderOwner
+    bidderProfileId
+    endTimestamp
+    timestamp
+  }
+}

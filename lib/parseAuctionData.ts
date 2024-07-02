@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 
 type Recipient = {
   recipient: string;
@@ -9,11 +9,11 @@ export type AuctionInitData = {
   availableSinceTimestamp: Date;
   duration: number; //seconds
   minTimeAfterBid: number; //seconds
-  reservePrice: BigNumber;
-  minBidIncrement: BigNumber; 
+  reservePrice: bigint;
+  minBidIncrement: bigint;
   referralFee: number; // % * 100 (1000 = 10%)
   currency: string;
-  recipients: Recipient[]; //testar
+  recipients: Recipient[];
   onlyFollowers: boolean;
   tokenName: string;
   tokenSymbol: string;
@@ -25,25 +25,25 @@ export function parseAuctionInitData(data: any[]): AuctionInitData {
     throw new Error('Invalid init data format');
   }
 
-  const parseBigNumber = (value: any) => {
-    return BigNumber.from(value);
+  const parseBigInt = (value: any) => {
+    return BigInt(value);
   };
 
   const parseBytes32 = (value: any) => {
     return ethers.utils.parseBytes32String(value);
   };
 
-  const parseDateTime = (bigNumber: BigNumber) => {
-    const timestamp = bigNumber.toNumber();
+  const parseDateTime = (bigint: bigint) => {
+    const timestamp = Number(bigint);
     return new Date(timestamp * 1000); // Convert from seconds to milliseconds
   };
 
   return {
-    availableSinceTimestamp: parseDateTime(parseBigNumber(data[0])),
+    availableSinceTimestamp: parseDateTime(parseBigInt(data[0])),
     duration: data[1] as number,
     minTimeAfterBid: data[2] as number,
-    reservePrice: parseBigNumber(data[3]),
-    minBidIncrement: parseBigNumber(data[4]),
+    reservePrice: parseBigInt(data[3]) / BigInt(10 ** 18),
+    minBidIncrement: parseBigInt(data[4]) / BigInt(10 ** 18),
     referralFee: data[5] as number,
     currency: data[6] as string,
     recipients: Array.isArray(data[7]) ? data[7].map((recipient: any) => ({

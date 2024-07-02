@@ -9,7 +9,7 @@ import { useOpenAction, OpenActionKind } from '@lens-protocol/react-web';
 import Hls from 'hls.js';
 import { useAccount } from 'wagmi';
 import Link from "next/link";
-import { getTitle } from '@/lib/utils';
+import { getTitle, getPostSellType } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import { FALLBACK_IMAGE_URL } from '../../constants';
 import AuctionComponent from '../../../components/AuctionComponent';
@@ -142,60 +142,65 @@ function GalleryPostDetails({ params }) {
     ? post.metadata.content
     : "";
 
+  const sellType = getPostSellType(post);
+
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto py-12 px-4 md:px-6 mt-20"> {/* Added mt-20 to add space on top */}
-        <div className="flex flex-col gap-4">
-          {(mediaSource?.type === 'image' || mediaSource?.type === 'text') && (
-            <img src={mediaSource.src || fallbackImage} alt="NFT Image test" className="rounded-xl object-cover aspect-square" />
-          )}
-          {mediaSource?.type === 'video' && (
-            <video ref={videoRef} src={mediaSource?.src || '/images/fallback-image.jpg'} controls className="rounded-xl object-cover aspect-square" />
-          )}
-          {mediaSource?.type === 'audio' && (
-            <div className="flex flex-col items-center">
-              <img src={mediaSource?.cover || '/images/fallback-image.jpg'} alt="Cover" className="rounded-xl object-cover aspect-square" />
-              <audio src={mediaSource.src || '/images/fallback-image.jpg'} controls className="w-full" />
-            </div>
-          )}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto py-12 px-4 md:px-6 mt-20">
+    <div className="md:col-span-2 flex flex-col gap-4"> {/* Adjusted to span 2 columns */}
+      {(mediaSource?.type === 'image' || mediaSource?.type === 'text') && (
+        <img src={mediaSource.src || fallbackImage} alt="NFT Image test" className="rounded-sm object-cover aspect-square" />
+      )}
+      {mediaSource?.type === 'video' && (
+        <video ref={videoRef} src={mediaSource?.src || '/images/fallback-image.jpg'} controls className="rounded-sm object-cover aspect-square" />
+      )}
+      {mediaSource?.type === 'audio' && (
+        <div className="flex flex-col items-center">
+          <img src={mediaSource?.cover || '/images/fallback-image.jpg'} alt="Cover" className="rounded-sm object-cover aspect-square" />
+          <audio src={mediaSource.src || '/images/fallback-image.jpg'} controls className="w-full" />
         </div>
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-2">
-            <Link href={`/${handleName}`}>
-              <Avatar>
-                <AvatarImage alt={displayName} src={profilePictureUri} />
-                <AvatarFallback>{handleName.slice(0, 2)}</AvatarFallback>
-              </Avatar>
-            </Link>
-            <div>
-              <h3 className="text-lg font-semibold">{displayName}</h3>
-              <p className="text-gray-500 dark:text-gray-400">{"@"+handleName}</p>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">{postTitle}</h1>
-            <ReactMarkdown className="text-gray-500 dark:text-gray-400">
-              {content || 'This NFT is a unique digital artwork created by the artist.'}
-            </ReactMarkdown>
-          </div>
-          <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-lg font-semibold">Price</h3>
-                <p className="text-gray-500 dark:text-gray-400">{formattedPrice}</p>
-              </div>
-            </div>
-            <Separator className="my-4" />
-            <Button size="lg" onClick={collect} disabled={isCollected || isLoading || isSaleEnded}>
-              {isLoading ? 'Loading...' : isCollected ? 'Sold Out' : isSaleEnded ? 'Sale Ended' : 'Purchase'}
-            </Button>
-            {/*<div> Auction
-              <AuctionComponent publicationId={post.id} />
-        </div>*/}
-          </div>
+      )}
+    </div>
+    <div className="flex flex-col gap-6"> {/* Adjusted to take up less space */}
+      <div className="flex items-center gap-2">
+        <Link href={`/${handleName}`}>
+          <Avatar>
+            <AvatarImage alt={displayName} src={profilePictureUri} />
+            <AvatarFallback>{handleName.slice(0, 2)}</AvatarFallback>
+          </Avatar>
+        </Link>
+        <div>
+          <h3 className="text-lg font-semibold">{displayName}</h3>
+          <p className="text-gray-500 dark:text-gray-400">{"@"+handleName}</p>
         </div>
       </div>
-    </>
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">{postTitle}</h1>
+        <ReactMarkdown className="text-gray-500 dark:text-gray-400">
+          {content || 'This NFT is a unique digital artwork created by the artist.'}
+        </ReactMarkdown>
+      </div>
+      <div className="flex flex-col gap-4">
+        <Separator className="my-4" />
+        {sellType === 'buy_now' && (
+          <div>
+            <div className="grid mb-4">
+              <div>
+                <h3 className="text-s font-thin">List Price: <span className="text-xl font-semibold">{formattedPrice}</span></h3>
+              </div>
+          </div>
+          <Button className='rounded-sm w-full' onClick={collect} disabled={isCollected || isLoading || isSaleEnded}>
+            {isLoading ? 'Loading...' : isCollected ? 'Sold Out' : isSaleEnded ? 'Sale Ended' : 'BUY NOW'}
+          </Button>
+          </div>
+        )}
+        {sellType === 'auction' && (
+          <AuctionComponent post={post} />
+        )}
+      </div>
+    </div>
+  </div>
+</>
   );
 }
 
