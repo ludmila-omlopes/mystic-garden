@@ -25,7 +25,7 @@ const AuctionBids = ({ auctionId, auctionStatus, winningBid, winnerProfileId }) 
           if (hexId.length % 2 !== 0) { 
             hexId = '0' + hexId; 
           }
-          return '0x' + hexId;
+          return '0x' + hexId; 
         });
         setProfileIds(ids);
       } catch (err) {
