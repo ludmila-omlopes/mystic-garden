@@ -1,0 +1,1573 @@
+schema {
+  query: Query
+  subscription: Subscription
+}
+
+"""
+Marks the GraphQL type as indexable entity.  Each type that should be an entity is required to be annotated with this directive.
+"""
+directive @entity on OBJECT
+
+"""Defined a Subgraph ID for an object type"""
+directive @subgraphId(id: String!) on OBJECT
+
+"""
+creates a virtual field on the entity that may be queried but cannot be set manually through the mappings API.
+"""
+directive @derivedFrom(field: String!) on FIELD_DEFINITION
+
+enum Aggregation_interval {
+  hour
+  day
+}
+
+type AuctionCreated {
+  id: Bytes!
+  profileId: BigInt!
+  pubId: BigInt!
+  availableSinceTimestamp: BigInt!
+  duration: BigInt!
+  minTimeAfterBid: BigInt!
+  reservePrice: BigInt!
+  minBidIncrement: BigInt!
+  referralFee: Int!
+  currency: Bytes!
+  recipients: [Bytes!]!
+  onlyFollowers: Boolean!
+  tokenName: Bytes!
+  tokenSymbol: Bytes!
+  tokenRoyalty: Int!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+input AuctionCreated_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  profileId: BigInt
+  profileId_not: BigInt
+  profileId_gt: BigInt
+  profileId_lt: BigInt
+  profileId_gte: BigInt
+  profileId_lte: BigInt
+  profileId_in: [BigInt!]
+  profileId_not_in: [BigInt!]
+  pubId: BigInt
+  pubId_not: BigInt
+  pubId_gt: BigInt
+  pubId_lt: BigInt
+  pubId_gte: BigInt
+  pubId_lte: BigInt
+  pubId_in: [BigInt!]
+  pubId_not_in: [BigInt!]
+  availableSinceTimestamp: BigInt
+  availableSinceTimestamp_not: BigInt
+  availableSinceTimestamp_gt: BigInt
+  availableSinceTimestamp_lt: BigInt
+  availableSinceTimestamp_gte: BigInt
+  availableSinceTimestamp_lte: BigInt
+  availableSinceTimestamp_in: [BigInt!]
+  availableSinceTimestamp_not_in: [BigInt!]
+  duration: BigInt
+  duration_not: BigInt
+  duration_gt: BigInt
+  duration_lt: BigInt
+  duration_gte: BigInt
+  duration_lte: BigInt
+  duration_in: [BigInt!]
+  duration_not_in: [BigInt!]
+  minTimeAfterBid: BigInt
+  minTimeAfterBid_not: BigInt
+  minTimeAfterBid_gt: BigInt
+  minTimeAfterBid_lt: BigInt
+  minTimeAfterBid_gte: BigInt
+  minTimeAfterBid_lte: BigInt
+  minTimeAfterBid_in: [BigInt!]
+  minTimeAfterBid_not_in: [BigInt!]
+  reservePrice: BigInt
+  reservePrice_not: BigInt
+  reservePrice_gt: BigInt
+  reservePrice_lt: BigInt
+  reservePrice_gte: BigInt
+  reservePrice_lte: BigInt
+  reservePrice_in: [BigInt!]
+  reservePrice_not_in: [BigInt!]
+  minBidIncrement: BigInt
+  minBidIncrement_not: BigInt
+  minBidIncrement_gt: BigInt
+  minBidIncrement_lt: BigInt
+  minBidIncrement_gte: BigInt
+  minBidIncrement_lte: BigInt
+  minBidIncrement_in: [BigInt!]
+  minBidIncrement_not_in: [BigInt!]
+  referralFee: Int
+  referralFee_not: Int
+  referralFee_gt: Int
+  referralFee_lt: Int
+  referralFee_gte: Int
+  referralFee_lte: Int
+  referralFee_in: [Int!]
+  referralFee_not_in: [Int!]
+  currency: Bytes
+  currency_not: Bytes
+  currency_gt: Bytes
+  currency_lt: Bytes
+  currency_gte: Bytes
+  currency_lte: Bytes
+  currency_in: [Bytes!]
+  currency_not_in: [Bytes!]
+  currency_contains: Bytes
+  currency_not_contains: Bytes
+  recipients: [Bytes!]
+  recipients_not: [Bytes!]
+  recipients_contains: [Bytes!]
+  recipients_contains_nocase: [Bytes!]
+  recipients_not_contains: [Bytes!]
+  recipients_not_contains_nocase: [Bytes!]
+  onlyFollowers: Boolean
+  onlyFollowers_not: Boolean
+  onlyFollowers_in: [Boolean!]
+  onlyFollowers_not_in: [Boolean!]
+  tokenName: Bytes
+  tokenName_not: Bytes
+  tokenName_gt: Bytes
+  tokenName_lt: Bytes
+  tokenName_gte: Bytes
+  tokenName_lte: Bytes
+  tokenName_in: [Bytes!]
+  tokenName_not_in: [Bytes!]
+  tokenName_contains: Bytes
+  tokenName_not_contains: Bytes
+  tokenSymbol: Bytes
+  tokenSymbol_not: Bytes
+  tokenSymbol_gt: Bytes
+  tokenSymbol_lt: Bytes
+  tokenSymbol_gte: Bytes
+  tokenSymbol_lte: Bytes
+  tokenSymbol_in: [Bytes!]
+  tokenSymbol_not_in: [Bytes!]
+  tokenSymbol_contains: Bytes
+  tokenSymbol_not_contains: Bytes
+  tokenRoyalty: Int
+  tokenRoyalty_not: Int
+  tokenRoyalty_gt: Int
+  tokenRoyalty_lt: Int
+  tokenRoyalty_gte: Int
+  tokenRoyalty_lte: Int
+  tokenRoyalty_in: [Int!]
+  tokenRoyalty_not_in: [Int!]
+  blockNumber: BigInt
+  blockNumber_not: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_lt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_not_in: [BigInt!]
+  blockTimestamp: BigInt
+  blockTimestamp_not: BigInt
+  blockTimestamp_gt: BigInt
+  blockTimestamp_lt: BigInt
+  blockTimestamp_gte: BigInt
+  blockTimestamp_lte: BigInt
+  blockTimestamp_in: [BigInt!]
+  blockTimestamp_not_in: [BigInt!]
+  transactionHash: Bytes
+  transactionHash_not: Bytes
+  transactionHash_gt: Bytes
+  transactionHash_lt: Bytes
+  transactionHash_gte: Bytes
+  transactionHash_lte: Bytes
+  transactionHash_in: [Bytes!]
+  transactionHash_not_in: [Bytes!]
+  transactionHash_contains: Bytes
+  transactionHash_not_contains: Bytes
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [AuctionCreated_filter]
+  or: [AuctionCreated_filter]
+}
+
+enum AuctionCreated_orderBy {
+  id
+  profileId
+  pubId
+  availableSinceTimestamp
+  duration
+  minTimeAfterBid
+  reservePrice
+  minBidIncrement
+  referralFee
+  currency
+  recipients
+  onlyFollowers
+  tokenName
+  tokenSymbol
+  tokenRoyalty
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+type BidPlaced {
+  id: Bytes!
+  profileId: BigInt!
+  pubId: BigInt!
+  referrerProfileIds: [BigInt!]!
+  amount: BigInt!
+  bidderOwner: Bytes!
+  bidderProfileId: BigInt!
+  transactionExecutor: Bytes!
+  endTimestamp: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+input BidPlaced_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  profileId: BigInt
+  profileId_not: BigInt
+  profileId_gt: BigInt
+  profileId_lt: BigInt
+  profileId_gte: BigInt
+  profileId_lte: BigInt
+  profileId_in: [BigInt!]
+  profileId_not_in: [BigInt!]
+  pubId: BigInt
+  pubId_not: BigInt
+  pubId_gt: BigInt
+  pubId_lt: BigInt
+  pubId_gte: BigInt
+  pubId_lte: BigInt
+  pubId_in: [BigInt!]
+  pubId_not_in: [BigInt!]
+  referrerProfileIds: [BigInt!]
+  referrerProfileIds_not: [BigInt!]
+  referrerProfileIds_contains: [BigInt!]
+  referrerProfileIds_contains_nocase: [BigInt!]
+  referrerProfileIds_not_contains: [BigInt!]
+  referrerProfileIds_not_contains_nocase: [BigInt!]
+  amount: BigInt
+  amount_not: BigInt
+  amount_gt: BigInt
+  amount_lt: BigInt
+  amount_gte: BigInt
+  amount_lte: BigInt
+  amount_in: [BigInt!]
+  amount_not_in: [BigInt!]
+  bidderOwner: Bytes
+  bidderOwner_not: Bytes
+  bidderOwner_gt: Bytes
+  bidderOwner_lt: Bytes
+  bidderOwner_gte: Bytes
+  bidderOwner_lte: Bytes
+  bidderOwner_in: [Bytes!]
+  bidderOwner_not_in: [Bytes!]
+  bidderOwner_contains: Bytes
+  bidderOwner_not_contains: Bytes
+  bidderProfileId: BigInt
+  bidderProfileId_not: BigInt
+  bidderProfileId_gt: BigInt
+  bidderProfileId_lt: BigInt
+  bidderProfileId_gte: BigInt
+  bidderProfileId_lte: BigInt
+  bidderProfileId_in: [BigInt!]
+  bidderProfileId_not_in: [BigInt!]
+  transactionExecutor: Bytes
+  transactionExecutor_not: Bytes
+  transactionExecutor_gt: Bytes
+  transactionExecutor_lt: Bytes
+  transactionExecutor_gte: Bytes
+  transactionExecutor_lte: Bytes
+  transactionExecutor_in: [Bytes!]
+  transactionExecutor_not_in: [Bytes!]
+  transactionExecutor_contains: Bytes
+  transactionExecutor_not_contains: Bytes
+  endTimestamp: BigInt
+  endTimestamp_not: BigInt
+  endTimestamp_gt: BigInt
+  endTimestamp_lt: BigInt
+  endTimestamp_gte: BigInt
+  endTimestamp_lte: BigInt
+  endTimestamp_in: [BigInt!]
+  endTimestamp_not_in: [BigInt!]
+  timestamp: BigInt
+  timestamp_not: BigInt
+  timestamp_gt: BigInt
+  timestamp_lt: BigInt
+  timestamp_gte: BigInt
+  timestamp_lte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_not_in: [BigInt!]
+  blockNumber: BigInt
+  blockNumber_not: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_lt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_not_in: [BigInt!]
+  blockTimestamp: BigInt
+  blockTimestamp_not: BigInt
+  blockTimestamp_gt: BigInt
+  blockTimestamp_lt: BigInt
+  blockTimestamp_gte: BigInt
+  blockTimestamp_lte: BigInt
+  blockTimestamp_in: [BigInt!]
+  blockTimestamp_not_in: [BigInt!]
+  transactionHash: Bytes
+  transactionHash_not: Bytes
+  transactionHash_gt: Bytes
+  transactionHash_lt: Bytes
+  transactionHash_gte: Bytes
+  transactionHash_lte: Bytes
+  transactionHash_in: [Bytes!]
+  transactionHash_not_in: [Bytes!]
+  transactionHash_contains: Bytes
+  transactionHash_not_contains: Bytes
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [BidPlaced_filter]
+  or: [BidPlaced_filter]
+}
+
+enum BidPlaced_orderBy {
+  id
+  profileId
+  pubId
+  referrerProfileIds
+  amount
+  bidderOwner
+  bidderProfileId
+  transactionExecutor
+  endTimestamp
+  timestamp
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+scalar BigDecimal
+
+scalar BigInt
+
+input BlockChangedFilter {
+  number_gte: Int!
+}
+
+input Block_height {
+  hash: Bytes
+  number: Int
+  number_gte: Int
+}
+
+scalar Bytes
+
+type CollectNFTDeployed {
+  id: Bytes!
+  profileId: BigInt!
+  pubId: BigInt!
+  collectNFT: Bytes!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+input CollectNFTDeployed_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  profileId: BigInt
+  profileId_not: BigInt
+  profileId_gt: BigInt
+  profileId_lt: BigInt
+  profileId_gte: BigInt
+  profileId_lte: BigInt
+  profileId_in: [BigInt!]
+  profileId_not_in: [BigInt!]
+  pubId: BigInt
+  pubId_not: BigInt
+  pubId_gt: BigInt
+  pubId_lt: BigInt
+  pubId_gte: BigInt
+  pubId_lte: BigInt
+  pubId_in: [BigInt!]
+  pubId_not_in: [BigInt!]
+  collectNFT: Bytes
+  collectNFT_not: Bytes
+  collectNFT_gt: Bytes
+  collectNFT_lt: Bytes
+  collectNFT_gte: Bytes
+  collectNFT_lte: Bytes
+  collectNFT_in: [Bytes!]
+  collectNFT_not_in: [Bytes!]
+  collectNFT_contains: Bytes
+  collectNFT_not_contains: Bytes
+  timestamp: BigInt
+  timestamp_not: BigInt
+  timestamp_gt: BigInt
+  timestamp_lt: BigInt
+  timestamp_gte: BigInt
+  timestamp_lte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_not_in: [BigInt!]
+  blockNumber: BigInt
+  blockNumber_not: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_lt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_not_in: [BigInt!]
+  blockTimestamp: BigInt
+  blockTimestamp_not: BigInt
+  blockTimestamp_gt: BigInt
+  blockTimestamp_lt: BigInt
+  blockTimestamp_gte: BigInt
+  blockTimestamp_lte: BigInt
+  blockTimestamp_in: [BigInt!]
+  blockTimestamp_not_in: [BigInt!]
+  transactionHash: Bytes
+  transactionHash_not: Bytes
+  transactionHash_gt: Bytes
+  transactionHash_lt: Bytes
+  transactionHash_gte: Bytes
+  transactionHash_lte: Bytes
+  transactionHash_in: [Bytes!]
+  transactionHash_not_in: [Bytes!]
+  transactionHash_contains: Bytes
+  transactionHash_not_contains: Bytes
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [CollectNFTDeployed_filter]
+  or: [CollectNFTDeployed_filter]
+}
+
+enum CollectNFTDeployed_orderBy {
+  id
+  profileId
+  pubId
+  collectNFT
+  timestamp
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+type Collected {
+  id: Bytes!
+  collectedProfileId: BigInt!
+  collectedPubId: BigInt!
+  collectorProfileId: BigInt!
+  nftRecipient: Bytes!
+  collectNFT: Bytes!
+  tokenId: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+input Collected_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  collectedProfileId: BigInt
+  collectedProfileId_not: BigInt
+  collectedProfileId_gt: BigInt
+  collectedProfileId_lt: BigInt
+  collectedProfileId_gte: BigInt
+  collectedProfileId_lte: BigInt
+  collectedProfileId_in: [BigInt!]
+  collectedProfileId_not_in: [BigInt!]
+  collectedPubId: BigInt
+  collectedPubId_not: BigInt
+  collectedPubId_gt: BigInt
+  collectedPubId_lt: BigInt
+  collectedPubId_gte: BigInt
+  collectedPubId_lte: BigInt
+  collectedPubId_in: [BigInt!]
+  collectedPubId_not_in: [BigInt!]
+  collectorProfileId: BigInt
+  collectorProfileId_not: BigInt
+  collectorProfileId_gt: BigInt
+  collectorProfileId_lt: BigInt
+  collectorProfileId_gte: BigInt
+  collectorProfileId_lte: BigInt
+  collectorProfileId_in: [BigInt!]
+  collectorProfileId_not_in: [BigInt!]
+  nftRecipient: Bytes
+  nftRecipient_not: Bytes
+  nftRecipient_gt: Bytes
+  nftRecipient_lt: Bytes
+  nftRecipient_gte: Bytes
+  nftRecipient_lte: Bytes
+  nftRecipient_in: [Bytes!]
+  nftRecipient_not_in: [Bytes!]
+  nftRecipient_contains: Bytes
+  nftRecipient_not_contains: Bytes
+  collectNFT: Bytes
+  collectNFT_not: Bytes
+  collectNFT_gt: Bytes
+  collectNFT_lt: Bytes
+  collectNFT_gte: Bytes
+  collectNFT_lte: Bytes
+  collectNFT_in: [Bytes!]
+  collectNFT_not_in: [Bytes!]
+  collectNFT_contains: Bytes
+  collectNFT_not_contains: Bytes
+  tokenId: BigInt
+  tokenId_not: BigInt
+  tokenId_gt: BigInt
+  tokenId_lt: BigInt
+  tokenId_gte: BigInt
+  tokenId_lte: BigInt
+  tokenId_in: [BigInt!]
+  tokenId_not_in: [BigInt!]
+  timestamp: BigInt
+  timestamp_not: BigInt
+  timestamp_gt: BigInt
+  timestamp_lt: BigInt
+  timestamp_gte: BigInt
+  timestamp_lte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_not_in: [BigInt!]
+  blockNumber: BigInt
+  blockNumber_not: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_lt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_not_in: [BigInt!]
+  blockTimestamp: BigInt
+  blockTimestamp_not: BigInt
+  blockTimestamp_gt: BigInt
+  blockTimestamp_lt: BigInt
+  blockTimestamp_gte: BigInt
+  blockTimestamp_lte: BigInt
+  blockTimestamp_in: [BigInt!]
+  blockTimestamp_not_in: [BigInt!]
+  transactionHash: Bytes
+  transactionHash_not: Bytes
+  transactionHash_gt: Bytes
+  transactionHash_lt: Bytes
+  transactionHash_gte: Bytes
+  transactionHash_lte: Bytes
+  transactionHash_in: [Bytes!]
+  transactionHash_not_in: [Bytes!]
+  transactionHash_contains: Bytes
+  transactionHash_not_contains: Bytes
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [Collected_filter]
+  or: [Collected_filter]
+}
+
+enum Collected_orderBy {
+  id
+  collectedProfileId
+  collectedPubId
+  collectorProfileId
+  nftRecipient
+  collectNFT
+  tokenId
+  timestamp
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+type FeeProcessed {
+  id: Bytes!
+  profileId: BigInt!
+  pubId: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+input FeeProcessed_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  profileId: BigInt
+  profileId_not: BigInt
+  profileId_gt: BigInt
+  profileId_lt: BigInt
+  profileId_gte: BigInt
+  profileId_lte: BigInt
+  profileId_in: [BigInt!]
+  profileId_not_in: [BigInt!]
+  pubId: BigInt
+  pubId_not: BigInt
+  pubId_gt: BigInt
+  pubId_lt: BigInt
+  pubId_gte: BigInt
+  pubId_lte: BigInt
+  pubId_in: [BigInt!]
+  pubId_not_in: [BigInt!]
+  timestamp: BigInt
+  timestamp_not: BigInt
+  timestamp_gt: BigInt
+  timestamp_lt: BigInt
+  timestamp_gte: BigInt
+  timestamp_lte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_not_in: [BigInt!]
+  blockNumber: BigInt
+  blockNumber_not: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_lt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_not_in: [BigInt!]
+  blockTimestamp: BigInt
+  blockTimestamp_not: BigInt
+  blockTimestamp_gt: BigInt
+  blockTimestamp_lt: BigInt
+  blockTimestamp_gte: BigInt
+  blockTimestamp_lte: BigInt
+  blockTimestamp_in: [BigInt!]
+  blockTimestamp_not_in: [BigInt!]
+  transactionHash: Bytes
+  transactionHash_not: Bytes
+  transactionHash_gt: Bytes
+  transactionHash_lt: Bytes
+  transactionHash_gte: Bytes
+  transactionHash_lte: Bytes
+  transactionHash_in: [Bytes!]
+  transactionHash_not_in: [Bytes!]
+  transactionHash_contains: Bytes
+  transactionHash_not_contains: Bytes
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [FeeProcessed_filter]
+  or: [FeeProcessed_filter]
+}
+
+enum FeeProcessed_orderBy {
+  id
+  profileId
+  pubId
+  timestamp
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+type InitializedPublicationAction {
+  id: Bytes!
+  profileId: BigInt!
+  pubId: BigInt!
+  transactionExecutor: Bytes!
+  data: Bytes!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+input InitializedPublicationAction_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  profileId: BigInt
+  profileId_not: BigInt
+  profileId_gt: BigInt
+  profileId_lt: BigInt
+  profileId_gte: BigInt
+  profileId_lte: BigInt
+  profileId_in: [BigInt!]
+  profileId_not_in: [BigInt!]
+  pubId: BigInt
+  pubId_not: BigInt
+  pubId_gt: BigInt
+  pubId_lt: BigInt
+  pubId_gte: BigInt
+  pubId_lte: BigInt
+  pubId_in: [BigInt!]
+  pubId_not_in: [BigInt!]
+  transactionExecutor: Bytes
+  transactionExecutor_not: Bytes
+  transactionExecutor_gt: Bytes
+  transactionExecutor_lt: Bytes
+  transactionExecutor_gte: Bytes
+  transactionExecutor_lte: Bytes
+  transactionExecutor_in: [Bytes!]
+  transactionExecutor_not_in: [Bytes!]
+  transactionExecutor_contains: Bytes
+  transactionExecutor_not_contains: Bytes
+  data: Bytes
+  data_not: Bytes
+  data_gt: Bytes
+  data_lt: Bytes
+  data_gte: Bytes
+  data_lte: Bytes
+  data_in: [Bytes!]
+  data_not_in: [Bytes!]
+  data_contains: Bytes
+  data_not_contains: Bytes
+  blockNumber: BigInt
+  blockNumber_not: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_lt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_not_in: [BigInt!]
+  blockTimestamp: BigInt
+  blockTimestamp_not: BigInt
+  blockTimestamp_gt: BigInt
+  blockTimestamp_lt: BigInt
+  blockTimestamp_gte: BigInt
+  blockTimestamp_lte: BigInt
+  blockTimestamp_in: [BigInt!]
+  blockTimestamp_not_in: [BigInt!]
+  transactionHash: Bytes
+  transactionHash_not: Bytes
+  transactionHash_gt: Bytes
+  transactionHash_lt: Bytes
+  transactionHash_gte: Bytes
+  transactionHash_lte: Bytes
+  transactionHash_in: [Bytes!]
+  transactionHash_not_in: [Bytes!]
+  transactionHash_contains: Bytes
+  transactionHash_not_contains: Bytes
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [InitializedPublicationAction_filter]
+  or: [InitializedPublicationAction_filter]
+}
+
+enum InitializedPublicationAction_orderBy {
+  id
+  profileId
+  pubId
+  transactionExecutor
+  data
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+"""
+8 bytes signed integer
+
+"""
+scalar Int8
+
+type ModuleRegistered {
+  id: Bytes!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+input ModuleRegistered_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  blockNumber: BigInt
+  blockNumber_not: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_lt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_not_in: [BigInt!]
+  blockTimestamp: BigInt
+  blockTimestamp_not: BigInt
+  blockTimestamp_gt: BigInt
+  blockTimestamp_lt: BigInt
+  blockTimestamp_gte: BigInt
+  blockTimestamp_lte: BigInt
+  blockTimestamp_in: [BigInt!]
+  blockTimestamp_not_in: [BigInt!]
+  transactionHash: Bytes
+  transactionHash_not: Bytes
+  transactionHash_gt: Bytes
+  transactionHash_lt: Bytes
+  transactionHash_gte: Bytes
+  transactionHash_lte: Bytes
+  transactionHash_in: [Bytes!]
+  transactionHash_not_in: [Bytes!]
+  transactionHash_contains: Bytes
+  transactionHash_not_contains: Bytes
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [ModuleRegistered_filter]
+  or: [ModuleRegistered_filter]
+}
+
+enum ModuleRegistered_orderBy {
+  id
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+"""Defines the order direction, either ascending or descending"""
+enum OrderDirection {
+  asc
+  desc
+}
+
+type OwnershipTransferred {
+  id: Bytes!
+  previousOwner: Bytes!
+  newOwner: Bytes!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+input OwnershipTransferred_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  previousOwner: Bytes
+  previousOwner_not: Bytes
+  previousOwner_gt: Bytes
+  previousOwner_lt: Bytes
+  previousOwner_gte: Bytes
+  previousOwner_lte: Bytes
+  previousOwner_in: [Bytes!]
+  previousOwner_not_in: [Bytes!]
+  previousOwner_contains: Bytes
+  previousOwner_not_contains: Bytes
+  newOwner: Bytes
+  newOwner_not: Bytes
+  newOwner_gt: Bytes
+  newOwner_lt: Bytes
+  newOwner_gte: Bytes
+  newOwner_lte: Bytes
+  newOwner_in: [Bytes!]
+  newOwner_not_in: [Bytes!]
+  newOwner_contains: Bytes
+  newOwner_not_contains: Bytes
+  blockNumber: BigInt
+  blockNumber_not: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_lt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_not_in: [BigInt!]
+  blockTimestamp: BigInt
+  blockTimestamp_not: BigInt
+  blockTimestamp_gt: BigInt
+  blockTimestamp_lt: BigInt
+  blockTimestamp_gte: BigInt
+  blockTimestamp_lte: BigInt
+  blockTimestamp_in: [BigInt!]
+  blockTimestamp_not_in: [BigInt!]
+  transactionHash: Bytes
+  transactionHash_not: Bytes
+  transactionHash_gt: Bytes
+  transactionHash_lt: Bytes
+  transactionHash_gte: Bytes
+  transactionHash_lte: Bytes
+  transactionHash_in: [Bytes!]
+  transactionHash_not_in: [Bytes!]
+  transactionHash_contains: Bytes
+  transactionHash_not_contains: Bytes
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [OwnershipTransferred_filter]
+  or: [OwnershipTransferred_filter]
+}
+
+enum OwnershipTransferred_orderBy {
+  id
+  previousOwner
+  newOwner
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+type ProcessedPublicationAction {
+  id: Bytes!
+  profileId: BigInt!
+  pubId: BigInt!
+  transactionExecutor: Bytes!
+  data: Bytes!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+input ProcessedPublicationAction_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  profileId: BigInt
+  profileId_not: BigInt
+  profileId_gt: BigInt
+  profileId_lt: BigInt
+  profileId_gte: BigInt
+  profileId_lte: BigInt
+  profileId_in: [BigInt!]
+  profileId_not_in: [BigInt!]
+  pubId: BigInt
+  pubId_not: BigInt
+  pubId_gt: BigInt
+  pubId_lt: BigInt
+  pubId_gte: BigInt
+  pubId_lte: BigInt
+  pubId_in: [BigInt!]
+  pubId_not_in: [BigInt!]
+  transactionExecutor: Bytes
+  transactionExecutor_not: Bytes
+  transactionExecutor_gt: Bytes
+  transactionExecutor_lt: Bytes
+  transactionExecutor_gte: Bytes
+  transactionExecutor_lte: Bytes
+  transactionExecutor_in: [Bytes!]
+  transactionExecutor_not_in: [Bytes!]
+  transactionExecutor_contains: Bytes
+  transactionExecutor_not_contains: Bytes
+  data: Bytes
+  data_not: Bytes
+  data_gt: Bytes
+  data_lt: Bytes
+  data_gte: Bytes
+  data_lte: Bytes
+  data_in: [Bytes!]
+  data_not_in: [Bytes!]
+  data_contains: Bytes
+  data_not_contains: Bytes
+  blockNumber: BigInt
+  blockNumber_not: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_lt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_not_in: [BigInt!]
+  blockTimestamp: BigInt
+  blockTimestamp_not: BigInt
+  blockTimestamp_gt: BigInt
+  blockTimestamp_lt: BigInt
+  blockTimestamp_gte: BigInt
+  blockTimestamp_lte: BigInt
+  blockTimestamp_in: [BigInt!]
+  blockTimestamp_not_in: [BigInt!]
+  transactionHash: Bytes
+  transactionHash_not: Bytes
+  transactionHash_gt: Bytes
+  transactionHash_lt: Bytes
+  transactionHash_gte: Bytes
+  transactionHash_lte: Bytes
+  transactionHash_in: [Bytes!]
+  transactionHash_not_in: [Bytes!]
+  transactionHash_contains: Bytes
+  transactionHash_not_contains: Bytes
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [ProcessedPublicationAction_filter]
+  or: [ProcessedPublicationAction_filter]
+}
+
+enum ProcessedPublicationAction_orderBy {
+  id
+  profileId
+  pubId
+  transactionExecutor
+  data
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+type Query {
+  auctionCreated(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): AuctionCreated
+  auctionCreateds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: AuctionCreated_orderBy
+    orderDirection: OrderDirection
+    where: AuctionCreated_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [AuctionCreated!]!
+  bidPlaced(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): BidPlaced
+  bidPlaceds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: BidPlaced_orderBy
+    orderDirection: OrderDirection
+    where: BidPlaced_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [BidPlaced!]!
+  collectNFTDeployed(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): CollectNFTDeployed
+  collectNFTDeployeds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: CollectNFTDeployed_orderBy
+    orderDirection: OrderDirection
+    where: CollectNFTDeployed_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [CollectNFTDeployed!]!
+  collected(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): Collected
+  collecteds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: Collected_orderBy
+    orderDirection: OrderDirection
+    where: Collected_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [Collected!]!
+  feeProcessed(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): FeeProcessed
+  feeProcesseds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: FeeProcessed_orderBy
+    orderDirection: OrderDirection
+    where: FeeProcessed_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [FeeProcessed!]!
+  initializedPublicationAction(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): InitializedPublicationAction
+  initializedPublicationActions(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: InitializedPublicationAction_orderBy
+    orderDirection: OrderDirection
+    where: InitializedPublicationAction_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [InitializedPublicationAction!]!
+  moduleRegistered(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): ModuleRegistered
+  moduleRegistereds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: ModuleRegistered_orderBy
+    orderDirection: OrderDirection
+    where: ModuleRegistered_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [ModuleRegistered!]!
+  ownershipTransferred(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): OwnershipTransferred
+  ownershipTransferreds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: OwnershipTransferred_orderBy
+    orderDirection: OrderDirection
+    where: OwnershipTransferred_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [OwnershipTransferred!]!
+  processedPublicationAction(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): ProcessedPublicationAction
+  processedPublicationActions(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: ProcessedPublicationAction_orderBy
+    orderDirection: OrderDirection
+    where: ProcessedPublicationAction_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [ProcessedPublicationAction!]!
+  """Access to subgraph metadata"""
+  _meta(block: Block_height): _Meta_
+}
+
+type Subscription {
+  auctionCreated(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): AuctionCreated
+  auctionCreateds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: AuctionCreated_orderBy
+    orderDirection: OrderDirection
+    where: AuctionCreated_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [AuctionCreated!]!
+  bidPlaced(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): BidPlaced
+  bidPlaceds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: BidPlaced_orderBy
+    orderDirection: OrderDirection
+    where: BidPlaced_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [BidPlaced!]!
+  collectNFTDeployed(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): CollectNFTDeployed
+  collectNFTDeployeds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: CollectNFTDeployed_orderBy
+    orderDirection: OrderDirection
+    where: CollectNFTDeployed_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [CollectNFTDeployed!]!
+  collected(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): Collected
+  collecteds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: Collected_orderBy
+    orderDirection: OrderDirection
+    where: Collected_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [Collected!]!
+  feeProcessed(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): FeeProcessed
+  feeProcesseds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: FeeProcessed_orderBy
+    orderDirection: OrderDirection
+    where: FeeProcessed_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [FeeProcessed!]!
+  initializedPublicationAction(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): InitializedPublicationAction
+  initializedPublicationActions(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: InitializedPublicationAction_orderBy
+    orderDirection: OrderDirection
+    where: InitializedPublicationAction_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [InitializedPublicationAction!]!
+  moduleRegistered(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): ModuleRegistered
+  moduleRegistereds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: ModuleRegistered_orderBy
+    orderDirection: OrderDirection
+    where: ModuleRegistered_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [ModuleRegistered!]!
+  ownershipTransferred(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): OwnershipTransferred
+  ownershipTransferreds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: OwnershipTransferred_orderBy
+    orderDirection: OrderDirection
+    where: OwnershipTransferred_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [OwnershipTransferred!]!
+  processedPublicationAction(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): ProcessedPublicationAction
+  processedPublicationActions(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: ProcessedPublicationAction_orderBy
+    orderDirection: OrderDirection
+    where: ProcessedPublicationAction_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [ProcessedPublicationAction!]!
+  """Access to subgraph metadata"""
+  _meta(block: Block_height): _Meta_
+}
+
+"""
+A string representation of microseconds UNIX timestamp (16 digits)
+
+"""
+scalar Timestamp
+
+type _Block_ {
+  """The hash of the block"""
+  hash: Bytes
+  """The block number"""
+  number: Int!
+  """Integer representation of the timestamp stored in blocks for the chain"""
+  timestamp: Int
+  """The hash of the parent block"""
+  parentHash: Bytes
+}
+
+"""The type for the top-level _meta field"""
+type _Meta_ {
+  """
+  Information about a specific subgraph block. The hash of the block
+  will be null if the _meta field has a block constraint that asks for
+  a block number. It will be filled if the _meta field has no block constraint
+  and therefore asks for the latest  block
+  
+  """
+  block: _Block_!
+  """The deployment ID"""
+  deployment: String!
+  """If `true`, the subgraph encountered indexing errors at some past block"""
+  hasIndexingErrors: Boolean!
+}
+
+enum _SubgraphErrorPolicy_ {
+  """Data will be returned even if the subgraph has indexing errors"""
+  allow
+  """
+  If the subgraph has indexing errors, data will be omitted. The default.
+  """
+  deny
+}

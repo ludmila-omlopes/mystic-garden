@@ -1,0 +1,9 @@
+# .graphclientrc.yml
+sources:
+  - name: lens-auction-open-action
+    handler:
+      graphql:
+        endpoint: https://gateway-arbitrum.network.thegraph.com/api/f807f535577279be061483d217f3efdd/subgraphs/id/Dip94gLgtM4tAjGr15XVqKGSXhBWbmWVLYKc4T4RJnpc
+
+documents:
+  - d:/Lensboard/MysticGarden/src/auctionBidsQuery.graphql

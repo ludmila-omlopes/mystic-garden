@@ -3,13 +3,13 @@ import { ThemeProvider } from "@/app/theme-provider"
 import { LensProvider } from '@/app/lens-provider'
 import { Web3ModalProvider } from '@/app/web3modal-provider'
 import { Nav } from '@/components/nav'
-import { raleway } from './fonts'
+import { raleway, lato } from './fonts'
 import { PublicationsProvider } from './publications-provider'
 
 export default function Layout({ children }) {
   return (
     <html lang="en">
-      <body className={raleway.className}>
+      <body className={lato.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Web3ModalProvider>
               <LensProvider>

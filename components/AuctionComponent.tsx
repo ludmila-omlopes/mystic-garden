@@ -3,173 +3,274 @@
 import { useEffect, useState } from 'react';
 import { decodeInitData, encodeBidData } from '../app/api/lib/lensModuleUtils';
 import { parseAuctionInitData, AuctionInitData } from '../lib/parseAuctionData';
-import { useLazyModuleMetadata, useProfiles, Post } from "@lens-protocol/react-web";
+import { useLazyModuleMetadata, Post, profileId, useProfile, SessionType, useSession } from "@lens-protocol/react-web";
 import { UnknownOpenActionModuleSettings } from "@lens-protocol/react-web";
-import { BigNumber } from 'ethers';
-import { AuctionButton } from './AuctionButton';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, formatDistanceStrict, formatDistance } from 'date-fns';
+import AuctionBids from './AuctionBids';
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { AuctionButton } from './AuctionButton';
+import { useReadAuctionsOaGetAuctionData } from '@/src/generated';
+import { parseFromLensHex } from '@/lib/utils';
 import AuctionClaimButton from './AuctionClaimButton';
-import { useAccount } from 'wagmi';
-import { useSession, SessionType } from '@lens-protocol/react-web';
-
+import { REV_WALLET } from '@/app/constants';
 
 const AuctionComponent = ({ post }: { post: Post }) => {
-  const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
+    const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
 
-  const [calldata, setCalldata] = useState<string | null>(null);
-  const [parsedInitData, setParsedInitData] = useState<AuctionInitData | null>(null);
-  const [moduleMetadata, setModuleMetadata] = useState<any | null>(null);
-  const [expandedAddress, setExpandedAddress] = useState<string | null>(null);
-  const { address } = useAccount();
-  const { data: sessionData, error: sessionError, loading: sessionLoading } = useSession();
+    const [calldata, setCalldata] = useState<string | null>(null);
+    const [parsedInitData, setParsedInitData] = useState<AuctionInitData | null>(null);
+    const [moduleMetadata, setModuleMetadata] = useState<any | null>(null);
+    const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
+    const [bidAmount, setBidAmount] = useState<string>('');
+    const { data: sessionData } = useSession();
 
-  const { execute } = useLazyModuleMetadata();
+    const { execute } = useLazyModuleMetadata();
+    const intPublicationId = parseFromLensHex(post.id);
 
-  async function fetchModuleMetadata(moduleAddress: string) {
-    const result = await execute({ implementation: moduleAddress });
+    const { data: auctionData, error: auctionError } = useReadAuctionsOaGetAuctionData({
+        args: [intPublicationId.profileId, intPublicationId.publicationId],
+        chainId: process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? 137 : 80002,  //amoy 80002  polygon 137
+    });
 
-    if (result.isFailure()) {
-      console.error(result.error.message);
-      return null;
+    async function fetchModuleMetadata(moduleAddress: string) {
+        if (isFetchingMetadata) return;
+        setIsFetchingMetadata(true);
+        const result = await execute({ implementation: moduleAddress });
+
+        setIsFetchingMetadata(false);
+
+        if (result.isFailure()) {
+            console.error(result.error.message);
+            return null;
+        }
+
+        const { metadata } = result.value;
+        return metadata;
     }
 
-    const { metadata } = result.value;
-    return metadata;
-  }
+    async function getModuleSettings(post: Post, moduleAddress: string) {
+        const settings = post.openActionModules.find(
+            (module): module is UnknownOpenActionModuleSettings =>
+                module.__typename === "UnknownOpenActionModuleSettings" &&
+                module.contract.address === moduleAddress,
+        );
 
-  async function getModuleSettings(post: Post, moduleAddress: string) {
-    const settings = post.openActionModules.find(
-      (module): module is UnknownOpenActionModuleSettings =>
-        module.__typename === "UnknownOpenActionModuleSettings" &&
-        module.contract.address === moduleAddress,
-    );
-
-    return settings || null;
-  }
-
-  useEffect(() => {
-    async function fetchData() {
-      const fetchedMetadata = await fetchModuleMetadata(OPEN_ACTION_MODULE_ADDRESS);
-      const fetchedSettings = await getModuleSettings(post, OPEN_ACTION_MODULE_ADDRESS);
-
-      if (fetchedMetadata && fetchedSettings) {
-        setModuleMetadata(fetchedMetadata);
-
-        const { initData } = await decodeInitData(fetchedSettings, fetchedMetadata);
-        const parsedAuctionInitData = parseAuctionInitData(initData);
-        setParsedInitData(parsedAuctionInitData);
-      }
+        return settings || null;
     }
 
-    fetchData();
-  }, [post]);
+    useEffect(() => {
+        async function fetchData() {
+            const fetchedMetadata = await fetchModuleMetadata(OPEN_ACTION_MODULE_ADDRESS);
+            const fetchedSettings = await getModuleSettings(post, OPEN_ACTION_MODULE_ADDRESS);
 
-  useEffect(() => {
-    async function generateCalldata() {
-      if (parsedInitData && moduleMetadata) {
-        const amount = BigNumber.from(0); // Placeholder for the bid amount
-        const encodedCalldata = await encodeBidData(moduleMetadata, amount);
-        setCalldata(encodedCalldata);
-      }
+            if (fetchedMetadata && fetchedSettings) {
+                setModuleMetadata(fetchedMetadata);
+
+                const { initData } = await decodeInitData(fetchedSettings, fetchedMetadata);
+                const parsedAuctionInitData = parseAuctionInitData(initData);
+                setParsedInitData(parsedAuctionInitData);
+                console.log("minBidIncrement =" + parsedAuctionInitData.minBidIncrement);
+            }
+        }
+
+        fetchData();
+    }, [post]);
+
+    useEffect(() => {
+        async function generateCalldata() {
+            if (parsedInitData && moduleMetadata) {
+                const amount = BigInt(bidAmount); // Use the bid amount input by the user
+                const encodedCalldata = await encodeBidData(moduleMetadata, amount);
+                setCalldata(encodedCalldata);
+            }
+        }
+
+        generateCalldata();
+    }, [parsedInitData, moduleMetadata, bidAmount]);
+
+    if (!parsedInitData) {
+        return <div>Loading...</div>;
     }
 
-    generateCalldata();
-  }, [parsedInitData, moduleMetadata]);
+    if (auctionError) {
+        return <div>Error: {auctionError.message}</div>;
+    }
 
-  const recipientAddresses = parsedInitData?.recipients.map(r => r.recipient) || [];
-  const { data: profilesData, loading, error } = useProfiles({ where: { ownedBy: recipientAddresses } });
+    const currentTime = Math.floor(Date.now() / 1000);
+    const availableSinceTimestamp = auctionData ? Number(auctionData.availableSinceTimestamp) : 0;
+    const startTimestamp = auctionData ? Number(auctionData.startTimestamp) : 0;
+    const endTimestamp = auctionData ? Number(auctionData.endTimestamp) : 0;
+    const auctionEnd = auctionData ? new Date(endTimestamp * 1000) : new Date();
+    const auctionStart = auctionData ? new Date(availableSinceTimestamp * 1000) : new Date();
+    const winningBid = auctionData ? (auctionData.winningBid / BigInt(10 ** 18)).toString() : '0';
 
-  const profiles = profilesData || [];
+    let auctionStatus = "Not started";
+    let timeLeft = formatDistanceToNow(auctionStart, { includeSeconds: true });
 
-  if (!parsedInitData) {
-    return <div>Loading...</div>;
-  }
+    if (auctionData && currentTime >= availableSinceTimestamp) {
+        if (startTimestamp === 0) {
+            auctionStatus = "Active but not started";
+        } else if (currentTime <= endTimestamp) {
+            auctionStatus = "Active auction";
+            timeLeft = formatDistanceToNow(auctionEnd, { includeSeconds: true });
+        } else if (auctionData.winnerProfileId !== 0n && !auctionData.collected) {
+            auctionStatus = "Auction ended, pending collection";
+        } else if (auctionData.collected) {
+            auctionStatus = "Art collected";
+        }
+    }
 
-  const auctionEnd = new Date(parsedInitData.availableSinceTimestamp.getTime() + parsedInitData.duration * 1000);
-  const timeLeft = formatDistanceToNow(auctionEnd, { includeSeconds: true });
+    if (auctionStatus === "Not started" && currentTime < availableSinceTimestamp && (availableSinceTimestamp - currentTime) < 86400) {
+        timeLeft = formatDistance(currentTime * 1000, auctionStart, { includeSeconds: true });
+    }
 
-  return (
-    <section className="bg-gray-100 dark:bg-gray-800 p-6 md:p-8 rounded-lg">
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div className="grid gap-1">
-            <h3 className="text-lg font-semibold">Auction Details</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Minting Start</div>
-                <div className="text-base font-semibold">{parsedInitData.availableSinceTimestamp.toUTCString()}</div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Reserve Price</div>
-                <div className="text-base font-semibold">{parsedInitData.reservePrice.toString()} ETH</div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Referral Fee</div>
-                <div className="text-base font-semibold">{parsedInitData.referralFee / 100}%</div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Royalty</div>
-                <div className="text-base font-semibold">{parsedInitData.tokenRoyalty / 100}%</div>
-              </div>
-            </div>
-          </div>
-          <div className="grid gap-1">
-            <h3 className="text-lg font-semibold">Auction Countdown</h3>
-            <div className="text-base font-semibold">{timeLeft}</div>
-          </div>
-        </div>
-        <div className="space-y-4">
-          <div className="grid gap-1">
-            <h3 className="text-lg font-semibold">Recipients</h3>
-            <div className="grid gap-2">
-              {parsedInitData.recipients.map((recipient, index) => {
-                const profile = profiles.find(p => String(p.ownedBy.address) === recipient.recipient);
-                const addressDisplay = expandedAddress === recipient.recipient
-                  ? recipient.recipient
-                  : `${recipient.recipient.slice(0, 6)}...${recipient.recipient.slice(-4)}`;
-                const handleDisplay = profile ? profile.handle?.localName : addressDisplay;
-                const fallbackText = profile
-                  ? profile.handle?.localName.slice(0, 2).toUpperCase()
-                  : recipient.recipient.slice(-2).toUpperCase();
+    const isWinner = auctionStatus === "Auction ended, pending collection" && sessionData?.type === SessionType.WithProfile && sessionData?.profile.id === auctionData?.winnerProfileId.toString();
 
-                return (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="w-8 h-8 border">
-                        <AvatarImage src={profile && profile.metadata && profile.metadata.picture && 'optimized' in profile.metadata.picture ? profile.metadata?.picture?.optimized?.uri : "/placeholder-user.jpg"} />
-                        <AvatarFallback>{fallbackText}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{handleDisplay}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {addressDisplay}
-                          {expandedAddress !== recipient.recipient && (
-                            <button onClick={() => setExpandedAddress(recipient.recipient)} className="ml-2 text-blue-500">
-                              Expand
-                            </button>
-                          )}
+    return (
+        <div className="md:col-span-1">
+            <div className="bg-card rounded-lg">
+                {auctionStatus === "Not started" && (
+                    <>
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-sm font-medium">Reserve Price</p>
+                                <p className="text-lg font-bold">{(parsedInitData.reservePrice ).toString()} BONSAI</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium">Minimum Bid</p>
+                                <p className="text-lg font-bold">{(parsedInitData.minBidIncrement).toString()} BONSAI</p>
+                            </div>
                         </div>
-                      </div>
-                    </div>
-                    <div className="text-base font-semibold">{recipient.split / 100}%</div>
-                  </div>
-                );
-              })}
+                        <div className="bg-muted p-4 rounded-md mb-4">
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium">Auction Starts In</p>
+                                <div className="flex items-center gap-2">
+                                    <div className="bg-primary text-primary-foreground rounded-md px-2 py-1 text-xs font-medium">{timeLeft}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+                {auctionStatus === "Active but not started" && (
+                    <>
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-sm font-medium">Reserve Price</p>
+                                <p className="text-lg font-bold">{(parsedInitData.reservePrice).toString()} BONSAI</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium">Minimum Bid</p>
+                                <p className="text-lg font-bold">{(parsedInitData.minBidIncrement).toString()} BONSAI</p>
+                            </div>
+                        </div>
+                        <div className="bg-muted p-4 rounded-md mb-4">
+                            <div className="text-center">
+                                <p className="text-sm font-medium">Auction not started, place the first bid</p>
+                            </div>
+                        </div>
+                        <Input
+                            id="bidAmount"
+                            value={bidAmount}
+                            onChange={(e) => setBidAmount(e.target.value)}
+                            placeholder="Enter your bid amount"
+                            type="number"
+                            className="mb-4"
+                        />
+                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} data={String(calldata)} publication={post} />
+                    </>
+                )}
+                {auctionStatus === "Active auction" ? (
+                    <>
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-sm font-medium">Reserve Price</p>
+                                <p className="text-lg font-bold">{(parsedInitData.reservePrice).toString()} BONSAI</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium">Minimum Bid</p>
+                                <p className="text-lg font-bold">{(parsedInitData.minBidIncrement).toString()} BONSAI</p>
+                            </div>
+                        </div>
+                        <div className="bg-muted p-4 rounded-md mb-4">
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium">Auction Ends In</p>
+                                <div className="flex items-center gap-2">
+                                    <div className="bg-primary text-primary-foreground rounded-md px-2 py-1 text-xs font-medium">{timeLeft}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <Input
+                            id="bidAmount"
+                            value={bidAmount}
+                            onChange={(e) => setBidAmount(e.target.value)}
+                            placeholder="Enter your bid amount"
+                            type="number"
+                            className="mb-4"
+                        />
+                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} data={String(calldata)} publication={post} />
+                    </>
+                ) : auctionStatus === "Auction ended, pending collection" || auctionStatus === "Art collected" ? (
+                    <>
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-lg font-bold">Sold: {winningBid} BONSAI</p>
+                            </div>
+                        </div>
+                        {isWinner && <AuctionClaimButton collectedPubId={post.id} />}
+                    </>
+                ) : null}
+                <Separator className="my-8" />
+                <Tabs defaultValue="details" className="mt-4">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="details">Details</TabsTrigger>
+                        <TabsTrigger value="activity">Activity</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="details">
+                        <div className="p-4">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-base font-semibold">Recipients</h3>
+                                <Badge variant="secondary">{parsedInitData.onlyFollowers ? "Followers only" : "Public"}</Badge>
+                            </div>
+                            <div className="mb-4">
+                                {parsedInitData.recipients.map((recipient, index) => (
+                                    <div key={index} className="flex items-center gap-4 mb-2">
+                                        <Avatar>
+                                            <AvatarImage src="/placeholder-user.jpg" />
+                                            <AvatarFallback>{recipient.recipient.slice(-2)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="text-xs">
+                                            {recipient.recipient === REV_WALLET 
+                                                ? "Mystic Garden Minting Fee" 
+                                                : `${recipient.recipient.slice(0, 10)}...`}
+                                        </div>
+                                        <div className="text-xs">{recipient.split / 100}%</div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mb-4">
+                                <h3 className="text-base font-semibold mb-2">Referral Fee</h3>
+                                <p className="text-xs">{parsedInitData.referralFee / 100}%</p>
+                            </div>
+                            <div className="mb-4">
+                                <h3 className="text-base font-semibold mb-2">Royalty</h3>
+                                <p className="text-xs">{parsedInitData.tokenRoyalty / 100}%</p>
+                            </div>
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="activity">
+                        <div className="p-4">
+                            <AuctionBids auctionId={post.id} auctionStatus={auctionStatus} winningBid={winningBid} winnerProfileId={auctionData?.winnerProfileId} />
+                        </div>
+                    </TabsContent>
+                </Tabs>
             </div>
-          </div>
-          <div className="grid gap-1">
-            <h3 className="text-lg font-semibold">Followers Only</h3>
-            <div className="text-base font-semibold">{parsedInitData.onlyFollowers ? "Yes" : "No"}</div>
-          </div>
-          <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} data={String(calldata)} publication={post} />
         </div>
-        <div>
-          <AuctionClaimButton contractAddress={OPEN_ACTION_MODULE_ADDRESS} collectedPubId={post.id} />
-        </div>
-      </div>
-    </section>
-  );
+    );
 };
 
 export default AuctionComponent;
+

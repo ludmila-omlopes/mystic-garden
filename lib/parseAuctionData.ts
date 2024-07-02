@@ -13,7 +13,7 @@ export type AuctionInitData = {
   minBidIncrement: bigint;
   referralFee: number; // % * 100 (1000 = 10%)
   currency: string;
-  recipients: Recipient[]; //testar
+  recipients: Recipient[];
   onlyFollowers: boolean;
   tokenName: string;
   tokenSymbol: string;
@@ -42,8 +42,8 @@ export function parseAuctionInitData(data: any[]): AuctionInitData {
     availableSinceTimestamp: parseDateTime(parseBigInt(data[0])),
     duration: data[1] as number,
     minTimeAfterBid: data[2] as number,
-    reservePrice: parseBigInt(data[3]),
-    minBidIncrement: parseBigInt(data[4]),
+    reservePrice: parseBigInt(data[3]) / BigInt(10 ** 18),
+    minBidIncrement: parseBigInt(data[4]) / BigInt(10 ** 18),
     referralFee: data[5] as number,
     currency: data[6] as string,
     recipients: Array.isArray(data[7]) ? data[7].map((recipient: any) => ({

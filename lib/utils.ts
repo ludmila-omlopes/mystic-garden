@@ -9,6 +9,9 @@ import {
   MediaAudioMimeType,
   MediaVideoMimeType,
 } from '@lens-protocol/metadata';
+import { Post } from '@lens-protocol/react-web';
+
+const AUCTION_OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
  
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -150,3 +153,54 @@ export const createMetadata = (fileUrl: string, title: string, description: stri
       });
   }
 };
+
+export function getPostSellType(post: Post): 'auction' | 'buy_now' | 'none' {
+  if (!post.openActionModules || post.openActionModules.length === 0) {
+    return 'none';
+  }
+
+  const openActionModule = post.openActionModules[0];
+
+  if (openActionModule.__typename === 'UnknownOpenActionModuleSettings' && openActionModule.contract.address === AUCTION_OPEN_ACTION_MODULE_ADDRESS) {
+    return 'auction';
+  }
+
+  if (
+    openActionModule.__typename === 'SimpleCollectOpenActionSettings' ||
+    openActionModule.__typename === 'MultirecipientFeeCollectOpenActionSettings'
+  ) {
+    return 'buy_now';
+  }
+
+  return 'none';
+}
+
+/**
+ * Converts BigInt profileId and publicationId to hex format string.
+ * 
+ * @param profileId - The BigInt profileId.
+ * @param publicationId - The BigInt publicationId.
+ * @returns The concatenated hex format string of profileId and publicationId.
+ */
+export function formatToLensHex(profileId: bigint, publicationId: bigint): string {
+  const profileIdHex = profileId.toString(16);
+  const publicationIdHex = publicationId.toString(16);
+
+  return `${profileIdHex}-${publicationIdHex}`;
+}
+
+/**
+ * Converts a hex format string to BigInt profileId and publicationId.
+ * 
+ * @param hexString - The hex format string.
+ * @returns An object containing the BigInt profileId and publicationId.
+ */
+export function parseFromLensHex(hexString: string): { profileId: bigint; publicationId: bigint } {
+  const [profileIdHex, publicationIdHex] = hexString.split('-');
+
+  const profileId = BigInt(profileIdHex);
+  const publicationId = BigInt(publicationIdHex);
+  //console.log("converted: " + profileId + " - " + publicationId)
+
+  return { profileId, publicationId };
+}

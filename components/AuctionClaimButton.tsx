@@ -10,7 +10,6 @@ import {
   } from 'wagmi'
 
 interface AuctionClaimButtonProps {
-    contractAddress: Address;
     collectedPubId: string;
 }
 

@@ -51,8 +51,8 @@ export function AuctionButton(props: AuctionButtonProps) {
   };
 
   return (
-    <Button onClick={run} disabled={loading}>
-      Bid
+    <Button className="w-full" onClick={run} disabled={loading}>
+      Place Bid
     </Button>
   );
 }

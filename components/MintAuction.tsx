@@ -79,9 +79,9 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         availableSinceTimestamp: new Date(auctionStartDate),
         duration: parseInt(duration, 10),
         minTimeAfterBid: parseInt(minTimeAfterBid, 10),
-        reservePrice: BigInt(reservePrice),
-        minBidIncrement: BigInt(minBidIncrement),
-        referralFee: parseInt(referralFee, 10),
+        reservePrice: BigInt(reservePrice) * BigInt(10 ** 18),
+        minBidIncrement: BigInt(minBidIncrement) * BigInt(10 ** 18),
+        referralFee: parseInt(referralFee, 10)*100,
         currency: bonsaiCurrency.address,
         recipients: [
           {
@@ -197,7 +197,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         <Label htmlFor="tokenRoyalty">Token Royalty</Label>
         <Input
           id="tokenRoyalty"
-          value={tokenRoyalty || 10}
+          value={tokenRoyalty}
           onChange={(e) => setTokenRoyalty(e.target.value)}
           placeholder="Enter the token royalty"
           type="number"
