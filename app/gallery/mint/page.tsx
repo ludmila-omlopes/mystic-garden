@@ -86,7 +86,7 @@ const MintArt = () => {
         </label>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 mt-4">
         <div>
           <Label htmlFor="media">Upload Media</Label>
           <div
