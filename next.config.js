@@ -48,7 +48,7 @@ const nextConfig = {
       },
       fallback: {
         ...config.resolve.fallback,
-        url: require.resolve('url/')
+        url: require.resolve('url')
       }
     }
 
