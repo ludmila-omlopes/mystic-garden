@@ -10,6 +10,7 @@ import { REV_WALLET } from '@/app/constants';
 import { uploadFile, uploadData, createMetadata } from '@/lib/utils';
 import { encodeInitData } from '@/app/api/lib/lensModuleUtils';
 import { AuctionInitData } from '@/lib/parseAuctionData';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const MintAuction = ({ isAuthenticated, sessionData, title, description, file, fileName }) => {
   const { execute, error, loading: createPostLoading } = useCreatePost();
@@ -17,7 +18,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   const [reservePrice, setReservePrice] = useState('');
   const [minBidIncrement, setMinBidIncrement] = useState('');
   const [referralFee, setReferralFee] = useState('0');
-  const [duration, setDuration] = useState('');
+  const [duration, setDuration] = useState('24h'); // Default value
   const [minTimeAfterBid, setMinTimeAfterBid] = useState('');
   const [tokenRoyalty, setTokenRoyalty] = useState('10');
   const [auctionStartDate, setAuctionStartDate] = useState('');
@@ -27,6 +28,13 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
 
   const { execute: executeModuleMetadata } = useLazyModuleMetadata();
+
+  const durationMapping = {
+    '24h': 24 * 60 * 60,
+    '3 days': 3 * 24 * 60 * 60,
+    '5 days': 5 * 24 * 60 * 60,
+    '1 week': 7 * 24 * 60 * 60
+  };
 
   async function fetchModuleMetadata(moduleAddress: string) {
     const result = await executeModuleMetadata({ implementation: moduleAddress });
@@ -44,7 +52,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
     setLoading(true);
     try {
       const currency = bonsaiCurrency;
-      const fileUrl = await uploadFile(file); // Upload media to IPFS
+      const fileUrl = await uploadFile(file);
       console.log('fileUrl', fileUrl);
 
       if (!currency) {
@@ -77,11 +85,11 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
       const initAuctionData: AuctionInitData = {
         availableSinceTimestamp: new Date(auctionStartDate),
-        duration: parseInt(duration, 10),
+        duration: durationMapping[duration],
         minTimeAfterBid: parseInt(minTimeAfterBid, 10),
         reservePrice: BigInt(reservePrice) * BigInt(10 ** 18),
         minBidIncrement: BigInt(minBidIncrement) * BigInt(10 ** 18),
-        referralFee: parseInt(referralFee, 10)*100,
+        referralFee: parseInt(referralFee, 10) * 100,
         currency: bonsaiCurrency.address,
         recipients: [
           {
@@ -96,7 +104,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         onlyFollowers: false,
         tokenName: title,
         tokenSymbol: "MYST",
-        tokenRoyalty: parseInt(tokenRoyalty, 10)*100,
+        tokenRoyalty: parseInt(tokenRoyalty, 10) * 100,
       };
 
       const fetchedMetadata = await fetchModuleMetadata(OPEN_ACTION_MODULE_ADDRESS);
@@ -140,14 +148,14 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className='mt-4'>
         <Label htmlFor="reservePrice">Reserve Price</Label>
         <div className="flex items-center gap-4">
           <Input
             id="reservePrice"
             value={reservePrice}
             onChange={(e) => setReservePrice(e.target.value)}
-            placeholder="Enter the reserve price"
+            placeholder="Enter the minimum price to start your auction"
             type="number"
           />
           BONSAI
@@ -155,6 +163,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       </div>
       <div>
         <Label htmlFor="minBidIncrement">Minimum Bid Increment</Label>
+        <div className="flex items-center gap-4">
         <Input
           id="minBidIncrement"
           value={minBidIncrement}
@@ -162,9 +171,11 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
           placeholder="Enter the minimum bid increment"
           type="number"
         />
+        BONSAI
+        </div>
       </div>
       <div>
-        <Label htmlFor="referralFee">Referral Fee</Label>
+        <Label htmlFor="referralFee">Referral Fee (%)</Label>
         <Input
           id="referralFee"
           value={referralFee || 0}
@@ -174,14 +185,18 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         />
       </div>
       <div>
-        <Label htmlFor="duration">Duration (in seconds)</Label>
-        <Input
-          id="duration"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          placeholder="Enter the auction duration"
-          type="number"
-        />
+        <Label htmlFor="duration">Duration</Label>
+        <Select value={duration} onValueChange={setDuration}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select duration" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="24h">24h</SelectItem>
+            <SelectItem value="3 days">3 days</SelectItem>
+            <SelectItem value="5 days">5 days</SelectItem>
+            <SelectItem value="1 week">1 week</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <Label htmlFor="minTimeAfterBid">Minimum Time After Bid (in seconds)</Label>
@@ -194,7 +209,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         />
       </div>
       <div>
-        <Label htmlFor="tokenRoyalty">Token Royalty</Label>
+        <Label htmlFor="tokenRoyalty">Secondary Sales Royalty (%)</Label>
         <Input
           id="tokenRoyalty"
           value={tokenRoyalty}
