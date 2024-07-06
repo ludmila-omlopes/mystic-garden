@@ -71,6 +71,11 @@ export function Nav() {
                 </Link>
               </li>
               <li>
+                      <Link href="/auctions" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
+                        Auctions
+                      </Link>
+                    </li>
+              <li>
                 <Link href="/gallery/mint" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
                   Create New
                 </Link>
@@ -96,6 +101,11 @@ export function Nav() {
                     <li>
                       <Link href="/explore" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
                         Explore
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/auctions" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
+                        Auctions
                       </Link>
                     </li>
                     <li>

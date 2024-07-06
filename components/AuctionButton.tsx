@@ -14,6 +14,10 @@ type AuctionButtonProps = {
    * The Publication to execute the Open Action on
    */
   publication: AnyPublication;
+  /**
+   * Disabled state for the button
+   */
+  disabled: boolean;
 }
 
 export function AuctionButton(props: AuctionButtonProps) {
@@ -41,7 +45,7 @@ export function AuctionButton(props: AuctionButtonProps) {
     // optional: wait for the transaction to be mined and indexed
     const completion = await result.value.waitForCompletion();
 
-    // handle minining/indexing errors
+    // handle mining/indexing errors
     if (completion.isFailure()) {
       window.alert(completion.error.message);
       return;
@@ -51,8 +55,8 @@ export function AuctionButton(props: AuctionButtonProps) {
   };
 
   return (
-    <Button className="w-full" onClick={run} disabled={loading}>
-      Place Bid
+    <Button className="w-full" onClick={run} disabled={loading || props.disabled}>
+      {props.disabled ? "Login to Lens first" : "Place Bid"}
     </Button>
   );
 }

@@ -1,8 +1,4 @@
-import { LensClient, development, production } from '@lens-protocol/client';
 import { decodeData, encodeData, ModuleParam } from '@lens-protocol/react-web';
-import {isUnknownOpenActionModuleSettings, UnknownOpenActionModuleSettingsFragment } from '@lens-protocol/client';
-import { useLazyModuleMetadata, Post } from "@lens-protocol/react-web";
-import { UnknownOpenActionModuleSettings } from "@lens-protocol/react-web";
 import { AuctionInitData } from '@/lib/parseAuctionData';
 import { ethers } from 'ethers';
 
@@ -24,7 +20,6 @@ export async function decodeInitData(settings, metadata) {
 }
 
 export async function encodeInitData(settings: AuctionInitData, metadata: any) {
-  console.log('settings =  ', settings);
   const abi = JSON.parse(metadata.initializeCalldataABI) as ModuleParam[];
   const encodeBigInt = (value: bigint) => ethers.BigNumber.from(value).toHexString();
   const encodeDate = (value: Date) => Math.floor(value.getTime() / 1000).toString();
@@ -48,7 +43,6 @@ export async function encodeInitData(settings: AuctionInitData, metadata: any) {
 }
 
 export async function encodeBidData(metadata: any, bidAmount: bigint) {
-  const abi = JSON.parse(metadata.processCalldataABI) as ModuleParam[];
   const encodeBigInt = (value: bigint) => ethers.BigNumber.from(value).toHexString();
 
   const calldata = encodeData([
