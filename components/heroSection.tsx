@@ -46,7 +46,7 @@ export default function HeroSection() {
         </p>
         <div className="mb-8 flex items-center text-lg text-gray-300">
           <CalendarIcon className="h-6 w-6 mr-2 text-gray-300" />
-          <span>SUMMER 2024</span>
+          <span>JULY 20th - 2024</span>
         </div>
         <ShineBorder className="text-center uppercase" color={["#A07CFE", "#FE8FB5", "#FFBE7B"]}>
       dropping Soon

@@ -1954,7 +1954,8 @@ const merger = new(BareMerger as any)({
         store: rootStore.child('bareMerger')
       })
 const documentHashMap = {
-        "47a48ba8eeea0c0b613b2392f76a00579f2e84f0baef0d02f13b817e0409acad": BidsQueryDocument
+        "47a48ba8eeea0c0b613b2392f76a00579f2e84f0baef0d02f13b817e0409acad": BidsQueryDocument,
+"fe1dc5e947a2c5de49ebafe6295245aad36cd1b863dba55977dcecda39f0be04": ExploreBonsaiCreatedAuctionsDocument
       }
 additionalEnvelopPlugins.push(usePersistedOperations({
         getPersistedOperation(key) {
@@ -1982,6 +1983,13 @@ additionalEnvelopPlugins.push(usePersistedOperations({
         },
         location: 'BidsQueryDocument.graphql',
         sha256Hash: '47a48ba8eeea0c0b613b2392f76a00579f2e84f0baef0d02f13b817e0409acad'
+      },{
+        document: ExploreBonsaiCreatedAuctionsDocument,
+        get rawSDL() {
+          return printWithCache(ExploreBonsaiCreatedAuctionsDocument);
+        },
+        location: 'ExploreBonsaiCreatedAuctionsDocument.graphql',
+        sha256Hash: 'fe1dc5e947a2c5de49ebafe6295245aad36cd1b863dba55977dcecda39f0be04'
       }
     ];
     },
@@ -2044,6 +2052,11 @@ export type BidsQueryQueryVariables = Exact<{
 
 export type BidsQueryQuery = { bidPlaceds: Array<Pick<BidPlaced, 'id' | 'profileId' | 'pubId' | 'referrerProfileIds' | 'amount' | 'bidderOwner' | 'bidderProfileId' | 'endTimestamp' | 'timestamp'>> };
 
+export type ExploreBonsaiCreatedAuctionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ExploreBonsaiCreatedAuctionsQuery = { auctionCreateds: Array<Pick<AuctionCreated, 'id' | 'duration' | 'minBidIncrement' | 'minTimeAfterBid' | 'onlyFollowers' | 'profileId' | 'pubId' | 'reservePrice' | 'tokenName' | 'tokenRoyalty' | 'tokenSymbol' | 'blockTimestamp' | 'availableSinceTimestamp'>> };
+
 
 export const BidsQueryDocument = gql`
     query BidsQuery($profileId: BigInt!, $pubId: BigInt!) {
@@ -2060,6 +2073,30 @@ export const BidsQueryDocument = gql`
   }
 }
     ` as unknown as DocumentNode<BidsQueryQuery, BidsQueryQueryVariables>;
+export const ExploreBonsaiCreatedAuctionsDocument = gql`
+    query ExploreBonsaiCreatedAuctions {
+  auctionCreateds(
+    where: {currency: "0x3d2bD0e15829AA5C362a4144FdF4A1112fa29B5c"}
+    orderBy: blockTimestamp
+    orderDirection: desc
+  ) {
+    id
+    duration
+    minBidIncrement
+    minTimeAfterBid
+    onlyFollowers
+    profileId
+    pubId
+    reservePrice
+    tokenName
+    tokenRoyalty
+    tokenSymbol
+    blockTimestamp
+    availableSinceTimestamp
+  }
+}
+    ` as unknown as DocumentNode<ExploreBonsaiCreatedAuctionsQuery, ExploreBonsaiCreatedAuctionsQueryVariables>;
+
 
 
 export type Requester<C = {}, E = unknown> = <R, V>(doc: DocumentNode, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>
@@ -2067,6 +2104,9 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
     BidsQuery(variables: BidsQueryQueryVariables, options?: C): Promise<BidsQueryQuery> {
       return requester<BidsQueryQuery, BidsQueryQueryVariables>(BidsQueryDocument, variables, options) as Promise<BidsQueryQuery>;
+    },
+    ExploreBonsaiCreatedAuctions(variables?: ExploreBonsaiCreatedAuctionsQueryVariables, options?: C): Promise<ExploreBonsaiCreatedAuctionsQuery> {
+      return requester<ExploreBonsaiCreatedAuctionsQuery, ExploreBonsaiCreatedAuctionsQueryVariables>(ExploreBonsaiCreatedAuctionsDocument, variables, options) as Promise<ExploreBonsaiCreatedAuctionsQuery>;
     }
   };
 }

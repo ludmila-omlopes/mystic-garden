@@ -141,7 +141,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                                 <p className="text-lg font-bold">{(parsedInitData.reservePrice ).toString()} BONSAI</p>
                             </div>
                             <div>
-                                <p className="text-sm font-medium">Minimum Bid</p>
+                                <p className="text-sm font-medium">Minimum Bid Increment</p>
                                 <p className="text-lg font-bold">{(parsedInitData.minBidIncrement).toString()} BONSAI</p>
                             </div>
                         </div>
@@ -163,7 +163,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                                 <p className="text-lg font-bold">{(parsedInitData.reservePrice).toString()} BONSAI</p>
                             </div>
                             <div>
-                                <p className="text-sm font-medium">Minimum Bid</p>
+                                <p className="text-sm font-medium">Minimum Bid Increment</p>
                                 <p className="text-lg font-bold">{(parsedInitData.minBidIncrement).toString()} BONSAI</p>
                             </div>
                         </div>
@@ -180,7 +180,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                             type="number"
                             className="mb-4"
                         />
-                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} data={String(calldata)} publication={post} />
+                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} data={String(calldata)} publication={post} disabled={!sessionData?.authenticated} />
                     </>
                 )}
                 {auctionStatus === "Active auction" ? (
@@ -191,7 +191,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                                 <p className="text-lg font-bold">{(parsedInitData.reservePrice).toString()} BONSAI</p>
                             </div>
                             <div>
-                                <p className="text-sm font-medium">Minimum Bid</p>
+                                <p className="text-sm font-medium">Minimum Bid Increment</p>
                                 <p className="text-lg font-bold">{(parsedInitData.minBidIncrement).toString()} BONSAI</p>
                             </div>
                         </div>
@@ -211,7 +211,10 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                             type="number"
                             className="mb-4"
                         />
-                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} data={String(calldata)} publication={post} />
+                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} data={String(calldata)} publication={post} disabled={!sessionData?.authenticated} />
+                        {!sessionData?.authenticated && (
+                            <p className="text-sm text-red-500">Login to Lens first</p>
+                        )}
                     </>
                 ) : auctionStatus === "Auction ended, pending collection" || auctionStatus === "Art collected" ? (
                     <>
@@ -273,4 +276,3 @@ const AuctionComponent = ({ post }: { post: Post }) => {
 };
 
 export default AuctionComponent;
-

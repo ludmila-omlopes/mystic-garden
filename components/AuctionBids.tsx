@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import React from 'react';
 import { BidsQueryDocument, BidsQueryQuery, execute } from '../.graphclient';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { useProfiles, profileId } from '@lens-protocol/react-web';
+import { useProfiles, profileId, ProfileId } from '@lens-protocol/react-web';
 
 const AuctionBids = ({ auctionId, auctionStatus, winningBid, winnerProfileId }) => {
   const [data, setData] = useState<BidsQueryQuery>();
@@ -43,7 +43,7 @@ const AuctionBids = ({ auctionId, auctionStatus, winningBid, winnerProfileId }) 
   }, [auctionId]);
 
   const { data: profilesData, loading: profilesLoading, error: profilesError } = useProfiles({
-    where: { profileIds: profileIds.length > 0 ? profileIds.map(id => profileId(id)) : [] }
+    where: { profileIds: profileIds.length > 0 ? profileIds.map(id => profileId(id)) : ['0x00' as ProfileId]}
   });
 
   if (loading || profilesLoading) return <p>Loading...</p>;
