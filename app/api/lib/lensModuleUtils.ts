@@ -43,13 +43,23 @@ export async function encodeInitData(settings: AuctionInitData, metadata: any) {
 }
 
 export async function encodeBidData(metadata: any, bidAmount: bigint) {
-  const encodeBigInt = (value: bigint) => ethers.BigNumber.from(value).toHexString();
+  const abi = JSON.parse(metadata.processCalldataABI) as ModuleParam[];
+  console.log('auction abi', abi);
+  const encodeBigInt = (value: bigint) => BigInt(value).toString();
+  console.log('bidAmount', encodeBigInt(bidAmount));
 
-  const calldata = encodeData([
+  /*const calldata = encodeData([
     { name: "bidAmount", type: "uint256" },
   ], [
     encodeBigInt(bidAmount),
+  ]);*/
+
+  const calldata = encodeData(
+    abi, [
+    encodeBigInt(bidAmount),
   ]);
+
+
 
   return calldata;
 }

@@ -204,3 +204,32 @@ export function parseFromLensHex(hexString: string): { profileId: bigint; public
 
   return { profileId, publicationId };
 }
+
+export const awardPoints = async (userWallet, points, event , uniqueId): Promise<string> => {
+  try {
+    const response = await fetch('/api/awardPoints', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+          userWallet: userWallet,
+          points: points, 
+          event: event,
+          uniqueId: uniqueId
+      }),
+  });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+    return data.receiptId;
+  } catch (error) {
+    console.error('Error uploading data:', error);
+  }
+
+  return '';
+};
+

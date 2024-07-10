@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useCreatePost, useCurrencies, OpenActionType, useLazyModuleMetadata } from '@lens-protocol/react-web';
+import { useCreatePost, useCurrencies, OpenActionType, useLazyModuleMetadata, Erc20 } from '@lens-protocol/react-web';
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   const [auctionStartDate, setAuctionStartDate] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const bonsaiCurrency = currencies?.find((c) => c.symbol === 'BONSAI');
   const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
 
   const { execute: executeModuleMetadata } = useLazyModuleMetadata();
@@ -51,7 +50,10 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   const mintArt = async () => {
     setLoading(true);
     try {
-      const currency = bonsaiCurrency;
+      const bonsaiCurrency = currencies?.find((c) => c.symbol === 'BONSAI');
+      console.log('bonsaiCurrency', bonsaiCurrency);
+      const currency = bonsaiCurrency?.address || "0x3d2bD0e15829AA5C362a4144FdF4A1112fa29B5c";
+      console.log('currencies', currencies);
       const fileUrl = await uploadFile(file);
       console.log('fileUrl', fileUrl);
 
@@ -90,7 +92,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         reservePrice: BigInt(reservePrice) * BigInt(10 ** 18),
         minBidIncrement: BigInt(minBidIncrement) * BigInt(10 ** 18),
         referralFee: parseInt(referralFee, 10) * 100,
-        currency: bonsaiCurrency.address,
+        currency: currency,
         recipients: [
           {
             recipient: REV_WALLET, 

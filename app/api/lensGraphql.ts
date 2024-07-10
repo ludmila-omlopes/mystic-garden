@@ -1,4 +1,5 @@
 export async function getAuctions() {
+  const auctionsOaAddress = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
     const graphqlQuery = {
       query: `
         query Publications($request: PublicationsRequest!) {
@@ -87,7 +88,7 @@ export async function getAuctions() {
           where: {
             withOpenActions: [
               {
-                address: "0x857b5e09d54AD26580297C02e4596537a2d3E329"
+                address: auctionsOaAddress
               }
             ]
           }
@@ -95,7 +96,7 @@ export async function getAuctions() {
       }
     };
   
-    const ENDPOINT = 'https://api-v2.lens.dev';
+    const ENDPOINT = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? 'https://api-v2.lens.dev' : '	https://api-v2-amoy.lens.dev';
   
     const response = await fetch(ENDPOINT, {
       method: 'POST',

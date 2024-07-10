@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { decodeInitData, encodeBidData } from '../app/api/lib/lensModuleUtils';
 import { parseAuctionInitData, AuctionInitData } from '../lib/parseAuctionData';
-import { useLazyModuleMetadata, Post, profileId, useProfile, SessionType, useSession } from "@lens-protocol/react-web";
-import { UnknownOpenActionModuleSettings } from "@lens-protocol/react-web";
+import { useLazyModuleMetadata, Post, useProfile, SessionType, useSession, ProfileId } from "@lens-protocol/react-web";
+import { UnknownOpenActionModuleSettings, useCurrencies } from "@lens-protocol/react-web";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { formatDistanceToNow, formatDistanceStrict, formatDistance } from 'date-fns';
+import { formatDistanceToNow, formatDistance } from 'date-fns';
 import AuctionBids from './AuctionBids';
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
     const [parsedInitData, setParsedInitData] = useState<AuctionInitData | null>(null);
     const [moduleMetadata, setModuleMetadata] = useState<any | null>(null);
     const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
-    const [bidAmount, setBidAmount] = useState<string>('');
+    const [bidAmount, setBidAmount] = useState<bigint>(BigInt(0));
     const { data: sessionData } = useSession();
 
     const { execute } = useLazyModuleMetadata();
@@ -83,7 +83,8 @@ const AuctionComponent = ({ post }: { post: Post }) => {
     useEffect(() => {
         async function generateCalldata() {
             if (parsedInitData && moduleMetadata) {
-                const amount = BigInt(bidAmount); // Use the bid amount input by the user
+                const amount = bidAmount; // Use the bid amount input by the user
+                console.log("module metadata=" + JSON.stringify(moduleMetadata) + " amount=" + amount);
                 const encodedCalldata = await encodeBidData(moduleMetadata, amount);
                 setCalldata(encodedCalldata);
             }
@@ -92,14 +93,6 @@ const AuctionComponent = ({ post }: { post: Post }) => {
         generateCalldata();
     }, [parsedInitData, moduleMetadata, bidAmount]);
 
-    if (!parsedInitData) {
-        return <div>Loading...</div>;
-    }
-
-    if (auctionError) {
-        return <div>Error: {auctionError.message}</div>;
-    }
-
     const currentTime = Math.floor(Date.now() / 1000);
     const availableSinceTimestamp = auctionData ? Number(auctionData.availableSinceTimestamp) : 0;
     const startTimestamp = auctionData ? Number(auctionData.startTimestamp) : 0;
@@ -107,6 +100,15 @@ const AuctionComponent = ({ post }: { post: Post }) => {
     const auctionEnd = auctionData ? new Date(endTimestamp * 1000) : new Date();
     const auctionStart = auctionData ? new Date(availableSinceTimestamp * 1000) : new Date();
     const winningBid = auctionData ? (auctionData.winningBid / BigInt(10 ** 18)).toString() : '0';
+    var winningProfileId = auctionData ? auctionData.winnerProfileId.toString(16) : '0';
+    if (winningProfileId.length % 2 !== 0) { 
+        winningProfileId = '0' + winningProfileId; 
+    }
+    winningProfileId =  '0x' + winningProfileId; 
+
+    console.log("winningProfileId=" + winningProfileId);
+
+    const { data: winningProfile } = useProfile( {forProfileId: winningProfileId as ProfileId} );
 
     let auctionStatus = "Not started";
     let timeLeft = formatDistanceToNow(auctionStart, { includeSeconds: true });
@@ -130,6 +132,14 @@ const AuctionComponent = ({ post }: { post: Post }) => {
 
     const isWinner = auctionStatus === "Auction ended, pending collection" && sessionData?.type === SessionType.WithProfile && sessionData?.profile.id === auctionData?.winnerProfileId.toString();
 
+    if (!parsedInitData) {
+        return <div>Loading...</div>;
+    }
+
+    if (auctionError) {
+        return <div>Error: {auctionError.message}</div>;
+    }
+    
     return (
         <div className="md:col-span-1">
             <div className="bg-card rounded-lg">
@@ -138,7 +148,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <p className="text-sm font-medium">Reserve Price</p>
-                                <p className="text-lg font-bold">{(parsedInitData.reservePrice ).toString()} BONSAI</p>
+                                <p className="text-lg font-bold">{(parsedInitData.reservePrice).toString()} BONSAI</p>
                             </div>
                             <div>
                                 <p className="text-sm font-medium">Minimum Bid Increment</p>
@@ -174,13 +184,12 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                         </div>
                         <Input
                             id="bidAmount"
-                            value={bidAmount}
-                            onChange={(e) => setBidAmount(e.target.value)}
+                            onChange={(e) => setBidAmount(BigInt(e.target.value) * BigInt(10 ** 18))}
                             placeholder="Enter your bid amount"
                             type="number"
                             className="mb-4"
                         />
-                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} data={String(calldata)} publication={post} disabled={!sessionData?.authenticated} />
+                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} amount={bidAmount} data={String(calldata)} publication={post} disabled={!sessionData?.authenticated} />
                     </>
                 )}
                 {auctionStatus === "Active auction" ? (
@@ -203,15 +212,32 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                                 </div>
                             </div>
                         </div>
+                        <div className="bg-transparent border border-gray-300 p-4 rounded-md mb-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">Highest Bid</p>
+                                    <p className="text-lg font-bold">{winningBid} BONSAI</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Avatar className="w-8 h-8 mr-2">
+                                        <AvatarImage src={winningProfile?.metadata?.picture?.__typename === 'ImageSet' ? winningProfile?.metadata?.picture?.optimized?.uri : "/placeholder-user.jpg"} />
+                                        <AvatarFallback>{winningProfile?.handle?.localName?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="text-sm font-medium">{winningProfile?.handle?.localName}</p>
+                                        <p className="text-xs text-muted-foreground">{winningProfile?.metadata?.displayName}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <Input
                             id="bidAmount"
-                            value={bidAmount}
-                            onChange={(e) => setBidAmount(e.target.value)}
+                            onChange={(e) => setBidAmount(BigInt(e.target.value) * BigInt(10 ** 18))}
                             placeholder="Enter your bid amount"
                             type="number"
                             className="mb-4"
                         />
-                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} data={String(calldata)} publication={post} disabled={!sessionData?.authenticated} />
+                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} amount={bidAmount} data={String(calldata)} publication={post} disabled={!sessionData?.authenticated} />
                         {!sessionData?.authenticated && (
                             <p className="text-sm text-red-500">Login to Lens first</p>
                         )}
