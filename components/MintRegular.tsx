@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from 'next/navigation';
 import { Label } from "@/components/ui/label";
 import { REV_WALLET } from '@/app/constants';
+import { awardPoints } from '@/lib/utils';
+import { CREATE_NEW_AWARD } from '@/app/constants';
 
 const MintRegular = ({ isAuthenticated, sessionData, title, description, file, fileName }) => {
   const { execute, error, loading: createPostLoading } = useCreatePost();
@@ -120,7 +122,7 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
             collectLimit: 1,
             recipients: [
               {
-                recipient: "REV_WALLET",
+                recipient: REV_WALLET,
                 split: 2, // 2% for the platform
               },
               {
@@ -147,6 +149,14 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
         setLoading(false);
         return;
       }
+
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const awardUniqueId = `${year}-${month}-${day}-${sessionData?.address}`;
+
+      awardPoints(sessionData?.address, CREATE_NEW_AWARD, 'New Mint', awardUniqueId);
 
       console.log('Post created', completion.value);
 

@@ -3,6 +3,8 @@ import { Button } from './ui/button';
 import { useSession } from '@lens-protocol/react-web';
 import { useReadErc20Allowance, useWriteErc20Approve } from '@/src/generated';
 import { Address } from 'viem';
+import { awardPoints } from '@/lib/utils';
+import { BID_AWARD } from '@/app/constants';
 
 // This button handles the Open Action for placing a bid on an auction
 
@@ -34,7 +36,7 @@ export function AuctionButton(props: AuctionButtonProps) {
           chainId: 137,
           args: [props.address as Address, props.amount]
         });
-        
+
       } catch (error) {
         console.error("Failed to approve allowance:", error);
         window.alert("Failed to approve allowance.");
@@ -78,7 +80,7 @@ export function AuctionButton(props: AuctionButtonProps) {
       window.alert(`Error: ${completion.error.message}`);
       return;
     }
-
+    awardPoints(walletAddress, BID_AWARD, "bid", null);
     window.alert("Bid executed successfully");
   };
 

@@ -249,7 +249,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                                 <p className="text-lg font-bold">Sold: {winningBid} BONSAI</p>
                             </div>
                         </div>
-                        {isWinner && <AuctionClaimButton collectedPubId={post.id} />}
+                        {isWinner && <AuctionClaimButton collectedPubId={post.id} price={Number(winningBid)} postCreatorAddress={post.by.ownedBy.address} />}
                     </>
                 ) : null}
                 <Separator className="my-8" />
