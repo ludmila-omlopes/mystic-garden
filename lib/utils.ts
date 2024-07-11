@@ -206,6 +206,9 @@ export function parseFromLensHex(hexString: string): { profileId: bigint; public
 }
 
 export const awardPoints = async (userWallet, points, event , uniqueId): Promise<string> => {
+  if (process.env.NEXT_PUBLIC_ENVIRONMENT !== "production")
+    return '';
+
   try {
     const response = await fetch('/api/awardPoints', {
       method: 'POST',

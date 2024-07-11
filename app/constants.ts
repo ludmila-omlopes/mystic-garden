@@ -1,6 +1,7 @@
 export const DEVNET_PROVIDER_URL = "https://rpc-amoy.polygon.technology";
 export const REV_WALLET = "0x2F059872781f8310C65C735720d3F089Dc0eC78F";
 export const FALLBACK_IMAGE_URL = "/images/no-image-available.jpg";
+export const BONSAI_ADDRESS = "0x3d2bD0e15829AA5C362a4144FdF4A1112fa29B5c";
 
 export const FEATURED_ARTIST_PROFILE_IDS = [
     '0x021135', // aoife
@@ -14,4 +15,7 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0xf71a',   // internetfase
   ];
 
-  export const BID_AWARD = 100;
+  export const BID_AWARD = 100; //todo: talvez colocar proporcional ao bid
+  export const CREATE_NEW_AWARD = 500;
+  export const COLLECT_PERCENT_AWARD = 0.2; 
+

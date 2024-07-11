@@ -13,6 +13,11 @@ import { getTitle, getPostSellType } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import { FALLBACK_IMAGE_URL } from '../../constants';
 import AuctionComponent from '../../../components/AuctionComponent';
+import { awardPoints } from '@/lib/utils';
+import { COLLECT_PERCENT_AWARD, BONSAI_ADDRESS } from '@/app/constants';
+import { useReadErc20Allowance, useWriteErc20Approve } from '@/src/generated';
+import { polygon, polygonAmoy } from 'wagmi/chains'
+import { Address } from 'viem';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover?: string } | null {
   if (!post?.metadata) {
@@ -37,6 +42,9 @@ function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text
 
 function GalleryPostDetails({ params }) {
   const fallbackImage = '/images/fallback-image.png';
+  const CHAIN_ID = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? polygon.id : polygonAmoy.id;
+  const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
+
   const { data, error, loading } = usePublication({ forId: params.id });
   const post = data as Post;
   const [isCollected, setIsCollected] = useState(false);
@@ -45,11 +53,45 @@ function GalleryPostDetails({ params }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { address } = useAccount();
   const { data: sessionData } = useSession();
+  const [moduleAddress, setModuleAddress] = useState<Address | undefined>(undefined);
+  const walletAddress = sessionData?.authenticated ? sessionData.address : undefined;
+
   const { execute } = useOpenAction({
     action: {
       kind: OpenActionKind.COLLECT,
     },
   });
+
+
+  const { data: allowance, refetch: refetchAllowance } = useReadErc20Allowance({
+    address: BONSAI_ADDRESS,
+    chainId: CHAIN_ID,
+    args: [walletAddress as Address, moduleAddress as Address] //é pra colocar o contrato a ser chamado aqui
+  });
+
+  const { writeContractAsync } = useWriteErc20Approve();
+
+  const checkAndApproveAllowance = async () => {
+    if (!allowance || allowance < BigInt(postPrice * (10 ** 18))) {
+      console.log('bonsai add:', BONSAI_ADDRESS);
+      console.log('chain id:', CHAIN_ID);
+    console.log('module address:', moduleAddress);
+    console.log('post id:', post.id);
+      try {
+        const tx = await writeContractAsync({
+          address: BONSAI_ADDRESS,
+          chainId: CHAIN_ID,
+          args: [moduleAddress as Address, BigInt(postPrice * (10 ** 18))]
+        });
+  
+      } catch (error) {
+        console.error("Failed to approve allowance:", error);
+        window.alert("Failed to approve allowance.");
+        return false;
+      }
+    }
+    return true;
+  };
 
   useEffect(() => {
     if (post && post.__typename === 'Post' && post?.stats.collects > 0) {
@@ -62,6 +104,7 @@ function GalleryPostDetails({ params }) {
           actionModule.__typename === "SimpleCollectOpenActionSettings" ||
           actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings"
         ) {
+          setModuleAddress(actionModule.contract.address as Address);
           const endsAt = actionModule.endsAt;
           if (endsAt && new Date(endsAt) < new Date()) {
             setIsSaleEnded(true);
@@ -84,6 +127,10 @@ function GalleryPostDetails({ params }) {
       alert('Post is undefined');
       return;
     }
+
+    const allowanceApproved = await checkAndApproveAllowance();
+    if (!allowanceApproved) return;
+
     const result = await execute({ publication: post });
 
     if (result.isFailure()) {
@@ -92,14 +139,31 @@ function GalleryPostDetails({ params }) {
       return;
     }
 
+    const completion = await result.value.waitForCompletion();
+
+      if (completion.isFailure()) {
+        throw new Error(completion.error.message || 'There was an error processing the transaction');
+      }
+
     setIsCollected(true);
     setIsLoading(false);
+
+    if (completion.isSuccess()) {
+      if (sessionData?.address != post.by.ownedBy.address) {
+      awardPoints(sessionData?.address, COLLECT_PERCENT_AWARD * postPrice, 'Collect (Buyer)', null);
+      awardPoints(post.by.ownedBy.address, COLLECT_PERCENT_AWARD * postPrice, 'Collect (Seller)', null); 
+    }
+    else {  
+      awardPoints(post.by.ownedBy.address, 0, 'Try selling to someone else =)', null); 
+    }
+  }
+
     alert('Post collected!');
   };
 
   const postTitle = getTitle(post);
 
-  let postPrice: number | null = null;
+  let postPrice: number = 0;
   if (post && post.openActionModules) {
     for (let actionModule of post.openActionModules) {
       if (actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings" && Number(actionModule.amount.value) > 0) {

@@ -11,9 +11,11 @@ import { uploadFile, uploadData, createMetadata } from '@/lib/utils';
 import { encodeInitData } from '@/app/api/lib/lensModuleUtils';
 import { AuctionInitData } from '@/lib/parseAuctionData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { awardPoints } from '@/lib/utils';
+import { CREATE_NEW_AWARD } from '@/app/constants';
 
 const MintAuction = ({ isAuthenticated, sessionData, title, description, file, fileName }) => {
-  const { execute, error, loading: createPostLoading } = useCreatePost();
+  const { execute, error: createPostError, loading: createPostLoading } = useCreatePost();
   const { data: currencies } = useCurrencies();
   const [reservePrice, setReservePrice] = useState('');
   const [minBidIncrement, setMinBidIncrement] = useState('');
@@ -23,6 +25,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   const [tokenRoyalty, setTokenRoyalty] = useState('10');
   const [auctionStartDate, setAuctionStartDate] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
   const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
 
@@ -39,7 +42,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
     const result = await executeModuleMetadata({ implementation: moduleAddress });
 
     if (result.isFailure()) {
-      console.error(result.error.message);
+      setErrorMessage(result.error.message);
       return null;
     }
 
@@ -49,41 +52,31 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   
   const mintArt = async () => {
     setLoading(true);
+    setErrorMessage('');
     try {
       const bonsaiCurrency = currencies?.find((c) => c.symbol === 'BONSAI');
-      console.log('bonsaiCurrency', bonsaiCurrency);
       const currency = bonsaiCurrency?.address || "0x3d2bD0e15829AA5C362a4144FdF4A1112fa29B5c";
-      console.log('currencies', currencies);
       const fileUrl = await uploadFile(file);
-      console.log('fileUrl', fileUrl);
 
       if (!currency) {
-        console.error('Invalid currency');
-        setLoading(false);
-        return;
+        throw new Error('Invalid currency');
       }
 
       if (!fileUrl) {
-        console.error('File upload failed');
-        setLoading(false);
-        return;
+        throw new Error('File upload failed');
       }
 
       if (!sessionData?.authenticated) {
-        console.error('User not logged in on Lens');
-        setLoading(false);
-        return;
+        throw new Error('User not logged in on Lens');
       }
 
       const metadata = createMetadata(fileUrl, title, description, file);
 
       const arweaveID = await uploadData(metadata);
       const uri = `https://gateway.irys.xyz/${arweaveID}`;
-      if (uri === "") {
-        setLoading(false);
-        return;
+      if (!uri) {
+        throw new Error('Failed to upload metadata');
       }
-      console.log('metadata uri', uri);
 
       const initAuctionData: AuctionInitData = {
         availableSinceTimestamp: new Date(auctionStartDate),
@@ -124,25 +117,31 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       });
 
       if (result.isFailure()) {
-        console.error('There was an error creating the post', error?.message);
-        setLoading(false);
-        return;
+        throw new Error(result.error.message || 'There was an error creating the post');
       }
 
       const completion = await result.value.waitForCompletion();
       const createdPostId = completion.unwrap().id;
-      console.log('Post created', createdPostId);
 
       if (completion.isFailure()) {
-        console.error('There was an error processing the transaction', completion.error?.message);
-        setLoading(false);
-        return;
+        throw new Error(completion.error.message || 'There was an error processing the transaction');
       }
 
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const awardUniqueId = `${year}-${month}-${day}-${sessionData?.address}`;
+
+      awardPoints(sessionData?.address, CREATE_NEW_AWARD, 'New Auction', awardUniqueId);
+      
       console.log('Post created', completion.value);
 
       // Redirect to the gallery with the created post ID
       router.push(`/gallery/${createdPostId}`);
+    } catch (error) {
+      console.error('Error minting art:', error);
+      setErrorMessage(String(error));
     } finally {
       setLoading(false);
     }
@@ -235,6 +234,11 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
           {loading ? 'Creating...' : !isAuthenticated ? 'Login to Lens first' : 'Create NFT'}
         </Button>
       </div>
+      {errorMessage && (
+        <div className="mt-4 text-red-500">
+          {errorMessage}
+        </div>
+      )}
     </div>
   );
 };
