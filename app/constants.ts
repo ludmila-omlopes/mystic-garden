@@ -13,3 +13,5 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0x042318', //chloee
     '0xf71a',   // internetfase
   ];
+
+  export const BID_AWARD = 100;

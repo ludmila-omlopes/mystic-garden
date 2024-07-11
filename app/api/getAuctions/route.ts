@@ -26,7 +26,7 @@ async function getAdditionalAuctionData(profileId, pubId) {
         abi: auctionsOaAbi,
         functionName: 'getAuctionData',
         args: [profileId, pubId],
-        chainId: polygon.id,
+        chainId: process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? polygon.id : polygonAmoy.id,
       });
   
       const convertedResult = Object.fromEntries(
@@ -45,13 +45,14 @@ async function getAdditionalAuctionData(profileId, pubId) {
   export async function GET() {
     try {
       const auctions = await getAuctions();
+      console.log("auctions = " + JSON.stringify(auctions));
       const auctionsData = JSON.parse(auctions).data.publications.items;
   
       let auctionsWithAdditionalData = await Promise.all(
         auctionsData.map(async (auction) => {
           const {profileId, publicationId} = parseFromLensHex(auction.id);
           const additionalData = await getAdditionalAuctionData(profileId, publicationId);
-          console.log("additionalData = " + JSON.stringify(additionalData));
+          //console.log("additionalData = " + JSON.stringify(additionalData));
           return { ...auction, ...additionalData };
         })
       );
