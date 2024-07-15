@@ -10,9 +10,12 @@ import {
   MediaVideoMimeType,
 } from '@lens-protocol/metadata';
 import { Post } from '@lens-protocol/react-web';
+import { FEATURED_ARTIST_PROFILE_IDS } from '@/app/constants'; // Import the array of curated profile IDs
+import { FALLBACK_IMAGE_URL } from "@/app/constants";
 
 const AUCTION_OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
- 
+
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -236,3 +239,33 @@ export const awardPoints = async (userWallet, points, event , uniqueId): Promise
   return '';
 };
 
+/**
+ * Checks if the given profile ID is curated.
+ * 
+ * @param profileId - The profile ID to check.
+ * @returns {boolean} - True if the profile is curated, false otherwise.
+ */
+export function isCuratedProfile(profileId: string): boolean {
+  return FEATURED_ARTIST_PROFILE_IDS.includes(profileId);
+}
+
+export function getPublicationAsset(post: Post) {
+  if (!post.metadata) {
+    return { type: 'text', src: FALLBACK_IMAGE_URL };
+  }
+
+  switch (post.metadata.__typename) {
+    case 'AudioMetadataV3':
+      return { 
+        type: 'audio', 
+        src: post.metadata.asset?.audio?.optimized?.uri || FALLBACK_IMAGE_URL,
+        cover: post.metadata.asset?.cover?.optimized?.uri || FALLBACK_IMAGE_URL
+      };
+    case 'VideoMetadataV3':
+      return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || FALLBACK_IMAGE_URL };
+    case 'ImageMetadataV3':
+      return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || FALLBACK_IMAGE_URL };
+    default:
+      return { type: 'text', src: FALLBACK_IMAGE_URL };
+  }
+}
