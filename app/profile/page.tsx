@@ -361,7 +361,7 @@ export default function ProfilePage() {
               </div>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
                 {publicationsData && publicationsData.map((publication) => (
-                  <Link href={'/gallery/'+publication.id} >
+                  <Link key={publication.id} href={'/gallery/'+publication.id} >
                   <img
                     key={publication.id}
                     src={getPublicationAsset(publication as Post).src}
