@@ -1,6 +1,6 @@
 // Import the getAuctions function
-import { getAuctions } from '../lensGraphql';
-import { NextResponse } from 'next/server';
+import { getAuctions, getAuctionsByProfile } from '../lensGraphql';
+import { NextResponse, NextRequest } from 'next/server';
 import { readContract } from '@wagmi/core';
 import { auctionsOaAbi } from "@/src/generated";
 import { createConfig, http } from '@wagmi/core'
@@ -43,9 +43,12 @@ async function getAdditionalAuctionData(profileId, pubId) {
     }
   }
 
-  export async function GET() {
+  export async function GET(req: NextRequest) {
     try {
-      const auctions = await getAuctions();
+        const { searchParams } = new URL(req.url);
+        const profileId = searchParams.get('profileId');
+      const auctions = await getAuctionsByProfile(profileId || "");
+      console.log('auctions by profile:', auctions);
       const auctionsData = JSON.parse(auctions).data.publications.items;
   
       let auctionsWithAdditionalData = await Promise.all(

@@ -8,26 +8,26 @@ import Link from 'next/link';
 import { ModeToggle } from '@/components/dropdown';
 import { ChevronRight, LogOut } from "lucide-react";
 import { useCallback, useState } from 'react';
-import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Card } from '@/components/ui/card';
-import { ProfileId, useLogin, useLogout, useProfilesManaged, useSession } from '@lens-protocol/react-web';
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
 import SearchProfiles from './searchProfiles';
 import MysticIcon from './mysticIcon';
 import { Input } from "@/components/ui/input"
+import ProfileSelectDialog from './ProfileSelectDialog';
+import { useSession, useLogin, useLogout, useProfilesManaged, ProfileId } from '@lens-protocol/react-web';
+import { NavigationMenu, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger, NavigationMenuContent, NavigationMenuLink } from './ui/navigation-menu';
+import {Avatar, AvatarImage, AvatarFallback} from './ui/avatar';
 
 export function Nav() {
   const { open } = useWeb3Modal();
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
   const pathname = usePathname();
-  const { execute: exLogin, data: loginData } = useLogin();
   const { execute: exLogout } = useLogout();
-  const { data: managedProfiles, loading: loadingProfiles } = useProfilesManaged({ for: address ?? '' });
-  const { data: sessionData, error: sessionError, loading: sessionLoading } = useSession();
+  const { data: sessionData } = useSession();
   const [openSearch, setOpenSearch] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { execute: exLogin, data: loginData } = useLogin();
 
   const login = useCallback((profileId: ProfileId) => {
     if (!address) {
@@ -45,6 +45,8 @@ export function Nav() {
 
   const logout = useCallback(() => {
     exLogout().then(() => {
+      // Ensure dialog is closed after logout
+      setIsDialogOpen(false);
     }).catch(error => {
       console.error('Logout failed:', error);
     });
@@ -71,10 +73,10 @@ export function Nav() {
                 </Link>
               </li>
               <li>
-                      <Link href="/auctions" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
-                        Auctions
-                      </Link>
-                    </li>
+                <Link href="/auctions" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
+                  Auctions
+                </Link>
+              </li>
               <li>
                 <Link href="/gallery/mint" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
                   Create New
@@ -116,45 +118,14 @@ export function Nav() {
                   </ul>
                   { address ? (               
                   sessionData?.authenticated ? (
-                    <Button onClick={logout}>Logout</Button>
+                    <AvatarMenu sessionData={sessionData} logout={logout} />
                   ) : (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button>Login</Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        {loadingProfiles ? (
-                          <div>Loading profiles...</div>
-                        ) : (
-                          managedProfiles?.map(profile => (
-                            <Card
-                              key={profile.id}
-                              onClick={() => login(profile.id)}
-                              className="w-full text-left cursor-pointer hover:bg-gray-600"
-                            >
-                              <div className="flex items-center space-x-4">
-                                <Avatar>
-                                  <AvatarImage
-                                    src={
-                                      profile.metadata?.picture?.__typename === 'ImageSet'
-                                        ? profile.metadata?.picture?.optimized?.uri
-                                        : undefined
-                                    }
-                                    alt={profile.handle?.localName}
-                                  />
-                                  <AvatarFallback>{profile.handle?.localName?.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <h2 className="font-bold">{profile.handle?.localName}</h2>
-                                </div>
-                              </div>
-                            </Card>
-                          ))
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                  )) : null}
-                  <w3m-button />
+                    <ProfileSelectDialog
+                      address={address}
+                      open={isDialogOpen}
+                      onOpenChange={setIsDialogOpen}
+                    />
+                  )) : <w3m-button />}
                   <ModeToggle />
                 </div>
               </SheetContent>
@@ -162,51 +133,20 @@ export function Nav() {
           </div>
         </div>
         <div className="flex items-center gap-4 mt-4 md:mt-0 hidden md:flex">
-          <SearchProfiles />
-          {address && (
+          {address ? (
             <>
               {sessionData?.authenticated ? (
-                <Button onClick={logout}>Logout</Button>
+                <AvatarMenu sessionData={sessionData} logout={logout} />
               ) : (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button>Login</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    {loadingProfiles ? (
-                      <div>Loading profiles...</div>
-                    ) : (
-                      managedProfiles?.map(profile => (
-                        <Card
-                          key={profile.id}
-                          onClick={() => login(profile.id)}
-                          className="w-full text-left cursor-pointer hover:bg-gray-600"
-                        >
-                          <div className="flex items-center space-x-4">
-                            <Avatar>
-                              <AvatarImage
-                                src={
-                                  profile.metadata?.picture?.__typename === 'ImageSet'
-                                    ? profile.metadata?.picture?.optimized?.uri
-                                    : undefined
-                                }
-                                alt={profile.handle?.localName}
-                              />
-                              <AvatarFallback>{profile.handle?.localName?.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h2 className="font-bold">{profile.handle?.localName}</h2>
-                            </div>
-                          </div>
-                        </Card>
-                      ))
-                    )}
-                  </DialogContent>
-                </Dialog>
+                <ProfileSelectDialog
+                  address={address}
+                  open={isDialogOpen}
+                  onOpenChange={setIsDialogOpen}
+                />
               )}
             </>
-          )}
-          <w3m-button />
+          ) : <w3m-button />}
+          <SearchProfiles />
           <ModeToggle />
         </div>
       </div>
@@ -252,5 +192,49 @@ function SearchIcon(props) {
       <circle cx="11" cy="11" r="8" />
       <path d="m21 21-4.3-4.3" />
     </svg>
+  );
+}
+
+function AvatarMenu({ sessionData, logout }) {
+  return (
+    <NavigationMenu>
+        <NavigationMenuList>
+      <NavigationMenuItem>
+        <NavigationMenuTrigger>
+          <Avatar className="h-8 w-8">
+            <AvatarImage
+              src={
+                sessionData.profile?.metadata?.picture?.__typename === 'ImageSet'
+                  ? sessionData.profile.metadata.picture.optimized?.uri
+                  : undefined
+              }
+              alt={sessionData.profile?.handle?.localName}
+            />
+            <AvatarFallback>{sessionData.profile?.handle?.localName?.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <span className = "ml-2">{sessionData.profile?.handle?.localName}</span>
+        </NavigationMenuTrigger>
+        <NavigationMenuContent>
+        <NavigationMenuItem asChild>
+          <div className='m-2'><w3m-button /></div>
+        </NavigationMenuItem>
+          <NavigationMenuItem asChild  className='min-w-32'>
+            <NavigationMenuLink asChild>
+              <Link href="/profile" className="group grid h-auto w-full items-center justify-start gap-1 rounded-md p-4 text-sm font-medium transition-colors">
+                My Profile
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+          <NavigationMenuItem asChild>
+            <NavigationMenuLink asChild>
+              <Button onClick={logout} variant="ghost" className="group grid h-auto w-full items-center justify-start gap-1 rounded-md p-4 text-sm font-medium transition-colors">
+                Logout
+              </Button>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+        </NavigationMenuContent>
+      </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
   );
 }

@@ -15,7 +15,7 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0xf71a',   // internetfase
   ];
 
-  export const BID_AWARD = 100; //todo: talvez colocar proporcional ao bid
+  export const BID_AWARD = 100; // será que coloco proporcional?
   export const CREATE_NEW_AWARD = 500;
   export const COLLECT_PERCENT_AWARD = 0.2; 
 
