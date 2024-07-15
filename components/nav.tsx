@@ -125,7 +125,7 @@ export function Nav() {
                       open={isDialogOpen}
                       onOpenChange={setIsDialogOpen}
                     />
-                  )) : null}
+                  )) : <w3m-button />}
                   <ModeToggle />
                 </div>
               </SheetContent>
@@ -133,7 +133,7 @@ export function Nav() {
           </div>
         </div>
         <div className="flex items-center gap-4 mt-4 md:mt-0 hidden md:flex">
-          {address && (
+          {address ? (
             <>
               {sessionData?.authenticated ? (
                 <AvatarMenu sessionData={sessionData} logout={logout} />
@@ -145,7 +145,7 @@ export function Nav() {
                 />
               )}
             </>
-          )}
+          ) : <w3m-button />}
           <SearchProfiles />
           <ModeToggle />
         </div>
