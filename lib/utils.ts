@@ -262,10 +262,14 @@ export function getPublicationAsset(post: Post) {
         cover: post.metadata.asset?.cover?.optimized?.uri || FALLBACK_IMAGE_URL
       };
     case 'VideoMetadataV3':
-      return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || FALLBACK_IMAGE_URL };
+      return { type: 'video', 
+              src: post.metadata.asset?.video?.optimized?.uri,
+              cover: post.metadata.asset?.cover?.optimized?.uri || FALLBACK_IMAGE_URL };
     case 'ImageMetadataV3':
-      return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || FALLBACK_IMAGE_URL };
+      return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || FALLBACK_IMAGE_URL,
+        cover: post.metadata.asset?.image?.optimized?.uri
+       };
     default:
-      return { type: 'text', src: FALLBACK_IMAGE_URL };
+      return { type: 'text', src: FALLBACK_IMAGE_URL, cover: FALLBACK_IMAGE_URL };
   }
 }

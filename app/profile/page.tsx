@@ -364,7 +364,7 @@ export default function ProfilePage() {
                   <Link key={publication.id} href={'/gallery/'+publication.id} >
                   <img
                     key={publication.id}
-                    src={getPublicationAsset(publication as Post).src}
+                    src={getPublicationAsset(publication as Post).cover}
                     width={200}
                     height={200}
                     alt="Created Art"
