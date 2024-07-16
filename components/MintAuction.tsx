@@ -49,8 +49,45 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
     const { metadata } = result.value;
     return metadata;
   }
-  
+
+  const validateFields = () => {
+    if (!title || !description || !file) {
+      setErrorMessage('Title, description, and file are required.');
+      return false;
+    }
+    if (!reservePrice || isNaN(Number(reservePrice)) || Number(reservePrice) <= 0) {
+      setErrorMessage('Valid reserve price is required.');
+      return false;
+    }
+    if (!minBidIncrement || isNaN(Number(minBidIncrement)) || Number(minBidIncrement) <= 0) {
+      setErrorMessage('Valid minimum bid increment is required.');
+      return false;
+    }
+    if (Number(referralFee) < 0 || Number(referralFee) > 100) {
+      setErrorMessage('Referral fee must be between 0 and 100.');
+      return false;
+    }
+    if (!minTimeAfterBid || isNaN(Number(minTimeAfterBid)) || Number(minTimeAfterBid) <= 0) {
+      setErrorMessage('Valid minimum time after bid is required.');
+      return false;
+    }
+    if (Number(tokenRoyalty) < 0 || Number(tokenRoyalty) > 100) {
+      setErrorMessage('Token royalty must be between 0 and 100.');
+      return false;
+    }
+    if (!auctionStartDate) {
+      setErrorMessage('Auction start date is required.');
+      return false;
+    }
+    setErrorMessage('');
+    return true;
+  };
+
   const mintArt = async () => {
+    if (!validateFields()) {
+      return;
+    }
+
     setLoading(true);
     setErrorMessage('');
     try {
