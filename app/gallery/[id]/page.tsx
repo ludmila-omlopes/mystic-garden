@@ -50,12 +50,12 @@ function GalleryPostDetails({ params }) {
   const [isCollected, setIsCollected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaleEnded, setIsSaleEnded] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  //const videoRef = useRef<HTMLVideoElement | null>(null);
   const { address } = useAccount();
   const { data: sessionData } = useSession();
   const [moduleAddress, setModuleAddress] = useState<Address | undefined>(undefined);
   const walletAddress = sessionData?.authenticated ? sessionData.address : undefined;
-
+  const videoRef = useRef(null);
   const { execute } = useOpenAction({
     action: {
       kind: OpenActionKind.COLLECT,
@@ -216,7 +216,7 @@ function GalleryPostDetails({ params }) {
         <img src={mediaSource.src || fallbackImage} alt="NFT Image test" className="rounded-sm object-cover aspect-square" />
       )}
       {mediaSource?.type === 'video' && (
-        <video ref={videoRef} src={mediaSource?.src || '/images/fallback-image.jpg'} controls className="rounded-sm object-cover aspect-square" />
+        <video src={mediaSource?.src || '/images/fallback-image.jpg'} controls className="rounded-sm object-cover aspect-square" />
       )}
       {mediaSource?.type === 'audio' && (
         <div className="flex flex-col items-center">
@@ -253,8 +253,8 @@ function GalleryPostDetails({ params }) {
                 <h3 className="text-s font-thin">List Price: <span className="text-xl font-semibold">{formattedPrice}</span></h3>
               </div>
           </div>
-          <Button className='rounded-sm w-full' onClick={collect} disabled={isCollected || isLoading || isSaleEnded}>
-            {isLoading ? 'Loading...' : isCollected ? 'Sold Out' : isSaleEnded ? 'Sale Ended' : 'BUY NOW'}
+          <Button className='rounded-sm w-full' onClick={collect} disabled={isCollected || isLoading || isSaleEnded || !sessionData?.authenticated}>
+            {isLoading ? 'Loading...' : !sessionData?.authenticated ? 'Login to Lens First.' : isCollected ? 'Sold Out' : isSaleEnded ? 'Sale Ended' : 'BUY NOW'}
           </Button>
           </div>
         )}

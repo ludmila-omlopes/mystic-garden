@@ -9,11 +9,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import UploadIcon from '@mui/icons-material/Upload';
 import { useCreatePost, useCurrencies, OpenActionType, Amount, useSession } from '@lens-protocol/react-web';
+import { useAccount } from 'wagmi';
+
 
 const MintArt = () => {
   const { data: sessionData, error: sessionError, loading: sessionLoading } = useSession();
 
   const isAuthenticated = sessionData?.authenticated;
+  const { address } = useAccount();
+
+  console.log("Autenticated? ", isAuthenticated);
+  console.log("Session Data: ", JSON.stringify(sessionData));
+  console.log("addrss: ", JSON.stringify(address));
 
   const [selectedMintType, setSelectedMintType] = useState<'regular' | 'auction'>('regular');
   const [title, setTitle] = useState('');
@@ -118,7 +125,7 @@ const MintArt = () => {
 
       {selectedMintType === 'regular' ? (
         <MintRegular
-          isAuthenticated={isAuthenticated}
+          isAuthenticated={isAuthenticated && address}
           sessionData={sessionData}
           title={title}
           description={description}
@@ -127,7 +134,7 @@ const MintArt = () => {
         />
       ) : (
         <MintAuction
-          isAuthenticated={isAuthenticated}
+          isAuthenticated={isAuthenticated && address}
           sessionData={sessionData}
           title={title}
           description={description}

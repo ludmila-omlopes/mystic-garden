@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ModeToggle } from '@/components/dropdown';
 import { ChevronRight, LogOut } from "lucide-react";
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
 import SearchProfiles from './searchProfiles';
 import MysticIcon from './mysticIcon';
@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import ProfileSelectDialog from './ProfileSelectDialog';
 import { useSession, useLogin, useLogout, useProfilesManaged, ProfileId } from '@lens-protocol/react-web';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger, NavigationMenuContent, NavigationMenuLink } from './ui/navigation-menu';
-import {Avatar, AvatarImage, AvatarFallback} from './ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 
 export function Nav() {
   const { open } = useWeb3Modal();
@@ -28,6 +28,7 @@ export function Nav() {
   const [searchInput, setSearchInput] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { execute: exLogin, data: loginData } = useLogin();
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   const login = useCallback((profileId: ProfileId) => {
     if (!address) {
@@ -44,13 +45,22 @@ export function Nav() {
   }, [address, exLogin]);
 
   const logout = useCallback(() => {
+    if (logoutLoading) return;
+    setLogoutLoading(true);
     exLogout().then(() => {
-      // Ensure dialog is closed after logout
       setIsDialogOpen(false);
+      setLogoutLoading(false);
     }).catch(error => {
       console.error('Logout failed:', error);
+      setLogoutLoading(false);
     });
-  }, [exLogout]);
+  }, [exLogout, logoutLoading]);
+
+  useEffect(() => {
+    if (!address && sessionData?.authenticated) {
+      logout();
+    }
+  }, [address, sessionData, logout]);
 
   return (
     <nav className="w-full fixed top-0 left-0 z-50 shadow-md bg-white/80 dark:bg-neutral-950/70">
@@ -198,42 +208,42 @@ function SearchIcon(props) {
 function AvatarMenu({ sessionData, logout }) {
   return (
     <NavigationMenu>
-        <NavigationMenuList>
-      <NavigationMenuItem>
-        <NavigationMenuTrigger>
-          <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={
-                sessionData.profile?.metadata?.picture?.__typename === 'ImageSet'
-                  ? sessionData.profile.metadata.picture.optimized?.uri
-                  : undefined
-              }
-              alt={sessionData.profile?.handle?.localName}
-            />
-            <AvatarFallback>{sessionData.profile?.handle?.localName?.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <span className = "ml-2">{sessionData.profile?.handle?.localName}</span>
-        </NavigationMenuTrigger>
-        <NavigationMenuContent>
-        <NavigationMenuItem asChild>
-          <div className='m-2'><w3m-button /></div>
+      <NavigationMenuList>
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>
+            <Avatar className="h-8 w-8">
+              <AvatarImage
+                src={
+                  sessionData.profile?.metadata?.picture?.__typename === 'ImageSet'
+                    ? sessionData.profile.metadata.picture.optimized?.uri
+                    : undefined
+                }
+                alt={sessionData.profile?.handle?.localName}
+              />
+              <AvatarFallback>{sessionData.profile?.handle?.localName?.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <span className="ml-2">{sessionData.profile?.handle?.localName}</span>
+          </NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <NavigationMenuItem asChild>
+              <div className='m-2'><w3m-button /></div>
+            </NavigationMenuItem>
+            <NavigationMenuItem asChild className='min-w-32'>
+              <NavigationMenuLink asChild>
+                <Link href="/profile" className="group grid h-auto w-full items-center justify-start gap-1 rounded-md p-4 text-sm font-medium transition-colors">
+                  My Profile
+                </Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem asChild>
+              <NavigationMenuLink asChild>
+                <Button onClick={logout} variant="ghost" className="group grid h-auto w-full items-center justify-start gap-1 rounded-md p-4 text-sm font-medium transition-colors">
+                  Logout
+                </Button>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuContent>
         </NavigationMenuItem>
-          <NavigationMenuItem asChild  className='min-w-32'>
-            <NavigationMenuLink asChild>
-              <Link href="/profile" className="group grid h-auto w-full items-center justify-start gap-1 rounded-md p-4 text-sm font-medium transition-colors">
-                My Profile
-              </Link>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-          <NavigationMenuItem asChild>
-            <NavigationMenuLink asChild>
-              <Button onClick={logout} variant="ghost" className="group grid h-auto w-full items-center justify-start gap-1 rounded-md p-4 text-sm font-medium transition-colors">
-                Logout
-              </Button>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-        </NavigationMenuContent>
-      </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   );

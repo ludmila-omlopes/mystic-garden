@@ -87,7 +87,7 @@ export default function Explore() {
   useEffect(() => {
     const fetchAuctions = async () => {
       try {
-        const response = await fetch('/api/getAuctions'); // Adjust the endpoint as necessary
+        const response = await fetch('/api/getAuctions'); 
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
