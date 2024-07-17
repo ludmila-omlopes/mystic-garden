@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { REV_WALLET } from '@/app/constants';
 import { awardPoints } from '@/lib/utils';
 import { CREATE_NEW_AWARD } from '@/app/constants';
+import { createMetadata } from '@/lib/utils';
 
 const MintRegular = ({ isAuthenticated, sessionData, title, description, file, fileName }) => {
   const { execute, error, loading: createPostLoading } = useCreatePost();
@@ -16,21 +17,8 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
   const [price, setPrice] = useState('');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const bonsaiCurrency = currencies?.find((c) => c.symbol === 'BONSAI');
-
-  const createMetadata = (fileUrl) => {
-    return {
-      title: title,
-      description: description,
-      image: fileUrl,
-      appId: 'mysticgarden',
-      marketplace: {
-        name: title,
-        description: description,
-        external_url: "https://mysticgarden.xyz",
-      },
-    };
-  };
 
   const uploadData = async (metadata) => {
     try {
@@ -49,10 +37,8 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
       const data = await response.json();
       return data.receiptId;
     } catch (error) {
-      console.error('Error uploading data:', error);
+      throw new Error('Error uploading metadata');
     }
-
-    return "";
   };
 
   const uploadFile = async () => {
@@ -74,42 +60,52 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
       const data = await response.json();
       return data.ipfsUri;
     } catch (error) {
-      console.error('Error uploading file to IPFS:', error);
-      return '';
+      throw new Error('Error uploading file to IPFS');
     }
   };
 
+  const validateFields = () => {
+    if (!title || !description || !file) {
+      setErrorMessage('Title, description, and file are required.');
+      return false;
+    }
+    if (!price || isNaN(Number(price)) || Number(price) <= 0) {
+      setErrorMessage('Valid price is required.');
+      return false;
+    }
+    setErrorMessage('');
+    return true;
+  };
+
   const mintArt = async () => {
+    if (!validateFields()) {
+      return;
+    }
+
     setLoading(true);
+    setErrorMessage('');
     try {
       const currency = bonsaiCurrency;
       const fileUrl = await uploadFile();
 
       if (!currency) {
-        console.error('Invalid currency');
-        setLoading(false);
-        return;
+        throw new Error('Invalid currency');
       }
 
       if (!fileUrl) {
-        console.error('File upload failed');
-        setLoading(false);
-        return;
+        throw new Error('File upload failed');
       }
 
       if (!sessionData?.authenticated) {
-        console.error('User not logged in on Lens');
-        setLoading(false);
-        return;
+        throw new Error('User not logged in on Lens');
       }
 
-      const metadata = createMetadata(fileUrl);
+      const metadata = createMetadata(fileUrl, title, description, file);
 
       const arweaveID = await uploadData(metadata);
       const uri = `https://gateway.irys.xyz/${arweaveID}`;
-      if (uri === "") {
-        setLoading(false);
-        return;
+      if (!uri) {
+        throw new Error('Failed to upload metadata');
       }
 
       const result = await execute({
@@ -135,19 +131,14 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
       });
 
       if (result.isFailure()) {
-        console.error('There was an error creating the post', error?.message);
-        setLoading(false);
-        return;
+        throw new Error(result.error.message || 'There was an error creating the post');
       }
 
       const completion = await result.value.waitForCompletion();
       const createdPostId = completion.unwrap().id;
-      console.log('Post created', createdPostId);
 
       if (completion.isFailure()) {
-        console.error('There was an error processing the transaction', completion.error?.message);
-        setLoading(false);
-        return;
+        throw new Error(completion.error.message || 'There was an error processing the transaction');
       }
 
       const currentDate = new Date();
@@ -162,6 +153,9 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
 
       // Redirect to the gallery with the created post ID
       router.push(`/gallery/${createdPostId}`);
+    } catch (error) {
+      console.error('Error minting art:', error);
+      setErrorMessage('Error minting art');
     } finally {
       setLoading(false);
     }
@@ -181,6 +175,11 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
           {loading ? 'Creating...' : !isAuthenticated ? 'Login to Lens first' : 'Create NFT'}
         </Button>
       </div>
+      {errorMessage && (
+        <div className="mt-4 text-red-500">
+          {errorMessage}
+        </div>
+      )}
     </div>
   );
 };
