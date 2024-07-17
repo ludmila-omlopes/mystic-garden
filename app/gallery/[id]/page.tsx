@@ -6,7 +6,6 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { useOpenAction, OpenActionKind } from '@lens-protocol/react-web';
-import Hls from 'hls.js';
 import { useAccount } from 'wagmi';
 import Link from "next/link";
 import { getTitle, getPostSellType } from '@/lib/utils';
@@ -16,8 +15,9 @@ import AuctionComponent from '../../../components/AuctionComponent';
 import { awardPoints } from '@/lib/utils';
 import { COLLECT_PERCENT_AWARD, BONSAI_ADDRESS } from '@/app/constants';
 import { useReadErc20Allowance, useWriteErc20Approve } from '@/src/generated';
-import { polygon, polygonAmoy } from 'wagmi/chains'
+import { polygon, polygonAmoy } from 'wagmi/chains';
 import { Address } from 'viem';
+import ReactPlayer from 'react-player';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover?: string } | null {
   if (!post?.metadata) {
@@ -50,40 +50,32 @@ function GalleryPostDetails({ params }) {
   const [isCollected, setIsCollected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaleEnded, setIsSaleEnded] = useState(false);
-  //const videoRef = useRef<HTMLVideoElement | null>(null);
   const { address } = useAccount();
   const { data: sessionData } = useSession();
   const [moduleAddress, setModuleAddress] = useState<Address | undefined>(undefined);
   const walletAddress = sessionData?.authenticated ? sessionData.address : undefined;
-  const videoRef = useRef(null);
   const { execute } = useOpenAction({
     action: {
       kind: OpenActionKind.COLLECT,
     },
   });
 
-
   const { data: allowance, refetch: refetchAllowance } = useReadErc20Allowance({
     address: BONSAI_ADDRESS,
     chainId: CHAIN_ID,
-    args: [walletAddress as Address, moduleAddress as Address] //é pra colocar o contrato a ser chamado aqui
+    args: [walletAddress as Address, moduleAddress as Address]
   });
 
   const { writeContractAsync } = useWriteErc20Approve();
 
   const checkAndApproveAllowance = async () => {
     if (!allowance || allowance < BigInt(postPrice * (10 ** 18))) {
-      console.log('bonsai add:', BONSAI_ADDRESS);
-      console.log('chain id:', CHAIN_ID);
-    console.log('module address:', moduleAddress);
-    console.log('post id:', post.id);
       try {
         const tx = await writeContractAsync({
           address: BONSAI_ADDRESS,
           chainId: CHAIN_ID,
           args: [moduleAddress as Address, BigInt(postPrice * (10 ** 18))]
         });
-  
       } catch (error) {
         console.error("Failed to approve allowance:", error);
         window.alert("Failed to approve allowance.");
@@ -141,22 +133,21 @@ function GalleryPostDetails({ params }) {
 
     const completion = await result.value.waitForCompletion();
 
-      if (completion.isFailure()) {
-        throw new Error(completion.error.message || 'There was an error processing the transaction');
-      }
+    if (completion.isFailure()) {
+      throw new Error(completion.error.message || 'There was an error processing the transaction');
+    }
 
     setIsCollected(true);
     setIsLoading(false);
 
     if (completion.isSuccess()) {
       if (sessionData?.address != post.by.ownedBy.address) {
-      awardPoints(sessionData?.address, COLLECT_PERCENT_AWARD * postPrice, 'Collect (Buyer)', null);
-      awardPoints(post.by.ownedBy.address, COLLECT_PERCENT_AWARD * postPrice, 'Collect (Seller)', null); 
+        awardPoints(sessionData?.address, COLLECT_PERCENT_AWARD * postPrice, 'Collect (Buyer)', null);
+        awardPoints(post.by.ownedBy.address, COLLECT_PERCENT_AWARD * postPrice, 'Collect (Seller)', null); 
+      } else {  
+        awardPoints(post.by.ownedBy.address, 0, 'Try selling to someone else =)', null); 
+      }
     }
-    else {  
-      awardPoints(post.by.ownedBy.address, 0, 'Try selling to someone else =)', null); 
-    }
-  }
 
     alert('Post collected!');
   };
@@ -177,17 +168,6 @@ function GalleryPostDetails({ params }) {
 
   const mediaSource = getMediaSource(post);
   const isPlayable = post ? post.metadata?.__typename === 'AudioMetadataV3' || post.metadata?.__typename === 'VideoMetadataV3' : false;
-
-  useEffect(() => {
-    if (Hls.isSupported() && videoRef.current && isPlayable && mediaSource?.src) {
-      const hls = new Hls();
-      hls.loadSource(mediaSource?.src);
-      hls.attachMedia(videoRef.current);
-      hls.on(Hls.Events.MANIFEST_PARSED, function () {
-        videoRef.current && videoRef.current.play();
-      });
-    }
-  }, [mediaSource, isPlayable]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -210,61 +190,61 @@ function GalleryPostDetails({ params }) {
 
   return (
     <>
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto py-12 px-4 md:px-6 mt-20">
-    <div className="md:col-span-2 flex flex-col gap-4"> {/* Adjusted to span 2 columns */}
-      {(mediaSource?.type === 'image' || mediaSource?.type === 'text') && (
-        <img src={mediaSource.src || fallbackImage} alt="NFT Image test" className="rounded-sm object-cover aspect-square" />
-      )}
-      {mediaSource?.type === 'video' && (
-        <video src={mediaSource?.src || '/images/fallback-image.jpg'} controls className="rounded-sm object-cover aspect-square" />
-      )}
-      {mediaSource?.type === 'audio' && (
-        <div className="flex flex-col items-center">
-          <img src={mediaSource?.cover || '/images/fallback-image.jpg'} alt="Cover" className="rounded-sm object-cover aspect-square" />
-          <audio src={mediaSource.src || '/images/fallback-image.jpg'} controls className="w-full" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto py-12 px-4 md:px-6 mt-20">
+        <div className="md:col-span-2 flex flex-col gap-4">
+          {(mediaSource?.type === 'image' || mediaSource?.type === 'text') && (
+            <img src={mediaSource.src || fallbackImage} alt="NFT Image" className="rounded-sm object-cover aspect-square" />
+          )}
+          {mediaSource?.type === 'video' && (
+            <ReactPlayer url={mediaSource.src} controls className="rounded-sm object-cover aspect-square" />
+          )}
+          {mediaSource?.type === 'audio' && (
+            <div className="flex flex-col items-center">
+              <img src={mediaSource?.cover || '/images/fallback-image.jpg'} alt="Cover" className="rounded-sm object-cover aspect-square" />
+              <ReactPlayer url={mediaSource.src} controls className="w-full" />
+            </div>
+          )}
         </div>
-      )}
-    </div>
-    <div className="flex flex-col gap-6"> {/* Adjusted to take up less space */}
-      <div className="flex items-center gap-2">
-        <Link href={`/${handleName}`}>
-          <Avatar>
-            <AvatarImage alt={displayName} src={profilePictureUri} />
-            <AvatarFallback>{handleName.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-        </Link>
-        <div>
-          <h3 className="text-lg font-semibold">{displayName}</h3>
-          <p className="text-gray-500 dark:text-gray-400">{"@"+handleName}</p>
-        </div>
-      </div>
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">{postTitle}</h1>
-        <ReactMarkdown className="text-gray-500 dark:text-gray-400">
-          {content || 'This NFT is a unique digital artwork created by the artist.'}
-        </ReactMarkdown>
-      </div>
-      <div className="flex flex-col gap-4">
-        <Separator className="my-4" />
-        {sellType === 'buy_now' && (
-          <div>
-            <div className="grid mb-4">
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center gap-2">
+            <Link href={`/${handleName}`}>
+              <Avatar>
+                <AvatarImage alt={displayName} src={profilePictureUri} />
+                <AvatarFallback>{handleName.slice(0, 2)}</AvatarFallback>
+              </Avatar>
+            </Link>
+            <div>
+              <h3 className="text-lg font-semibold">{displayName}</h3>
+              <p className="text-gray-500 dark:text-gray-400">{"@" + handleName}</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">{postTitle}</h1>
+            <ReactMarkdown className="text-gray-500 dark:text-gray-400">
+              {content || 'This NFT is a unique digital artwork created by the artist.'}
+            </ReactMarkdown>
+          </div>
+          <div className="flex flex-col gap-4">
+            <Separator className="my-4" />
+            {sellType === 'buy_now' && (
               <div>
-                <h3 className="text-s font-thin">List Price: <span className="text-xl font-semibold">{formattedPrice}</span></h3>
+                <div className="grid mb-4">
+                  <div>
+                    <h3 className="text-s font-thin">List Price: <span className="text-xl font-semibold">{formattedPrice}</span></h3>
+                  </div>
+                </div>
+                <Button className='rounded-sm w-full' onClick={collect} disabled={isCollected || isLoading || isSaleEnded || !sessionData?.authenticated}>
+                  {isLoading ? 'Loading...' : !sessionData?.authenticated ? 'Login to Lens First.' : isCollected ? 'Sold Out' : isSaleEnded ? 'Sale Ended' : 'BUY NOW'}
+                </Button>
               </div>
+            )}
+            {sellType === 'auction' && (
+              <AuctionComponent post={post} />
+            )}
           </div>
-          <Button className='rounded-sm w-full' onClick={collect} disabled={isCollected || isLoading || isSaleEnded || !sessionData?.authenticated}>
-            {isLoading ? 'Loading...' : !sessionData?.authenticated ? 'Login to Lens First.' : isCollected ? 'Sold Out' : isSaleEnded ? 'Sale Ended' : 'BUY NOW'}
-          </Button>
-          </div>
-        )}
-        {sellType === 'auction' && (
-          <AuctionComponent post={post} />
-        )}
+        </div>
       </div>
-    </div>
-  </div>
-</>
+    </>
   );
 }
 

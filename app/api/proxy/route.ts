@@ -1,9 +1,9 @@
-// app/api/proxy/route.ts
+// não está sendo usado por enquanto.
 
-export const dynamic = 'force-dynamic'; // static by default, unless reading the request
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
+  const { searchParams, pathname } = new URL(request.url);
   const targetUrl = searchParams.get('url');
 
   if (!targetUrl) {
@@ -11,7 +11,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch(targetUrl);
+    const fileUrl = targetUrl + pathname.replace('/api/proxy', '');
+    const response = await fetch(fileUrl, {
+      headers: {
+        'Accept-Encoding': 'identity', // Request uncompressed content
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch the requested resource. Status: ${response.status}`);
@@ -23,7 +28,7 @@ export async function GET(request: Request) {
     headers.set('Access-Control-Allow-Origin', '*');
     headers.set('Content-Type', contentType);
 
-    return new Response(response.body, {
+    return new Response(await response.arrayBuffer(), {
       status: response.status,
       headers,
     });
