@@ -6,15 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from 'next/navigation';
-import { REV_WALLET } from '@/app/constants';
-import { uploadFile, uploadData, createMetadata } from '@/lib/utils';
+import { BONSAI_ADDRESS, REV_WALLET } from '@/app/constants';
+import { uploadFile, uploadData, createMetadata, validateChainId } from '@/lib/utils';
 import { encodeInitData } from '@/app/api/lib/lensModuleUtils';
 import { AuctionInitData } from '@/lib/parseAuctionData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { awardPoints } from '@/lib/utils';
 import { CREATE_NEW_AWARD } from '@/app/constants';
+import { Progress } from "@/components/ui/progress";
 
-const MintAuction = ({ isAuthenticated, sessionData, title, description, file, fileName }) => {
+const MintAuction = ({ isAuthenticated, sessionData, title, description, file, fileName, coverFile }) => {
   const { execute, error: createPostError, loading: createPostLoading } = useCreatePost();
   const { data: currencies } = useCurrencies();
   const [reservePrice, setReservePrice] = useState('');
@@ -25,6 +26,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   const [tokenRoyalty, setTokenRoyalty] = useState('10');
   const [auctionStartDate, setAuctionStartDate] = useState('');
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
   const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
@@ -35,7 +37,8 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
     '24h': 24 * 60 * 60,
     '3 days': 3 * 24 * 60 * 60,
     '5 days': 5 * 24 * 60 * 60,
-    '1 week': 7 * 24 * 60 * 60
+    '1 week': 7 * 24 * 60 * 60,
+    '2 minutes': 2 * 60,
   };
 
   async function fetchModuleMetadata(moduleAddress: string) {
@@ -87,29 +90,34 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
     if (!validateFields()) {
       return;
     }
-
+  
     setLoading(true);
+    setProgress(10);
     setErrorMessage('');
-    try {
-      const bonsaiCurrency = currencies?.find((c) => c.symbol === 'BONSAI');
-      const currency = bonsaiCurrency?.address || "0x3d2bD0e15829AA5C362a4144FdF4A1112fa29B5c";
-      const fileUrl = await uploadFile(file);
 
-      if (!currency) {
-        throw new Error('Invalid currency');
+    try {
+      if (!sessionData?.authenticated) {
+        throw new Error('User not logged in on Lens');
       }
+
+      await validateChainId();
+      setProgress(20);
+
+      const currency = BONSAI_ADDRESS;
+      const fileUrl = await uploadFile(file);
+      setProgress(40);
+      const coverUrl = coverFile ? await uploadFile(coverFile) : undefined;
+      setProgress(60);
 
       if (!fileUrl) {
         throw new Error('File upload failed');
       }
 
-      if (!sessionData?.authenticated) {
-        throw new Error('User not logged in on Lens');
-      }
-
-      const metadata = createMetadata(fileUrl, title, description, file);
+      const metadata = createMetadata(fileUrl, title, description, file, coverUrl);
+      setProgress(70);
 
       const arweaveID = await uploadData(metadata);
+      setProgress(80);
       const uri = `https://gateway.irys.xyz/${arweaveID}`;
       if (!uri) {
         throw new Error('Failed to upload metadata');
@@ -152,6 +160,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
           }
         ]
       });
+      setProgress(90);
 
       if (result.isFailure()) {
         throw new Error(result.error.message || 'There was an error creating the post');
@@ -173,12 +182,14 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       awardPoints(sessionData?.address, CREATE_NEW_AWARD, 'New Auction', awardUniqueId);
       
       console.log('Post created', completion.value);
+      setProgress(100);
 
       // Redirect to the gallery with the created post ID
       router.push(`/gallery/${createdPostId}`);
     } catch (error) {
       console.error('Error minting art:', error);
       setErrorMessage(String(error));
+      setProgress(0); // Reset progress on error
     } finally {
       setLoading(false);
     }
@@ -233,6 +244,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
             <SelectItem value="3 days">3 days</SelectItem>
             <SelectItem value="5 days">5 days</SelectItem>
             <SelectItem value="1 week">1 week</SelectItem>
+            <SelectItem value="2 minutes">2 minutes</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -266,6 +278,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
           type="datetime-local"
         />
       </div>
+      <Progress value={progress} />
       <div className="mt-8 flex justify-end">
         <Button onClick={mintArt} disabled={loading || !isAuthenticated}>
           {loading ? 'Creating...' : !isAuthenticated ? 'Login to Lens first' : 'Create NFT'}

@@ -217,7 +217,7 @@ export default function Explore() {
               <div key={auction.id} className="bg-background rounded-lg overflow-hidden shadow-lg">
                 <div className="flex items-center mb-2 p-4">
                   <Avatar className="w-6 h-6 mr-2">
-                    <AvatarImage src={auction.by.metadata.picture?.optimized?.uri || "/placeholder-user.jpg"} />
+                    <AvatarImage src={auction.by.metadata?.picture?.optimized?.uri || "/placeholder-user.jpg"} />
                     <AvatarFallback>{auction.by.handle.localName.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="text-s font-medium">{auction.by.handle.localName || auction.by.handle.suggestedFormatted.localName}</div>

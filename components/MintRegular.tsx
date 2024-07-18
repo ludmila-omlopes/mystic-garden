@@ -10,8 +10,9 @@ import { REV_WALLET } from '@/app/constants';
 import { awardPoints } from '@/lib/utils';
 import { CREATE_NEW_AWARD } from '@/app/constants';
 import { createMetadata } from '@/lib/utils';
+import { profile } from 'console';
 
-const MintRegular = ({ isAuthenticated, sessionData, title, description, file, fileName }) => {
+const MintRegular = ({ isAuthenticated, sessionData, title, description, file, fileName, coverFile }) => {
   const { execute, error, loading: createPostLoading } = useCreatePost();
   const { data: currencies } = useCurrencies();
   const [price, setPrice] = useState('');
@@ -41,11 +42,11 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
     }
   };
 
-  const uploadFile = async () => {
-    if (!file) return '';
+  const uploadFile = async (fileToUpload) => {
+    if (!fileToUpload) return '';
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', fileToUpload);
 
     try {
       const response = await fetch('/api/uploadFile', {
@@ -86,7 +87,8 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
     setErrorMessage('');
     try {
       const currency = bonsaiCurrency;
-      const fileUrl = await uploadFile();
+      const fileUrl = await uploadFile(file);
+      const coverUrl = coverFile ? await uploadFile(coverFile) : undefined;
 
       if (!currency) {
         throw new Error('Invalid currency');
@@ -100,7 +102,10 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error('User not logged in on Lens');
       }
 
-      const metadata = createMetadata(fileUrl, title, description, file);
+      console.log("fileUrl", fileUrl);
+      console.log("coverUrl", coverUrl);
+      const metadata = createMetadata(fileUrl, title, description, file, coverUrl);
+      console.log("metadata", metadata); 
 
       const arweaveID = await uploadData(metadata);
       const uri = `https://gateway.irys.xyz/${arweaveID}`;

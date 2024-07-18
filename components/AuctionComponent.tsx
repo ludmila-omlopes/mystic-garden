@@ -100,6 +100,8 @@ const AuctionComponent = ({ post }: { post: Post }) => {
     const auctionEnd = auctionData ? new Date(endTimestamp * 1000) : new Date();
     const auctionStart = auctionData ? new Date(availableSinceTimestamp * 1000) : new Date();
     const winningBid = auctionData ? (auctionData.winningBid / BigInt(10 ** 18)).toString() : '0';
+    var currentMinimumBid = (auctionData && auctionData?.reservePrice > auctionData.winningBid) ? auctionData?.reservePrice : (auctionData ? (BigInt(winningBid) + auctionData?.minBidIncrement) : parsedInitData?.reservePrice);
+    currentMinimumBid = currentMinimumBid ? currentMinimumBid / BigInt(10 ** 18) : BigInt(0);
     var winningProfileId = auctionData ? auctionData.winnerProfileId.toString(16) : '0';
     if (winningProfileId.length % 2 !== 0) { 
         winningProfileId = '0' + winningProfileId; 
@@ -130,8 +132,9 @@ const AuctionComponent = ({ post }: { post: Post }) => {
         timeLeft = formatDistance(currentTime * 1000, auctionStart, { includeSeconds: true });
     }
 
-    const isWinner = auctionStatus === "Auction ended, pending collection" && sessionData?.type === SessionType.WithProfile && sessionData?.profile.id === auctionData?.winnerProfileId.toString();
-
+    const isWinner = auctionStatus === "Auction ended, pending collection" && sessionData?.type === SessionType.WithProfile && sessionData?.profile.id === winningProfileId;
+    console.log("auctionStatus=" + auctionStatus);
+    console.log("isWinner=" + isWinner);
     if (!parsedInitData) {
         return <div>Loading...</div>;
     }
@@ -185,7 +188,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                         <Input
                             id="bidAmount"
                             onChange={(e) => setBidAmount(BigInt(e.target.value) * BigInt(10 ** 18))}
-                            placeholder="Enter your bid amount"
+                            placeholder={`Enter your bid amount (min ${currentMinimumBid} BONSAI)`}
                             type="number"
                             className="mb-4"
                         />
@@ -233,7 +236,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                         <Input
                             id="bidAmount"
                             onChange={(e) => setBidAmount(BigInt(e.target.value) * BigInt(10 ** 18))}
-                            placeholder="Enter your bid amount"
+                            placeholder={`Enter your bid amount (min ${currentMinimumBid} BONSAI)`}
                             type="number"
                             className="mb-4"
                         />
@@ -249,7 +252,12 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                                 <p className="text-lg font-bold">Sold: {winningBid} BONSAI</p>
                             </div>
                         </div>
-                        {isWinner && <AuctionClaimButton collectedPubId={post.id} price={Number(winningBid)} postCreatorAddress={post.by.ownedBy.address} />}
+                        {isWinner && (
+                            <>
+                                <AuctionClaimButton collectedPubId={post.id} price={Number(winningBid)} postCreatorAddress={post.by.ownedBy.address} />
+                                <p className="text-green-500 font-semibold mt-2">You are the winner of the auction, claim your art!</p>
+                            </>
+                        )}
                     </>
                 ) : null}
                 <Separator className="my-8" />

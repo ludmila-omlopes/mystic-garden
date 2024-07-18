@@ -18,6 +18,8 @@ import { useReadErc20Allowance, useWriteErc20Approve } from '@/src/generated';
 import { polygon, polygonAmoy } from 'wagmi/chains';
 import { Address } from 'viem';
 import ReactPlayer from 'react-player';
+import { getChainId, switchChain, getBalance  } from '@wagmi/core';
+import { wagmiConfig } from '@/app/web3modal-provider';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover?: string } | null {
   if (!post?.metadata) {
@@ -54,6 +56,7 @@ function GalleryPostDetails({ params }) {
   const { data: sessionData } = useSession();
   const [moduleAddress, setModuleAddress] = useState<Address | undefined>(undefined);
   const walletAddress = sessionData?.authenticated ? sessionData.address : undefined;
+  const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
   const { execute } = useOpenAction({
     action: {
       kind: OpenActionKind.COLLECT,
@@ -69,12 +72,16 @@ function GalleryPostDetails({ params }) {
   const { writeContractAsync } = useWriteErc20Approve();
 
   const checkAndApproveAllowance = async () => {
-    if (!allowance || allowance < BigInt(postPrice * (10 ** 18))) {
+    console.log('allowance:', allowance);
+
+    if (!allowance || allowance < BigInt((postPrice + 1) * (10 ** 18))) {
+      console.log('postPrice' +  BigInt((postPrice + 1) * (10 ** 18)));
+      console.log('Approving allowance...');
       try {
         const tx = await writeContractAsync({
           address: BONSAI_ADDRESS,
           chainId: CHAIN_ID,
-          args: [moduleAddress as Address, BigInt(postPrice * (10 ** 18))]
+          args: [moduleAddress as Address, BigInt((postPrice + 1) * (10 ** 18))]
         });
       } catch (error) {
         console.error("Failed to approve allowance:", error);
@@ -119,6 +126,17 @@ function GalleryPostDetails({ params }) {
       alert('Post is undefined');
       return;
     }
+
+    const currentChainId = getChainId(wagmiConfig);
+    if (currentChainId !== requiredChainId) 
+        await switchChain(wagmiConfig, { chainId: requiredChainId });
+
+    const balance = await getBalance(wagmiConfig, {
+      address: address,
+      chainId: requiredChainId,
+      token: BONSAI_ADDRESS
+    })
+    console.log('Balance:', balance);
 
     const allowanceApproved = await checkAndApproveAllowance();
     if (!allowanceApproved) return;
