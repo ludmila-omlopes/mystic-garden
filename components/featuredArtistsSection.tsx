@@ -1,10 +1,12 @@
-'use client';
+'use client'
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useProfiles, profileId, URI } from '@lens-protocol/react-web';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import { FEATURED_ARTIST_PROFILE_IDS } from '@/app/constants';
+//import Autoplay from 'embla-carousel-autoplay';
+import AutoScroll from 'embla-carousel-auto-scroll'
 
 export default function FeaturedArtistsSection() {
   type Artist = {
@@ -15,8 +17,6 @@ export default function FeaturedArtistsSection() {
   };
 
   const [artists, setArtists] = useState<Artist[]>([]);
-
-  // Use the useProfiles hook to query the Lens profiles
   const { data: profiles, loading, error } = useProfiles({
     where: {
       profileIds: FEATURED_ARTIST_PROFILE_IDS.map(id => profileId(id)),
@@ -35,7 +35,6 @@ export default function FeaturedArtistsSection() {
     }
   }, [loading, profiles]);
 
-  // Utility function to group artists into chunks of 3
   const chunkArtists = (array, size) => {
     const chunkedArray: Artist[][] = [];
     for (let i = 0; i < array.length; i += size) {
@@ -49,9 +48,7 @@ export default function FeaturedArtistsSection() {
   return (
     <section
       className="relative w-full py-12 md:py-24 lg:py-32 bg-cover bg-center"
-      style={{
-        backgroundImage: "url(/images/background-image.webp)",
-      }}
+      style={{ backgroundImage: "url(/images/background-image.webp)" }}
     >
       <div className="absolute inset-0 bg-black/50" />
       <div className="container relative z-10 px-4 md:px-6">
@@ -65,7 +62,7 @@ export default function FeaturedArtistsSection() {
             <div className="spinner" />
           </div>
         ) : (
-          <Carousel className="mx-auto max-w-5xl py-12">
+          <Carousel  opts={{ loop: true,}} autoplay={true} autoplayInterval={3000} className="mx-auto max-w-5xl py-12">
             <CarouselContent>
               {artistChunks.map((chunk, index) => (
                 <CarouselItem key={index}>
