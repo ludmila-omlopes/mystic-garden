@@ -12,9 +12,12 @@ import {
 import { Post } from '@lens-protocol/react-web';
 import { FEATURED_ARTIST_PROFILE_IDS } from '@/app/constants'; // Import the array of curated profile IDs
 import { FALLBACK_IMAGE_URL } from "@/app/constants";
+import { getChainId, switchChain } from "@wagmi/core";
+import { wagmiConfig } from "@/app/web3modal-provider";
+import { polygon, polygonAmoy } from "wagmi/chains";
 
 const AUCTION_OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
-
+const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -95,7 +98,7 @@ export const uploadData = async (metadata: any): Promise<string> => {
   return '';
 };
 
-export const createMetadata = (fileUrl: string, title: string, description: string, file?: File) => {
+export const createMetadata = (fileUrl: string, title: string, description: string, file?: File, coverUrl?: string) => {
   const commonMetadata = {
     title: title,
     content: description,
@@ -103,8 +106,9 @@ export const createMetadata = (fileUrl: string, title: string, description: stri
     marketplace: {
       name: title,
       description: description,
-      external_url: "https://mysticgarden.xyz", //todo: colocar a página do artista
-      image: file ? fileUrl : '',
+      external_url: "https://mysticgarden.xyz",  //colocar url pra página do artista
+      image: fileUrl,
+      animation_url: ""
     },
   };
 
@@ -116,6 +120,9 @@ export const createMetadata = (fileUrl: string, title: string, description: stri
   }
 
   const extension = file?.name?.split('.')?.pop()?.toLowerCase();
+  console.log("file : " +   file);
+  console.log("file name: " + file?.name);
+  console.log("extension: " + extension);
 
   switch (extension) {
     case 'jpg':
@@ -134,9 +141,15 @@ export const createMetadata = (fileUrl: string, title: string, description: stri
     case 'avi':
       return video({
         ...commonMetadata,
+        marketplace: {
+          ...commonMetadata.marketplace,
+          animation_url: fileUrl,
+          image: coverUrl || fileUrl,
+        },
         video: {
           item: fileUrl,
           type: file.type as MediaVideoMimeType,
+          cover: coverUrl,
         },
       });
     case 'mp3':
@@ -144,15 +157,21 @@ export const createMetadata = (fileUrl: string, title: string, description: stri
     case 'flac':
       return audio({
         ...commonMetadata,
+        marketplace: {
+          ...commonMetadata.marketplace,
+          animation_url: fileUrl,
+          image: coverUrl || fileUrl,
+        },
         audio: {
           item: fileUrl,
           type: file.type as MediaAudioMimeType,
+          cover: coverUrl,
         },
       });
     default:
       return article({
         ...commonMetadata,
-        content: description,
+        content: description,       
       });
   }
 };
@@ -273,3 +292,13 @@ export function getPublicationAsset(post: Post) {
       return { type: 'text', src: FALLBACK_IMAGE_URL, cover: FALLBACK_IMAGE_URL };
   }
 }
+
+export async function validateChainId() {
+const currentChainId = getChainId(wagmiConfig);
+    if (currentChainId !== requiredChainId) 
+        await switchChain(wagmiConfig, { chainId: requiredChainId });
+  }
+
+  export function getCurrentRequiredChainId() {
+    return requiredChainId;
+  }

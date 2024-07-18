@@ -3,8 +3,9 @@ import { Button } from './ui/button';
 import { useSession } from '@lens-protocol/react-web';
 import { useReadErc20Allowance, useWriteErc20Approve } from '@/src/generated';
 import { Address } from 'viem';
-import { awardPoints } from '@/lib/utils';
-import { BID_AWARD } from '@/app/constants';
+import { awardPoints, getCurrentRequiredChainId, validateChainId } from '@/lib/utils';
+import { BID_AWARD, BONSAI_ADDRESS } from '@/app/constants';
+import { polygon, polygonAmoy } from 'wagmi/chains';
 
 // This button handles the Open Action for placing a bid on an auction
 
@@ -19,10 +20,11 @@ type AuctionButtonProps = {
 export function AuctionButton(props: AuctionButtonProps) {
   const { data: sessionData } = useSession();
   const walletAddress = sessionData?.authenticated ? sessionData.address : undefined;
+  const chainId = getCurrentRequiredChainId();
 
   const { data: allowance, refetch: refetchAllowance } = useReadErc20Allowance({
-    address: "0x3d2bD0e15829AA5C362a4144FdF4A1112fa29B5c",
-    chainId: 137,
+    address: BONSAI_ADDRESS,
+    chainId: chainId,
     args: [walletAddress as Address, props.address as Address]
   });
 
@@ -32,14 +34,15 @@ export function AuctionButton(props: AuctionButtonProps) {
     if (!allowance || allowance < props.amount) {
       try {
         const tx = await writeContractAsync({
-          address: "0x3d2bD0e15829AA5C362a4144FdF4A1112fa29B5c",
-          chainId: 137,
+          address: BONSAI_ADDRESS,
+          chainId: chainId,
           args: [props.address as Address, props.amount]
         });
 
+        await refetchAllowance(); 
       } catch (error) {
         console.error("Failed to approve allowance:", error);
-        window.alert("Failed to approve allowance.");
+        window.alert("Failed to approve allowance. Please check your wallet and try again.");
         return false;
       }
     }
@@ -56,32 +59,40 @@ export function AuctionButton(props: AuctionButtonProps) {
 
   const run = async () => {
     if (!walletAddress) {
-      window.alert("User not authenticated.");
+      window.alert("User not authenticated. Please log in to your wallet.");
       return;
     }
 
-    const allowanceApproved = await checkAndApproveAllowance();
-    if (!allowanceApproved) return;
+    try {
+      validateChainId();
 
-    const result = await execute({
-      publication: props.publication
-    });
+      const allowanceApproved = await checkAndApproveAllowance();
+      if (!allowanceApproved) return;
 
-    if (result.isFailure()) {
-      console.error("Error executing bid:", result.error);
-      window.alert(`Error: ${result.error.message}`);
-      return;
+      const result = await execute({
+        publication: props.publication,
+      });
+
+      if (result.isFailure()) {
+        console.error("Error executing bid:", result.error);
+        window.alert(`Error: ${result.error.message}. Please try again later.`);
+        return;
+      }
+
+      const completion = await result.value.waitForCompletion();
+
+      if (completion.isFailure()) {
+        console.error("Error completing bid:", completion.error);
+        window.alert(`Error: ${completion.error.message}. Please try again later.`);
+        return;
+      }
+
+      awardPoints(walletAddress, BID_AWARD, "bid", null);
+      window.alert("Bid executed successfully");
+    } catch (err) {
+      console.error("Unexpected error during bid execution:", err);
+      window.alert("An unexpected error occurred. Please try again.");
     }
-
-    const completion = await result.value.waitForCompletion();
-
-    if (completion.isFailure()) {
-      console.error("Error completing bid:", completion.error);
-      window.alert(`Error: ${completion.error.message}`);
-      return;
-    }
-    awardPoints(walletAddress, BID_AWARD, "bid", null);
-    window.alert("Bid executed successfully");
   };
 
   return (

@@ -104,6 +104,8 @@ export async function getAuctions() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': 'https://sandbox.embed.apollographql.com',
+      'Access-Control-Allow-Credentials': 'true'
       // 'Authorization': 'Bearer YOUR_ACCESS_TOKEN', // Include this if your API request requires authentication
     },
     body: JSON.stringify(graphqlQuery)

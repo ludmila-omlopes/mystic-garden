@@ -9,11 +9,9 @@ import { parseFromLensHex } from '@/lib/utils';
 import { BONSAI_ADDRESS } from '@/app/constants';
 
 const config = createConfig({
-    chains: [mainnet, sepolia, polygonAmoy, polygon],
+    chains: [polygonAmoy, polygon],
     transports: {
-      [mainnet.id]: http('https://mainnet.example.com'),
-      [sepolia.id]: http('https://sepolia.example.com'),
-      [polygonAmoy.id]: http('https://polygon.example.com'),
+      [polygonAmoy.id]: http('https://rpc-amoy.polygon.technology/'),
       [polygon.id]: http('https://polygon-rpc.com'),
     },
   })

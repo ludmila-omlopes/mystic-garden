@@ -9,16 +9,15 @@ import { parseFromLensHex } from '@/lib/utils';
 import { BONSAI_ADDRESS } from '@/app/constants';
 
 const config = createConfig({
-    chains: [mainnet, sepolia, polygonAmoy, polygon],
+    chains: [polygonAmoy, polygon],
     transports: {
-      [mainnet.id]: http('https://mainnet.example.com'),
-      [sepolia.id]: http('https://sepolia.example.com'),
-      [polygonAmoy.id]: http('https://polygon.example.com'),
+      [polygonAmoy.id]: http('https://rpc-amoy.polygon.technology'),
       [polygon.id]: http('https://polygon-rpc.com'),
     },
   })
 
 const auctionsOaAddress = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
+const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
 
 async function getAdditionalAuctionData(profileId, pubId) {
     try {
@@ -27,7 +26,7 @@ async function getAdditionalAuctionData(profileId, pubId) {
         abi: auctionsOaAbi,
         functionName: 'getAuctionData',
         args: [profileId, pubId],
-        chainId: process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? polygon.id : polygonAmoy.id,
+        chainId: requiredChainId,
       });
   
       const convertedResult = Object.fromEntries(
@@ -47,18 +46,21 @@ async function getAdditionalAuctionData(profileId, pubId) {
     try {
       const auctions = await getAuctions();
       const auctionsData = JSON.parse(auctions).data.publications.items;
+      console.log('auctionsData:', auctionsData);
   
       let auctionsWithAdditionalData = await Promise.all(
         auctionsData.map(async (auction) => {
           const {profileId, publicationId} = parseFromLensHex(auction.id);
           const additionalData = await getAdditionalAuctionData(profileId, publicationId);
+          console.log('additionalData.currency:', auction.id + " - " + additionalData.currency);
           return { ...auction, ...additionalData };
         })
       );
-  
+      console.log('auctionsWithAdditionalData 1:', auctionsWithAdditionalData.length);
       // Filter out auctions where currency is not equal to the specified address
       auctionsWithAdditionalData = auctionsWithAdditionalData.filter(auction => auction.currency === BONSAI_ADDRESS);
-  
+      console.log('auctionsWithAdditionalData:', auctionsWithAdditionalData.length);
+
       return NextResponse.json({
         message: 'Auctions fetched successfully',
         data: auctionsWithAdditionalData,
