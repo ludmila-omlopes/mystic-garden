@@ -38,8 +38,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
     '3 days': 3 * 24 * 60 * 60,
     '5 days': 5 * 24 * 60 * 60,
     '1 week': 7 * 24 * 60 * 60,
-    '2 weeks': 14 * 24 * 60 * 60,
-    '2 minutes': 2 * 60,
+    '2 weeks': 14 * 24 * 60 * 60
   };
 
   async function fetchModuleMetadata(moduleAddress: string) {
@@ -244,7 +243,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
             <SelectItem value="5 days">5 days</SelectItem>
             <SelectItem value="1 week">1 week</SelectItem>
             <SelectItem value="2 weeks">2 weeks</SelectItem>
-            <SelectItem value="2 minutes">2 minutes</SelectItem>
           </SelectContent>
         </Select>
       </div>
