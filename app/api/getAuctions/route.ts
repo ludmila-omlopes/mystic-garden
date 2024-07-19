@@ -7,6 +7,7 @@ import { createConfig, http } from '@wagmi/core'
 import { mainnet, sepolia, polygonAmoy, polygon } from '@wagmi/core/chains'
 import { parseFromLensHex } from '@/lib/utils';
 import { BONSAI_ADDRESS } from '@/app/constants';
+export const maxDuration = 25;
 
 const config = createConfig({
     chains: [polygonAmoy, polygon],
