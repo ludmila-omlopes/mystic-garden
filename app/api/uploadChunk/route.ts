@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from 'fs';
 import path from 'path';
+import os from 'os';
 
 export async function POST(req: NextRequest) {
     try {
@@ -15,11 +16,13 @@ export async function POST(req: NextRequest) {
         }
 
         const chunkBuffer = Buffer.from(await chunk.arrayBuffer());
-        const uploadDir = path.join(process.cwd(), 'uploads', fileName);
-        await fs.mkdir(uploadDir, { recursive: true });
-        const chunkPath = path.join(uploadDir, `${chunkIndex}`);
 
+        const tempDir = path.join(os.tmpdir(), 'uploads', fileName);
+        await fs.mkdir(tempDir, { recursive: true });
+
+        const chunkPath = path.join(tempDir, `${chunkIndex}`);
         await fs.writeFile(chunkPath, chunkBuffer);
+
         return NextResponse.json({ message: 'Chunk uploaded successfully' });
     } catch (error) {
         console.error('Error uploading chunk:', error);

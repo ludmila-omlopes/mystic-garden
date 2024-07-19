@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import { ThirdwebStorage } from "@thirdweb-dev/storage";
 import path from 'path';
+import os from 'os';
 
 export async function POST(req: NextRequest) {
     try {
         let formData;
-        
+
         try {
             formData = await req.formData();
         } catch (e) {
@@ -25,17 +26,17 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No fileName provided' }, { status: 400 });
         }
 
-        const uploadDir = path.join(process.cwd(), 'uploads', fileName);
-        console.log('Reading directory:', uploadDir);
+        const tempDir = path.join(os.tmpdir(), 'uploads', fileName);
+        console.log('Reading directory:', tempDir);
 
-        const fileParts = await fs.promises.readdir(uploadDir);
+        const fileParts = await fs.readdir(tempDir);
         console.log('File parts:', fileParts);
 
         fileParts.sort((a, b) => parseInt(a) - parseInt(b));
 
         const fileBuffer = Buffer.concat(
             await Promise.all(
-                fileParts.map(part => fs.promises.readFile(path.join(uploadDir, part)))
+                fileParts.map(part => fs.readFile(path.join(tempDir, part)))
             )
         );
 
@@ -48,10 +49,10 @@ export async function POST(req: NextRequest) {
         const ipfsUri = await storage.upload(fileBuffer);
         console.log('Uploaded to IPFS:', ipfsUri);
 
-        // Clean up the upload directory
-        await Promise.all(fileParts.map(part => fs.promises.unlink(path.join(uploadDir, part))));
-        await fs.promises.rmdir(uploadDir);
-        console.log('Cleaned up upload directory');
+        // Clean up the temporary directory
+        await Promise.all(fileParts.map(part => fs.unlink(path.join(tempDir, part))));
+        await fs.rmdir(tempDir);
+        console.log('Cleaned up temporary directory');
 
         return NextResponse.json({ ipfsUri });
     } catch (error) {
