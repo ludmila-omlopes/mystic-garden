@@ -117,6 +117,17 @@ const ProfilePage = ({ params }) => {
     return false;
   };
 
+  const isAuction = (publication) => {
+    if (publication && publication.openActionModules) {
+      for (let actionModule of publication.openActionModules) {
+        if (actionModule.__typename === "UnknownOpenActionModule") {   // lógica fraca
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   if (profileLoading) {
     return <div className="flex justify-center items-center h-screen">Loading profile...</div>;
   }
