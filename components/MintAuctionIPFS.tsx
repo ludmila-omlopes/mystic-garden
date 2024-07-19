@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from 'next/navigation';
 import { BONSAI_ADDRESS, REV_WALLET } from '@/app/constants';
-import { uploadFile, uploadBigFile, uploadData, createMetadata, validateChainId, uploadFileFront } from '@/lib/utils';
+import { uploadFile, uploadBigFile, uploadData, createMetadata, validateChainId } from '@/lib/utils';
 import { encodeInitData } from '@/app/api/lib/lensModuleUtils';
 import { AuctionInitData } from '@/lib/parseAuctionData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -100,12 +100,10 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       setProgress(20);
 
       const currency = BONSAI_ADDRESS;
-      const fileUrl = await uploadFileFront(file);
-      console.log('File uploaded', fileUrl);
+      const fileUrl = await uploadBigFile(file);
       setProgress(40);
-      const coverUrl = coverFile ? await uploadFileFront(coverFile) : undefined;
+      const coverUrl = coverFile ? await uploadBigFile(coverFile) : undefined;
       setProgress(60);
-      console.log('Cover uploaded', coverUrl);
 
       if (!fileUrl) {
         throw new Error('File upload failed');
@@ -113,10 +111,8 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
       const metadata = createMetadata(fileUrl, title, description, file, coverUrl);
       setProgress(70);
-      console.log('Metadata created', JSON.stringify(metadata));
 
       const arweaveID = await uploadData(metadata);
-      console.log('Metadata uploaded', arweaveID);
       setProgress(80);
       const uri = `https://gateway.irys.xyz/${arweaveID}`;
       if (!uri) {
@@ -160,7 +156,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
           }
         ]
       });
-      console.log('Post created', result);
       setProgress(90);
 
       if (result.isFailure()) {
@@ -169,7 +164,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
       const completion = await result.value.waitForCompletion();
       const createdPostId = completion.unwrap().id;
-      console.log('Post completed', createdPostId);
 
       if (completion.isFailure()) {
         throw new Error(completion.error.message || 'There was an error processing the transaction');
@@ -183,7 +177,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
       awardPoints(sessionData?.address, CREATE_NEW_AWARD, 'New Auction', awardUniqueId);
       
-      console.log('Post awarded', completion.value);
+      console.log('Post created', completion.value);
       setProgress(100);
 
       toast({
@@ -195,7 +189,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
     } catch (error) {
       console.error('Error minting art:', error);
-      setErrorMessage(JSON.stringify(error));
+      setErrorMessage(String(error));
       setProgress(0)
 
       toast({

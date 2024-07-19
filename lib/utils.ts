@@ -15,6 +15,7 @@ import { FALLBACK_IMAGE_URL } from "@/app/constants";
 import { getChainId, switchChain } from "@wagmi/core";
 import { wagmiConfig } from "@/app/web3modal-provider";
 import { polygon, polygonAmoy } from "wagmi/chains";
+import { ThirdwebStorage } from "@thirdweb-dev/storage";
 
 const AUCTION_OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
 const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
@@ -351,3 +352,20 @@ const currentChainId = getChainId(wagmiConfig);
   export function getCurrentRequiredChainId() {
     return requiredChainId;
   }
+
+  export const uploadFileFront = async (file: File): Promise<string> => {
+
+        if (!file) {
+            return '';
+        }
+
+        const fileBuffer = Buffer.from(await (file as Blob).arrayBuffer())
+
+        const storage = new ThirdwebStorage({
+            clientId: "225aae9221a0837de48f5618d4aa0c3c",
+            secretKey: "a-_e7NohBSIu7ZdZe19YJcTvX0TgrERp7bC-AVC6ioRODdXTyx-m0Al1LsfuiZ3m40h3YbgWcY1ENKseigghyA",
+        });
+
+        const ipfsUri = await storage.upload(fileBuffer);
+        return ipfsUri;
+  };
