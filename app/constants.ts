@@ -23,3 +23,8 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
   export const CREATE_NEW_AWARD = 500;
   export const COLLECT_PERCENT_AWARD = 0.2; 
 
+  export const MYSTIC_DROP_IMAGES_URLS = [
+    '/images/dropMari.webp',
+    '/images/dropCristina.webp',
+  ]
+
