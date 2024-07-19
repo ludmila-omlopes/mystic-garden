@@ -15,9 +15,11 @@ import { FALLBACK_IMAGE_URL } from "@/app/constants";
 import { getChainId, switchChain } from "@wagmi/core";
 import { wagmiConfig } from "@/app/web3modal-provider";
 import { polygon, polygonAmoy } from "wagmi/chains";
+import { ThirdwebStorage } from "@thirdweb-dev/storage";
 
 const AUCTION_OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
 const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
+const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB per chunk
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -70,6 +72,54 @@ export const uploadFile = async (file: File): Promise<string> => {
     return data.ipfsUri;
   } catch (error) {
     console.error('Error uploading file to IPFS:', error);
+    return '';
+  }
+};
+
+export const uploadBigFile = async (file: File): Promise<string> => {
+  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+  for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+    const start = chunkIndex * CHUNK_SIZE;
+    const end = Math.min(start + CHUNK_SIZE, file.size);
+    const chunk = file.slice(start, end);
+
+    const formData = new FormData();
+    formData.append('chunk', chunk);
+    formData.append('chunkIndex', String(chunkIndex));
+    formData.append('totalChunks', String(totalChunks));
+    formData.append('fileName', file.name);
+
+    try {
+      const response = await fetch('/api/uploadChunk', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Chunk ${chunkIndex} upload failed`);
+      }
+    } catch (error) {
+      console.error(`Error uploading chunk ${chunkIndex}:`, error);
+      return '';
+    }
+  }
+
+  try {
+    const response = await fetch('/api/completeUpload', {
+      method: 'POST',
+      body: JSON.stringify({ fileName: file.name }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('File upload completion failed');
+    }
+
+    const data = await response.json();
+    return data.ipfsUri;
+  } catch (error) {
+    console.error('Error completing file upload:', error);
     return '';
   }
 };
@@ -302,3 +352,20 @@ const currentChainId = getChainId(wagmiConfig);
   export function getCurrentRequiredChainId() {
     return requiredChainId;
   }
+
+  export const uploadFileFront = async (file: File): Promise<string> => {
+
+        if (!file) {
+            return '';
+        }
+
+        const fileBuffer = Buffer.from(await (file as Blob).arrayBuffer())
+
+        const storage = new ThirdwebStorage({
+            clientId: "225aae9221a0837de48f5618d4aa0c3c",
+            secretKey: "a-_e7NohBSIu7ZdZe19YJcTvX0TgrERp7bC-AVC6ioRODdXTyx-m0Al1LsfuiZ3m40h3YbgWcY1ENKseigghyA",
+        });
+
+        const ipfsUri = await storage.upload(fileBuffer);
+        return ipfsUri;
+  };

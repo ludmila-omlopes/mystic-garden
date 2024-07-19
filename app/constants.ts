@@ -16,7 +16,6 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0xc4b8', // soju
     '0x01c90b', // gremiana
     '0x01bbee', // maze mari
-    '0xf340', // eastie
     '0xf71a',   // internetfase
   ];
 
