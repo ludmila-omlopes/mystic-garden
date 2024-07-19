@@ -167,6 +167,10 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error(result.error.message || 'There was an error creating the post');
       }
 
+      if (createPostError) {
+        throw new Error(createPostError.message || 'There was an error creating the post');
+      }
+
       const completion = await result.value.waitForCompletion();
       const createdPostId = completion.unwrap().id;
       console.log('Post completed', createdPostId);
