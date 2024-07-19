@@ -6,6 +6,7 @@ import { Nav } from '@/components/nav';
 import { raleway, lato } from './fonts';
 import { PublicationsProvider } from './publications-provider';
 import  Footer  from '@/components/footer';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export default function Layout({ children }) {
   return (
@@ -22,6 +23,7 @@ export default function Layout({ children }) {
             </LensProvider>
           </Web3ModalProvider>
         </ThemeProvider>
+        <SpeedInsights/>
       </body>
     </html>
   );
