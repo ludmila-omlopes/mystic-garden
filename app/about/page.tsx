@@ -114,11 +114,11 @@ Enhance Engagement: Create interactive experiences that bring art enthusiasts to
           <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-5 lg:gap-12">
             <div className="flex flex-col items-center justify-center space-y-4">
                 <Link href="lens.xyz">
-              <LensIcon className="h-12 w-12" />
-              <div className="space-y-1">
-                <h3 className="text-lg font-bold">Lens Protocol</h3>
-                <p className="text-muted-foreground">The backbone of our decentralized platform.</p>
-              </div>
+                    <LensIcon className="h-12 w-12" />
+                    <div className="space-y-1">
+                        <h3 className="text-lg font-bold">Lens Protocol</h3>
+                        <p className="text-muted-foreground">The backbone of our decentralized platform.</p>
+                    </div>
               </Link>
             </div>
             <div className="flex flex-col items-center justify-center space-y-4">

@@ -31,7 +31,8 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   const router = useRouter();
   const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
   const { execute: executeModuleMetadata } = useLazyModuleMetadata();
-  const { toast } = useToast()
+  const [progressMessage, setProgressMessage] = useState('');
+  const { toast } = useToast();
 
   const durationMapping = {
     '24h': 24 * 60 * 60,
@@ -98,11 +99,14 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
       await validateChainId();
       setProgress(20);
+      setProgressMessage('Uploading file...');
 
       const currency = BONSAI_ADDRESS;
       const fileUrl = await uploadFileFront(file);
       console.log('File uploaded', fileUrl);
       setProgress(40);
+
+      setProgressMessage('Uploading cover, if any...');
       const coverUrl = coverFile ? await uploadFileFront(coverFile) : undefined;
       setProgress(60);
       console.log('Cover uploaded', coverUrl);
@@ -111,10 +115,12 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error('File upload failed');
       }
 
+      setProgressMessage('Creating metadata...');
       const metadata = createMetadata(fileUrl, title, description, file, coverUrl);
       setProgress(70);
       console.log('Metadata created', JSON.stringify(metadata));
 
+      setProgressMessage('Uploading metadata...');
       const arweaveID = await uploadData(metadata);
       console.log('Metadata uploaded', arweaveID);
       setProgress(80);
@@ -150,6 +156,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       const fetchedMetadata = await fetchModuleMetadata(OPEN_ACTION_MODULE_ADDRESS);
       const encodedAuction = await encodeInitData(initAuctionData, fetchedMetadata);
 
+      setProgressMessage('Creating Post on Lens...');
       const result = await execute({
         metadata: uri,
         actions: [
@@ -171,6 +178,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error(createPostError.message || 'There was an error creating the post');
       }
 
+      setProgressMessage('Completing post creation on chain...');
       const completion = await result.value.waitForCompletion();
       const createdPostId = completion.unwrap().id;
       console.log('Post completed', createdPostId);
@@ -189,11 +197,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       
       console.log('Post awarded', completion.value);
       setProgress(100);
-
-      toast({
-        title: "Mint Successful",
-        description: "You'll be redirected to the gallery shortly.",
-      });
+      setProgressMessage('Post created and awarded successfully. You will be redirected to the gallery shortly.');
 
       router.push(`/gallery/${createdPostId}`);
 
@@ -287,6 +291,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         />
       </div>
       <Progress value={progress} />
+      <p className="mt-2 text-center text-gray-500">{progressMessage}</p>
       <div className="mt-8 flex justify-end">
         <Button onClick={mintArt} disabled={loading || !isAuthenticated}>
           {loading ? 'Creating...' : !isAuthenticated ? 'Login to Lens first' : 'Create NFT'}
@@ -295,6 +300,11 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       {errorMessage && (
         <div className="mt-4 text-red-500">
           {errorMessage}
+        </div>
+      )}
+      {createPostError && (
+        <div className="mt-4 text-red-500">
+          {createPostError.name + " - " + createPostError.message}
         </div>
       )}
     </div>
