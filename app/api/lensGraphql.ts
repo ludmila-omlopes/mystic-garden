@@ -108,8 +108,7 @@ export async function getAuctions() {
       'Access-Control-Allow-Credentials': 'true'
       // 'Authorization': 'Bearer YOUR_ACCESS_TOKEN', // Include this if your API request requires authentication
     },
-    body: JSON.stringify(graphqlQuery),
-    cache: 'no-store'
+    body: JSON.stringify(graphqlQuery)
   });
 
   const data = await response.json();
