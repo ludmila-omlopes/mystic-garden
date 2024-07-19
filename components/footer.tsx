@@ -25,7 +25,7 @@ export default function Footer() {
         </div>
         <div className="grid gap-2">
           <h3 className="text-sm font-semibold text-foreground">Platform</h3>
-          <Link href="#" className="text-sm text-muted-foreground hover:text-primary" prefetch={false}>
+          <Link href="/about" className="text-sm text-muted-foreground hover:text-primary" prefetch={false}>
             About
           </Link>
           <Link href="#" className="text-sm text-muted-foreground hover:text-primary" prefetch={false}>

@@ -14,14 +14,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { awardPoints } from '@/lib/utils';
 import { CREATE_NEW_AWARD } from '@/app/constants';
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/components/ui/use-toast";
 
 const MintAuction = ({ isAuthenticated, sessionData, title, description, file, fileName, coverFile }) => {
   const { execute, error: createPostError, loading: createPostLoading } = useCreatePost();
   const { data: currencies } = useCurrencies();
   const [reservePrice, setReservePrice] = useState('');
   const [minBidIncrement, setMinBidIncrement] = useState('');
-  const [referralFee, setReferralFee] = useState('0');
-  const [duration, setDuration] = useState('24h'); // Default value
+  const [duration, setDuration] = useState('24h');
   const [minTimeAfterBid, setMinTimeAfterBid] = useState('');
   const [tokenRoyalty, setTokenRoyalty] = useState('10');
   const [auctionStartDate, setAuctionStartDate] = useState('');
@@ -30,15 +30,15 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
   const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
-
   const { execute: executeModuleMetadata } = useLazyModuleMetadata();
+  const { toast } = useToast()
 
   const durationMapping = {
     '24h': 24 * 60 * 60,
     '3 days': 3 * 24 * 60 * 60,
     '5 days': 5 * 24 * 60 * 60,
     '1 week': 7 * 24 * 60 * 60,
-    '2 minutes': 2 * 60,
+    '2 weeks': 14 * 24 * 60 * 60
   };
 
   async function fetchModuleMetadata(moduleAddress: string) {
@@ -64,10 +64,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
     }
     if (!minBidIncrement || isNaN(Number(minBidIncrement)) || Number(minBidIncrement) <= 0) {
       setErrorMessage('Valid minimum bid increment is required.');
-      return false;
-    }
-    if (Number(referralFee) < 0 || Number(referralFee) > 100) {
-      setErrorMessage('Referral fee must be between 0 and 100.');
       return false;
     }
     if (!minTimeAfterBid || isNaN(Number(minTimeAfterBid)) || Number(minTimeAfterBid) <= 0) {
@@ -129,7 +125,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         minTimeAfterBid: parseInt(minTimeAfterBid, 10),
         reservePrice: BigInt(reservePrice) * BigInt(10 ** 18),
         minBidIncrement: BigInt(minBidIncrement) * BigInt(10 ** 18),
-        referralFee: parseInt(referralFee, 10) * 100,
+        referralFee: 0,
         currency: currency,
         recipients: [
           {
@@ -184,12 +180,24 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       console.log('Post created', completion.value);
       setProgress(100);
 
-      // Redirect to the gallery with the created post ID
+      toast({
+        title: "Mint Successful",
+        description: "You'll be redirected to the gallery shortly.",
+      });
+
       router.push(`/gallery/${createdPostId}`);
+
     } catch (error) {
       console.error('Error minting art:', error);
       setErrorMessage(String(error));
-      setProgress(0); // Reset progress on error
+      setProgress(0)
+
+      toast({
+        title: "Mint Failed",
+        description: String(error),
+        variant: "destructive",
+      });
+
     } finally {
       setLoading(false);
     }
@@ -224,16 +232,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         </div>
       </div>
       <div>
-        <Label htmlFor="referralFee">Referral Fee (%)</Label>
-        <Input
-          id="referralFee"
-          value={referralFee || 0}
-          onChange={(e) => setReferralFee(e.target.value)}
-          placeholder="Enter the referral fee"
-          type="number"
-        />
-      </div>
-      <div>
         <Label htmlFor="duration">Duration</Label>
         <Select value={duration} onValueChange={setDuration}>
           <SelectTrigger className="w-[180px]">
@@ -244,7 +242,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
             <SelectItem value="3 days">3 days</SelectItem>
             <SelectItem value="5 days">5 days</SelectItem>
             <SelectItem value="1 week">1 week</SelectItem>
-            <SelectItem value="2 minutes">2 minutes</SelectItem>
+            <SelectItem value="2 weeks">2 weeks</SelectItem>
           </SelectContent>
         </Select>
       </div>

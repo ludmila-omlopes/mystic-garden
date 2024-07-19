@@ -289,10 +289,6 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                                 ))}
                             </div>
                             <div className="mb-4">
-                                <h3 className="text-base font-semibold mb-2">Referral Fee</h3>
-                                <p className="text-xs">{parsedInitData.referralFee / 100}%</p>
-                            </div>
-                            <div className="mb-4">
                                 <h3 className="text-base font-semibold mb-2">Royalty</h3>
                                 <p className="text-xs">{parsedInitData.tokenRoyalty / 100}%</p>
                             </div>

@@ -11,6 +11,7 @@ import { getTitle } from '@/lib/utils';
 import { FaPlay } from 'react-icons/fa';
 import { FALLBACK_IMAGE_URL} from '../constants';
 import { getApiEndpoint } from '@/lib/apiEndpoints';
+import { getAllCreatedPublicationsByCreator } from '@/lib/publications';
 
 const ProfilePage = ({ params }) => {
   const ITEMS_PER_PAGE = 40;
@@ -24,6 +25,7 @@ const ProfilePage = ({ params }) => {
   const profileAvatarUri = (profile?.metadata?.picture && 'optimized' in profile.metadata.picture) ? profile.metadata?.picture?.optimized?.uri  : '';
 
   useEffect(() => {
+    const fetchData = async () => {/*
     if (profile?.id) {
       const endpoint = getApiEndpoint('get1editionsBonsaiByCreator');
       const url = new URL(endpoint);
@@ -40,6 +42,13 @@ const ProfilePage = ({ params }) => {
         })
         .catch(error => console.log('Error:', error));
     }
+  */
+ if (profile) {
+    const publicationsList = await getAllCreatedPublicationsByCreator(profile.id) as PublicationId[];
+    console.log('publicationsList:', publicationsList);
+    setPublicationIds(publicationsList);
+  } };
+  fetchData();
   }, [profile]);
 
   const publicationsQueryParams = {
