@@ -162,7 +162,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       setProgressMessage('Creating Post on Lens...');
       const result = await execute({
         metadata: uri,
-        sponsored: false,
         actions: [
           {
             type: OpenActionType.UNKNOWN_OPEN_ACTION,
