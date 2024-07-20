@@ -27,6 +27,7 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
   export const MYSTIC_DROP_IMAGES_URLS = [
     '/images/dropMari.webp',
     '/images/dropCristina.webp',
+    '/images/dropGremiana.webp',
     '/images/dropZo.webp',
     '/images/dropchloe.jpg',
     '/images/dropTiny.png',
@@ -42,9 +43,9 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0x01bbee-0x2035', // maze mari
     '0x012a99-0x046c', //tiny
     '0x021135-0x018e' , //aeoife
+    '0x01c90b-0x023f', //gremiana
     '0x042318-0x01db', //chloe
     '0x326c-0x101f', // grams
     '0x018ccc-0x2b62', // zo
-
   ]
 
