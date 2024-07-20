@@ -29,6 +29,9 @@ export function AuctionButton(props: AuctionButtonProps) {
     args: [walletAddress as Address, props.address as Address]
   });
 
+  console.log("Minimum bid:", props.minimumBid);
+  console.log("Amount:", props.amount);
+
   const { writeContractAsync } = useWriteErc20Approve();
 
   const checkAndApproveAllowance = async () => {
@@ -60,7 +63,7 @@ export function AuctionButton(props: AuctionButtonProps) {
 
   const validateBidAmount = (amount: bigint, minimumBid: bigint): boolean => {
     if (amount < minimumBid) {
-      window.alert(`Your bid must be at least ${minimumBid} BONSAI.`);
+      window.alert(`Your bid must be at least ${minimumBid / BigInt(10 ** 18)} BONSAI.`);
       return false;
     }
     return true;
@@ -72,7 +75,7 @@ export function AuctionButton(props: AuctionButtonProps) {
       return;
     }
 
-    if (!validateBidAmount(props.amount, props.minimumBid)) {
+    if (!validateBidAmount(props.amount, (props.minimumBid * BigInt(10 ** 18)))) {
       return;
     }
 
