@@ -20,27 +20,35 @@ export async function decodeInitData(settings, metadata) {
 }
 
 export async function encodeInitData(settings: AuctionInitData, metadata: any) {
-  const abi = JSON.parse(metadata.initializeCalldataABI) as ModuleParam[];
-  const encodeDate = (value: Date) => Math.floor(value.getTime() / 1000).toString();
+  console.log('initializing encodeInitData');
+      try {
 
-  const calldata = encodeData(abi, [
-    encodeDate(settings.availableSinceTimestamp),
-    settings.duration.toString(),
-    settings.minTimeAfterBid.toString(),
-    settings.reservePrice.toString(),
-    settings.minBidIncrement.toString(),
-    settings.referralFee.toString(),
-    settings.currency,
-    settings.recipients.map(recipient => [recipient.recipient, recipient.split.toString()]),
-    settings.onlyFollowers,
-    ethers.utils.formatBytes32String(settings.tokenName),
-    ethers.utils.formatBytes32String(settings.tokenSymbol),
-    settings.tokenRoyalty.toString(),
-  ]);
+        const abi = JSON.parse(metadata.initializeCalldataABI) as ModuleParam[];
+        const encodeDate = (value: Date) => Math.floor(value.getTime() / 1000).toString();
 
-  console.log('calldata', calldata);
+        const calldata = encodeData(abi, [
+          encodeDate(settings.availableSinceTimestamp),
+          settings.duration.toString(),
+          settings.minTimeAfterBid.toString(),
+          settings.reservePrice.toString(),
+          settings.minBidIncrement.toString(),
+          settings.referralFee.toString(),
+          settings.currency,
+          settings.recipients.map(recipient => [recipient.recipient, recipient.split.toString()]),
+          settings.onlyFollowers,
+          ethers.utils.formatBytes32String(settings.tokenName),
+          ethers.utils.formatBytes32String(settings.tokenSymbol),
+          settings.tokenRoyalty.toString(),
+        ]);
 
-  return calldata;
+        console.log('calldata = ', calldata);
+
+        return calldata;
+      }
+      catch (e) {
+        console.error('Error in encodeInitData:', e);
+        throw new Error('Failed to encode init data' + e);
+      }
 }
 
 export async function encodeBidData(metadata: any, bidAmount: bigint) {
