@@ -43,6 +43,7 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0x01bbee-0x2035', // maze mari
     '0x012a99-0x046c', //tiny
     '0x021135-0x018e' , //aeoife
+    '0x73b1-0x59b5', //jessy
     '0x01c90b-0x023f', //gremiana
     '0x042318-0x01db', //chloe
     '0xf6b0-0x10fa', //andres

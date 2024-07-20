@@ -52,7 +52,7 @@ export default function HeroSection() {
           </div>
           <ShineBorder className="text-center uppercase" color={["#A07CFE", "#FE8FB5", "#FFBE7B"]}>
             <Link href={'/drops/mystic'}>
-              dropping Soon
+              LIVE NOW
             </Link>
           </ShineBorder>
         </div>
