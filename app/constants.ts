@@ -9,13 +9,14 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0x012a99',  //  tiny
     '0x1087', // christina spinei
     '0xf6b0', // Andres Briceno
-    '0x018ccc', // Losi
-    '0x01837b', //zo
+    '0x018ccc', // zo
+    '0x01837b', // losi
     '0x042318', //chloee
     '0x6079', //carla mooni
     '0xc4b8', // soju
     '0x01c90b', // gremiana
     '0x01bbee', // maze mari
+    '0x326c', // grams
     '0xf71a',   // internetfase
   ];
 
@@ -26,5 +27,24 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
   export const MYSTIC_DROP_IMAGES_URLS = [
     '/images/dropMari.webp',
     '/images/dropCristina.webp',
+    '/images/dropZo.webp',
+    '/images/dropchloe.jpg',
+    '/images/dropTiny.png',
+    '/images/dropGrams.jpg',
+    '/images/dropAeoife.png',
+    '/images/dropLosi.webp',
+    '/images/dropLosi.webp',
+  ]
+
+  export const MYSTIC_DROP_IDS = [
+    '0x1087-0x0ade', // cristina
+    '0x01837b-0x0290', // losi
+    '0x01bbee-0x2035', // maze mari
+    '0x012a99-0x046c', //tiny
+    '0x021135-0x018e' , //aeoife
+    '0x042318-0x01db', //chloe
+    '0x326c-0x101f', // grams
+    '0x018ccc-0x2b62', // zo
+
   ]
 

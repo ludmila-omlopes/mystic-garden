@@ -16,6 +16,7 @@ import ProfileSelectDialog from './ProfileSelectDialog';
 import { useSession, useLogin, useLogout, useProfilesManaged, ProfileId } from '@lens-protocol/react-web';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger, NavigationMenuContent, NavigationMenuLink } from './ui/navigation-menu';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import ShineBorder from './magicui/shine-border';
 
 export function Nav() {
   const { open } = useWeb3Modal();
@@ -78,6 +79,13 @@ export function Nav() {
                 </Link>
               </li>
               <li>
+                <Link href="/drops/mystic" className="hover:text-gray-700 dark:hover:text-gray-300"  prefetch={false}>
+                <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]} className=" min-w-[15px] m-1">
+                  Mystic Drop
+                  </ShineBorder>
+                </Link>
+              </li>
+              <li>
                 <Link href="/explore" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
                   Explore
                 </Link>
@@ -125,17 +133,23 @@ export function Nav() {
                         Create New
                       </Link>
                     </li>
+                    <li>
+                      <Link href="/drops/mystic" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
+                        Mystic Drop
+                      </Link>
+                    </li>
                   </ul>
-                  { address ? (               
-                  sessionData?.authenticated ? (
-                    <AvatarMenu sessionData={sessionData} logout={logout} />
-                  ) : (
-                    <ProfileSelectDialog
-                      address={address}
-                      open={isDialogOpen}
-                      onOpenChange={setIsDialogOpen}
-                    />
-                  )) : <w3m-button />}
+                  {address ? (
+                    sessionData?.authenticated ? (
+                      <AvatarMenu sessionData={sessionData} logout={logout} />
+                    ) : (
+                      <ProfileSelectDialog
+                        address={address}
+                        open={isDialogOpen}
+                        onOpenChange={setIsDialogOpen}
+                      />
+                    )
+                  ) : <w3m-button />}
                   <ModeToggle />
                 </div>
               </SheetContent>
