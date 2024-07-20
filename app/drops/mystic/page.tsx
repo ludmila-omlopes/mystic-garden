@@ -6,6 +6,8 @@ import Link from "next/link"
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
 import Countdown from 'react-countdown'
 import { MYSTIC_DROP_IMAGES_URLS } from "@/app/constants"
+import { cinzelDecor } from "@/app/fonts"
+import ShineBorder from "@/components/magicui/shine-border"
 
 // Custom renderer for the first countdown
 const statusRenderer = ({ days, hours, minutes, seconds, completed }) => {
@@ -50,17 +52,23 @@ export default function Component() {
     <div className="flex min-h-[100dvh] flex-col bg-background">
       <section className="container mx-auto flex flex-col items-start justify-between gap-8 px-4 py-12 md:flex-row md:py-24 lg:py-32">
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">Mystic Drop</h1>
+          <h1 className={`text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl ${cinzelDecor.className}`}>MyStic DRop</h1>
           <div className="flex items-center gap-4 text-muted-foreground">
-            <span>100 Artworks</span>
+            <span>13 Artworks</span>
             <Separator orientation="vertical" className="h-4" />
             <Countdown date={new Date(Date.UTC(2024, 6, 20, 14, 0, 0))} renderer={statusRenderer} />
             <Separator orientation="vertical" className="h-4" />
-            <span>2 Weeks</span>
+            <span>For 2 Weeks</span>
           </div>
           <div className="flex flex-col items-start gap-2">
             <Countdown date={new Date(Date.UTC(2024, 6, 20, 14, 0, 0))} renderer={countdownRenderer} className="text-3xl font-bold tracking-tighter" />
           </div>
+          <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]}>
+          <p className="mt-4 text-lg text-gray-300 max-w-xl m-4 italic">
+            Discover an enchanting collection of 13 unique artworks that blur the lines between reality and imagination. 
+            Join us in celebrating this extraordinary exhibition and immerse yourself in the magic of the Mystic Drop. - @definn
+          </p>
+          </ShineBorder>
           <Link
             href="/auctions"
             className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"

@@ -7,7 +7,10 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow, formatDistance } from 'date-fns';
 import Link from 'next/link';
+import Countdown from 'react-countdown';
 import { FEATURED_ARTIST_PROFILE_IDS } from '@/app/constants';
+import ShineBorder from "@/components/magicui/shine-border";
+import { FaPlay } from 'react-icons/fa';
 
 interface AuctionWithPublicationId {
   id: string;
@@ -74,6 +77,18 @@ interface AuctionWithPublicationId {
   };
 }
 
+const renderer = ({ days, hours, minutes, seconds, completed }) => {
+  if (completed) {
+    return <span>Auction started!</span>;
+  } else {
+    return (
+      <span>
+        {days}d {hours}h {minutes}m {seconds}s left to start
+      </span>
+    );
+  }
+};
+
 export default function Explore() {
   const ITEMS_PER_PAGE = 20;
   const [auctionsData, setAuctionsData] = useState<AuctionWithPublicationId[]>([]);
@@ -129,22 +144,27 @@ export default function Explore() {
     let auctionStatus = "Not started";
     let timeLeft = formatDistanceToNow(auctionStart, { includeSeconds: true });
 
+    console.log("currentTime = ", currentTime);
+    console.log("availableSinceTimestamp = ", availableSinceTimestamp);
+
     if (currentTime >= availableSinceTimestamp) {
-        if (parseInt(auction.startTimestamp) === 0) {
-            auctionStatus = "Active but not started";
-        } else if (currentTime <= endTimestamp) {
-            auctionStatus = "Active auction";
-            timeLeft = formatDistanceToNow(auctionEnd, { includeSeconds: true });
-        } else if (BigInt(auction.winnerProfileId) !== 0n && !auction.collected) {
-            auctionStatus = "Auction ended, pending collection";
-        } else if (auction.collected) {
-            auctionStatus = "Art collected";
-        }
+      if (parseInt(auction.startTimestamp) === 0) {
+        auctionStatus = "Active but not started";
+      } else if (currentTime <= endTimestamp) {
+        auctionStatus = "Active auction";
+        timeLeft = formatDistanceToNow(auctionEnd, { includeSeconds: true });
+      } else if (BigInt(auction.winnerProfileId) !== 0n && !auction.collected) {
+        auctionStatus = "Auction ended, pending collection";
+      } else if (auction.collected) {
+        auctionStatus = "Art collected";
+      }
     }
 
     if (auctionStatus === "Not started" && currentTime < availableSinceTimestamp && (availableSinceTimestamp - currentTime) < 86400) {
-        timeLeft = formatDistance(currentTime * 1000, auctionStart, { includeSeconds: true });
+      timeLeft = formatDistance(currentTime * 1000, auctionStart, { includeSeconds: true });
     }
+
+    console.log("auctionStatus = ", auctionStatus);
 
     return { auctionStatus, timeLeft };
   };
@@ -163,14 +183,14 @@ export default function Explore() {
   const filterPublicationsByCurated = useCallback(() => {
     let filteredAuctions = allAuctions;
     if (showCurated) {
-        filteredAuctions = filteredAuctions.filter(auction => {
-          const profileId = auction.id.split('-')[0];
-          return FEATURED_ARTIST_PROFILE_IDS.includes(profileId);
-        });
-      }
-      setAuctionsData(filteredAuctions);
-      setIndex(0); // Reset pagination index
-      //setPublications([]); // Reset publications when filter changes
+      filteredAuctions = filteredAuctions.filter(auction => {
+        const profileId = auction.id.split('-')[0];
+        return FEATURED_ARTIST_PROFILE_IDS.includes(profileId);
+      });
+    }
+    setAuctionsData(filteredAuctions);
+    setIndex(0); // Reset pagination index
+    //setPublications([]); // Reset publications when filter changes
   }, [showCurated, allAuctions]);
 
   useEffect(() => {
@@ -189,7 +209,7 @@ export default function Explore() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-20">
-        <h1 className="text-4xl font-bold text-center py-2">Auctions</h1>
+      <h1 className="text-4xl font-bold text-center py-2">Auctions</h1>
       <div className="my-4 flex flex-col sm:flex-row justify-start items-start sm:items-center">
         <div className="mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto flex items-center">
           <Switch checked={showCurated} onCheckedChange={handleToggleChange} />
@@ -206,6 +226,7 @@ export default function Explore() {
           {!loading && !error && auctionsData.slice(0, (index + 1) * ITEMS_PER_PAGE).map((auction) => {
             const { auctionStatus, timeLeft } = getAuctionStatusAndTimeLeft(auction);
             const isVideo = !!auction.metadata.asset.video?.optimized?.uri;
+            const hasCover = !!auction.metadata.asset.cover?.optimized?.uri;
             const isAudio = !!auction.metadata.asset.audio?.optimized?.uri;
             const imageUrl = auction.metadata.asset.image?.optimized?.uri ||
               auction.metadata.asset.cover?.optimized?.uri ||
@@ -222,13 +243,24 @@ export default function Explore() {
                   </Avatar>
                   <div className="text-s font-medium">{auction.by.handle.localName || auction.by.handle.suggestedFormatted.localName}</div>
                 </div>
-                <div className="relative">
-                  {isVideo ? (
-                    <video src={auction?.metadata?.asset?.video?.optimized?.uri} controls className="w-full h-96 object-cover"></video>
-                  ) : (
-                    <img src={imageUrl} alt={auction.metadata.title} className="w-full h-96 object-cover" />
-                  )}
-                </div>
+                <Link href={`/gallery/${auction.id}`} passHref>
+                  <div className="relative cursor-pointer">
+                    {hasCover ? (
+                      <>
+                        <img src={auction?.metadata?.asset?.cover?.optimized?.uri} alt={auction.metadata.title} className="w-full h-96 object-cover" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-t-lg">
+                          <FaPlay className="text-white text-4xl" />
+                        </div>
+                      </>
+                    ) : (
+                      isVideo ? (
+                        <video src={auction?.metadata?.asset?.video?.optimized?.uri} controls className="w-full h-96 object-cover"></video>
+                      ) : (
+                        <img src={imageUrl} alt={auction.metadata.title} className="w-full h-96 object-cover" />
+                      )
+                    )}
+                  </div>
+                </Link>
                 <div className="p-4">
                   <div className="text-lg font-bold mb-2">{auction.metadata.title}</div>
                   <hr className="my-2" />
@@ -254,6 +286,16 @@ export default function Explore() {
                           Place the first bid!
                         </div>
                       </>
+                    ) : auctionStatus === "Not started" ? (
+                      <>
+                        <div>
+                          <div className="text-xs text-muted-foreground">Reserve Price</div>
+                          <div className="text-base font-bold">{auction.reservePrice / 1e18} BONSAI</div>
+                        </div>
+                        <div className="text-xs font-medium text-muted-foreground">
+                          <Countdown date={new Date(parseInt(auction.availableSinceTimestamp) * 1000)} renderer={renderer} />
+                        </div>
+                      </>
                     ) : (
                       <>
                         <div>
@@ -270,23 +312,36 @@ export default function Explore() {
                   {auctionStatus === "Active auction" || auctionStatus === "Active but not started" ? (
                     <div className="flex gap-2">
                       <Link href={`/gallery/${auction.id}`} passHref>
-                        <Button variant="default" size="sm">
-                          Place Bid
+                        <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]}>
+                          <Button variant="default" size="sm" className="w-full">
+                            Place Bid
+                          </Button>
+                        </ShineBorder>
+                      </Link>
+                      <Link href={`/gallery/${auction.id}`} passHref className="w-full">
+                        <Button variant="outline" size="sm" className="w-full">
+                          View Details
                         </Button>
                       </Link>
-                      <Link href={`/gallery/${auction.id}`} passHref>
-                        <Button variant="outline" size="sm">
+                    </div>
+                  ) : auctionStatus === "Not started" ? (
+                    <div className="flex gap-2">
+                      <Button variant="default" size="sm" className="w-full" disabled>
+                        <Countdown date={new Date(parseInt(auction.availableSinceTimestamp) * 1000)} renderer={renderer} />
+                      </Button>
+                      <Link href={`/gallery/${auction.id}`} passHref className="w-full">
+                        <Button variant="outline" size="sm" className="w-full">
                           View Details
                         </Button>
                       </Link>
                     </div>
                   ) : (
                     <div className="flex gap-2">
-                      <Button variant="default" size="sm" disabled>
+                      <Button variant="default" size="sm" className="w-full" disabled>
                         Sold Out
                       </Button>
-                      <Link href={`/gallery/${auction.id}`} passHref>
-                        <Button variant="outline" size="sm">
+                      <Link href={`/gallery/${auction.id}`} passHref className="w-full">
+                        <Button variant="outline" size="sm" className="w-full">
                           View Details
                         </Button>
                       </Link>
