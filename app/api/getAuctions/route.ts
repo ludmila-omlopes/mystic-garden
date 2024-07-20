@@ -47,20 +47,17 @@ async function getAdditionalAuctionData(profileId, pubId) {
     try {
       const auctions = await getAuctions();
       const auctionsData = JSON.parse(auctions).data.publications.items;
-      console.log('auctionsData:', auctionsData);
+      console.log('auctionsData lenght:'+ (auctionsData ? auctionsData.length : '0'));
   
       let auctionsWithAdditionalData = await Promise.all(
         auctionsData.map(async (auction) => {
           const {profileId, publicationId} = parseFromLensHex(auction.id);
           const additionalData = await getAdditionalAuctionData(profileId, publicationId);
-          console.log('additionalData.currency:', auction.id + " - " + additionalData.currency);
           return { ...auction, ...additionalData };
         })
       );
-      console.log('auctionsWithAdditionalData 1:', auctionsWithAdditionalData.length);
       // Filter out auctions where currency is not equal to the specified address
       auctionsWithAdditionalData = auctionsWithAdditionalData.filter(auction => auction.currency === BONSAI_ADDRESS);
-      console.log('auctionsWithAdditionalData:', auctionsWithAdditionalData.length);
 
       return NextResponse.json({
         message: 'Auctions fetched successfully',

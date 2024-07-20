@@ -129,6 +129,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error('Failed to upload metadata');
       }
 
+      setProgressMessage('Setting up auction...');
       const initAuctionData: AuctionInitData = {
         availableSinceTimestamp: new Date(auctionStartDate),
         duration: durationMapping[duration],
@@ -153,6 +154,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         tokenRoyalty: parseInt(tokenRoyalty, 10) * 100,
       };
 
+      setProgressMessage('Encoding auction...');
       const fetchedMetadata = await fetchModuleMetadata(OPEN_ACTION_MODULE_ADDRESS);
       const encodedAuction = await encodeInitData(initAuctionData, fetchedMetadata);
 
@@ -175,6 +177,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       }
 
       if (createPostError) {
+        setErrorMessage(createPostError.message);
         throw new Error(createPostError.message || 'There was an error creating the post');
       }
 
@@ -202,8 +205,9 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       router.push(`/gallery/${createdPostId}`);
 
     } catch (error) {
-      console.error('Error minting art:', error);
-      setErrorMessage(JSON.stringify(error));
+      const errorMessage = (error instanceof Error) ? error.message : 'There was an error minting the art';
+      console.error('Error minting art:', errorMessage);
+      // setErrorMessage(errorMessage);
       setProgress(0)
 
       toast({
