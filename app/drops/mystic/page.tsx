@@ -116,7 +116,7 @@ export default function Component() {
   };
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-background">
+    <div className="flex min-h-[100dvh] flex-col bg-background mt-20">
       <section className="container mx-auto flex flex-col items-start justify-between gap-8 px-4 py-12 md:flex-row md:py-24 lg:py-32">
         <div className="space-y-4">
           <h1 className={`text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl ${cinzelDecor.className}`}>Mystic Drop</h1>
