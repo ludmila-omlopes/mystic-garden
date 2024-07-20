@@ -182,7 +182,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
               'There is a pending signing request in your wallet. ' +
               'Approve it or discard it and try again.'
             );
-            window.alert('There is a pending signing request in your wallet. ' + result.error.message);
+            console.log('There is a pending signing request in your wallet. ' + result.error.message);
             window.alert(result.error.message);
             break;
           case 'WalletConnectionError':
