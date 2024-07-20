@@ -2,7 +2,7 @@
 
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import { useProfile, usePublications, Post, PublicationId } from '@lens-protocol/react-web';
+import { useProfile, usePublications, Post, PublicationId, ProfilesOrderBy } from '@lens-protocol/react-web';
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
@@ -69,17 +69,25 @@ const ProfilePage = ({ params }) => {
         );
       case 'VideoMetadataV3':
       case 'AudioMetadataV3':
-        return (
-          <div className="relative">
-            <img src={publication.metadata.asset?.cover?.optimized?.uri} alt="Post cover" className={mediaContainerClass} />
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-t-lg">
-              <FaPlay className="text-white text-4xl" />
-            </div>
-          </div>
-        );
+        { if (publication.metadata.asset?.cover?.optimized?.uri) {
+            return (
+              <div className="relative">
+                <img src={publication.metadata.asset?.cover?.optimized?.uri} alt="Post cover" className={mediaContainerClass} />
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-t-lg">
+                  <FaPlay className="text-white text-4xl" />
+                </div>
+              </div>
+            );
+          }
+          else {
+            return (
+              <video src={publication?.metadata?.asset?.video?.optimized?.uri} controls className={mediaContainerClass}></video>
+            );
+          }
+        }
       default:
           return (
-            <img src={ FALLBACK_IMAGE_URL } alt="Art Image" className={mediaContainerClass} />
+            <img src={ FALLBACK_IMAGE_URL } alt="Art Image"  />
           );
     }
   };
@@ -95,7 +103,7 @@ const ProfilePage = ({ params }) => {
         }
       }
     }
-    const formattedPrice = postPrice ? `${postPrice} BONSAI` : 'Not for sale';
+    const formattedPrice = postPrice ? `${postPrice} BONSAI` : 'Auction';
     return (<p className="font-semibold">{formattedPrice}</p>);
   };
 

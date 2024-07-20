@@ -47,7 +47,7 @@ async function getAdditionalAuctionData(profileId, pubId) {
         const profileId = searchParams.get('profileId');
       const auctions = await getAuctionsByProfile(profileId || "");
       console.log('auctions by profile:', auctions);
-      const auctionsData = JSON.parse(auctions).data.publications.items;
+      const auctionsData = auctions.publications.items;
   
       let auctionsWithAdditionalData = await Promise.all(
         auctionsData.map(async (auction) => {
