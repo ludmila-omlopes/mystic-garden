@@ -46,6 +46,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
     const result = await executeModuleMetadata({ implementation: moduleAddress });
 
     if (result.isFailure()) {
+      console.error('Failed to fetch module metadata', result.error.message);
       setErrorMessage(result.error.message);
       return null;
     }
