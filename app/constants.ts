@@ -45,6 +45,7 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0x021135-0x018e' , //aeoife
     '0x01c90b-0x023f', //gremiana
     '0x042318-0x01db', //chloe
+    '0xf6b0-0x10fa', //andres
     '0x326c-0x101f', // grams
     '0x018ccc-0x2b62', // zo
   ]
