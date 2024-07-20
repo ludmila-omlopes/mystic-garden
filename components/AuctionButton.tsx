@@ -15,6 +15,7 @@ type AuctionButtonProps = {
   publication: AnyPublication;
   disabled: boolean;
   amount: bigint;
+  minimumBid: bigint;
 }
 
 export function AuctionButton(props: AuctionButtonProps) {
@@ -27,6 +28,9 @@ export function AuctionButton(props: AuctionButtonProps) {
     chainId: chainId,
     args: [walletAddress as Address, props.address as Address]
   });
+
+  console.log("Minimum bid:", props.minimumBid);
+  console.log("Amount:", props.amount);
 
   const { writeContractAsync } = useWriteErc20Approve();
 
@@ -57,9 +61,21 @@ export function AuctionButton(props: AuctionButtonProps) {
     }
   });
 
+  const validateBidAmount = (amount: bigint, minimumBid: bigint): boolean => {
+    if (amount < minimumBid) {
+      window.alert(`Your bid must be at least ${minimumBid / BigInt(10 ** 18)} BONSAI.`);
+      return false;
+    }
+    return true;
+  };
+
   const run = async () => {
     if (!walletAddress) {
       window.alert("User not authenticated. Please log in to your wallet.");
+      return;
+    }
+
+    if (!validateBidAmount(props.amount, (props.minimumBid * BigInt(10 ** 18)))) {
       return;
     }
 

@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { FaPlay } from "react-icons/fa";
 import { AuctionWithPublicationId } from "@/app/types/auction";
 import { formatDistanceToNow, formatDistance } from 'date-fns';
+import SparklesText from "@/components/magicui/sparkles-text";
+import { ClipLoader } from "react-spinners"; 
+
 
 const renderer = ({ days, hours, minutes, seconds, completed }) => {
   if (completed) {
@@ -57,6 +60,7 @@ const countdownRenderer = ({ days, hours, minutes, seconds, completed }) => {
 export default function Component() {
   const [daysRemaining, setDaysRemaining] = useState(0);
   const [auctionsData, setAuctionsData] = useState<AuctionWithPublicationId[]>([]);
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     const targetDate = new Date(Date.UTC(2024, 6, 20, 14, 0, 0)); // July 20, 2024, at 2pm UTC
@@ -66,9 +70,16 @@ export default function Component() {
     setDaysRemaining(daysRemaining);
 
     const fetchAuctions = async () => {
-      const response = await fetch(`/api/getAuctionsByIds?publicationIds=${MYSTIC_DROP_IDS.join(",")}`);
-      const data = await response.json();
-      setAuctionsData(data.data);
+      setLoading(true); // Set loading to true before fetching data
+      try {
+        const response = await fetch(`/api/getAuctionsByIds?publicationIds=${MYSTIC_DROP_IDS.join(",")}`);
+        const data = await response.json();
+        setAuctionsData(data.data);
+      } catch (error) {
+        console.error("Error fetching auctions:", error);
+      } finally {
+        setLoading(false); // Set loading to false after fetching data
+      }
     };
 
     fetchAuctions();
@@ -82,9 +93,6 @@ export default function Component() {
     const auctionEnd = new Date(endTimestamp * 1000);
     let auctionStatus = "Not started";
     let timeLeft = formatDistanceToNow(auctionStart, { includeSeconds: true });
-
-    console.log("currentTime = ", currentTime);
-    console.log("availableSinceTimestamp = ", availableSinceTimestamp);
 
     if (currentTime >= availableSinceTimestamp) {
       if (parseInt(auction.startTimestamp) === 0) {
@@ -102,8 +110,6 @@ export default function Component() {
     if (auctionStatus === "Not started" && currentTime < availableSinceTimestamp && (availableSinceTimestamp - currentTime) < 86400) {
       timeLeft = formatDistance(currentTime * 1000, auctionStart, { includeSeconds: true });
     }
-
-    console.log("auctionStatus = ", auctionStatus);
 
     return { auctionStatus, timeLeft };
   };
@@ -130,10 +136,10 @@ export default function Component() {
           <div className="flex flex-col items-start gap-2">
             <Countdown date={new Date(Date.UTC(2024, 6, 20, 14, 0, 0))} renderer={countdownRenderer} className="text-3xl font-bold tracking-tighter" />
           </div>
-            <p className="mt-4 text-lg text-gray-300 max-w-xl m-4 italic">
+            <p className="mt-4 text-lg text-gray-500 dark:text-gray-400 max-w-xl m-4 italic">
             Discover an enchanting collection of 13 unique artworks that blur the lines between reality and imagination.
               </p>
-              <p className="mt-4 text-lg text-gray-300 max-w-xl m-4 italic">
+              <p className="mt-4 text-lg text-gray-500 dark:text-gray-400 max-w-xl m-4 italic">
               Join me in celebrating the true Lens creative landscape and immerse yourself in the magic of the Mystic Garden. - @definn
               </p>
 
@@ -164,25 +170,30 @@ export default function Component() {
       <section className="container mx-auto px-4 py-12 md:py-24 lg:py-32">
         <div className="mx-auto max-w-3xl">
           <h2 className="mb-8 text-3xl font-bold tracking-tighter">Exploring the Mystic Garden</h2>
-          <p className="mb-8 max-w-2xl text-lg text-gray-300">
+          <p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
           Welcome to the Mystic Drop, the genesis curated drop of Mystic Garden.
 
 This drop marks the debut of our platform, featuring 13 artists carefully chosen to create pieces that embody the Mystic theme. As you scroll through the displayed artworks, remember that each piece is crafted by OG Lens creators. This collection is a homage to the Lens creative community, so keep an open mind and let the stories unfold before you.
-</p><p className="mb-8 max-w-2xl text-lg text-gray-300">
+</p><p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
 What is art? Art can serve many functions—it can evoke emotions, set the mood, and tell a story. Here, you’ll witness the story of Decentralized Social being told through diverse artistic expressions.
 
 From classical music to vibrant illustrations, these artists have been my companions since my early days on Lens. They are pushing the boundaries of on-chain art and, in doing so, are carving their stories into the blockchain.
-</p><p className="mb-8 max-w-2xl text-lg text-gray-300">
+</p><p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
 This is art. This is history.
 Are you ready to be enchanted?
 </p>
-<p className="mb-8 max-w-2xl text-lg text-gray-300">
+<p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
 Love, definn.
           </p>
         </div>
       </section>
       <Separator className="my-8" />
       <section id="artworks" className="container mx-auto px-4 py-12 md:py-24 lg:py-32">
+      {loading ? ( // Show spinner while loading
+          <div className="flex justify-center items-center min-h-[300px]">
+            <ClipLoader size={50} color={"#A07CFE"} loading={loading} />
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
           {auctionsData.map((auction) => {
             const { auctionStatus, timeLeft } = getAuctionStatusAndTimeLeft(auction);
@@ -203,6 +214,9 @@ Love, definn.
                     <AvatarFallback>{auction.by.handle.localName.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="text-s font-medium">{auction.by.handle.localName || auction.by.handle.suggestedFormatted.localName}</div>
+                  {auctionStatus === "Active auction" && (
+                    <span className="ml-auto inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-800"><SparklesText className="text-sm" sparklesCount={3} colors={{ first: '#daa520', second: '#72016f' }}	 text="Auction Live" /></span>
+                  )}
                 </div>
                 <Link href={`/gallery/${auction.id}`} passHref>
                   <div className="relative cursor-pointer">
@@ -230,6 +244,12 @@ Love, definn.
                       <div className="text-xs text-muted-foreground">Reserve Price</div>
                       <div className="text-base font-bold">{auction.reservePrice / 1e18} BONSAI</div>
                     </div>
+                    {auctionStatus === "Active auction" && (
+                      <div>
+                        <div className="text-xs text-muted-foreground">Winning Bid</div>
+                        <div className="text-base font-bold">{auction.winningBid / 1e18} BONSAI</div>
+                      </div>
+                    )}
                   </div>
                   {auctionStatus === "Active auction" || auctionStatus === "Active but not started" ? (
                     <div className="flex gap-2">
@@ -274,6 +294,7 @@ Love, definn.
             );
           })}
         </div>
+        )}
       </section>
     </div>
   );

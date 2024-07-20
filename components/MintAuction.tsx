@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useCreatePost, useCurrencies, OpenActionType, useLazyModuleMetadata, Erc20, BroadcastingErrorReason } from '@lens-protocol/react-web';
+import { useCreatePost, useCurrencies, OpenActionType, useLazyModuleMetadata, Erc20, BroadcastingErrorReason, SessionType } from '@lens-protocol/react-web';
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { awardPoints } from '@/lib/utils';
 import { CREATE_NEW_AWARD } from '@/app/constants';
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
+import { useSession } from '@lens-protocol/react-web';
 
 const MintAuction = ({ isAuthenticated, sessionData, title, description, file, fileName, coverFile }) => {
   const { execute, error: createPostError, loading: createPostLoading } = useCreatePost();
@@ -33,6 +34,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   const { execute: executeModuleMetadata } = useLazyModuleMetadata();
   const [progressMessage, setProgressMessage] = useState('');
   const { toast } = useToast();
+  const { data: thisSessionData } = useSession();
 
   const durationMapping = {
     '24h': 24 * 60 * 60,
@@ -130,6 +132,14 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error('Failed to upload metadata');
       }
 
+      var tokenName = "Mystic Garden";
+        if (thisSessionData?.type === SessionType.WithProfile) {
+          const displayName = thisSessionData?.profile?.metadata?.displayName || '';
+          const maxLength = 31 - (tokenName.length + 4); // 4 is the length of " by "
+          const truncatedDisplayName = displayName.slice(0, maxLength);
+          tokenName = tokenName + " by " + truncatedDisplayName;
+        }
+
       setProgressMessage('Setting up auction...');
       const initAuctionData: AuctionInitData = {
         availableSinceTimestamp: new Date(auctionStartDate),
@@ -150,10 +160,12 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
           },
         ],
         onlyFollowers: false,
-        tokenName: title,
+        tokenName: tokenName,
         tokenSymbol: "MYST",
         tokenRoyalty: parseInt(tokenRoyalty, 10) * 100,
       };
+
+      console.log('Auction init data = ', initAuctionData);
 
       setProgressMessage('Encoding auction...');
       const fetchedMetadata = await fetchModuleMetadata(OPEN_ACTION_MODULE_ADDRESS);
