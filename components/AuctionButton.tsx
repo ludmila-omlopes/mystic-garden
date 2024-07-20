@@ -15,6 +15,7 @@ type AuctionButtonProps = {
   publication: AnyPublication;
   disabled: boolean;
   amount: bigint;
+  minimumBid: bigint;
 }
 
 export function AuctionButton(props: AuctionButtonProps) {
@@ -57,9 +58,21 @@ export function AuctionButton(props: AuctionButtonProps) {
     }
   });
 
+  const validateBidAmount = (amount: bigint, minimumBid: bigint): boolean => {
+    if (amount < minimumBid) {
+      window.alert(`Your bid must be at least ${minimumBid} BONSAI.`);
+      return false;
+    }
+    return true;
+  };
+
   const run = async () => {
     if (!walletAddress) {
       window.alert("User not authenticated. Please log in to your wallet.");
+      return;
+    }
+
+    if (!validateBidAmount(props.amount, props.minimumBid)) {
       return;
     }
 

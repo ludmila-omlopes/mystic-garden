@@ -100,15 +100,13 @@ const AuctionComponent = ({ post }: { post: Post }) => {
     const auctionEnd = auctionData ? new Date(endTimestamp * 1000) : new Date();
     const auctionStart = auctionData ? new Date(availableSinceTimestamp * 1000) : new Date();
     const winningBid = auctionData ? (auctionData.winningBid / BigInt(10 ** 18)).toString() : '0';
-    var currentMinimumBid = (auctionData && auctionData?.reservePrice > auctionData.winningBid) ? auctionData?.reservePrice : (auctionData ? (BigInt(winningBid) + auctionData?.minBidIncrement) : parsedInitData?.reservePrice);
+    var currentMinimumBid = auctionData ? (auctionData.winningBid ? (auctionData.winningBid + auctionData.minBidIncrement) : auctionData.reservePrice) : BigInt(0);
     currentMinimumBid = currentMinimumBid ? currentMinimumBid / BigInt(10 ** 18) : BigInt(0);
     var winningProfileId = auctionData ? auctionData.winnerProfileId.toString(16) : '0';
     if (winningProfileId.length % 2 !== 0) { 
         winningProfileId = '0' + winningProfileId; 
     }
     winningProfileId =  '0x' + winningProfileId; 
-
-    console.log("winningProfileId=" + winningProfileId);
 
     const { data: winningProfile } = useProfile( {forProfileId: winningProfileId as ProfileId} );
 
@@ -192,7 +190,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                             type="number"
                             className="mb-4"
                         />
-                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} amount={bidAmount} data={String(calldata)} publication={post} disabled={!sessionData?.authenticated} />
+                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} amount={bidAmount} minimumBid={currentMinimumBid} data={String(calldata)} publication={post} disabled={!sessionData?.authenticated} />
                     </>
                 )}
                 {auctionStatus === "Active auction" ? (
@@ -240,7 +238,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                             type="number"
                             className="mb-4"
                         />
-                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} amount={bidAmount} data={String(calldata)} publication={post} disabled={!sessionData?.authenticated} />
+                        <AuctionButton address={OPEN_ACTION_MODULE_ADDRESS} minimumBid={currentMinimumBid} amount={bidAmount} data={String(calldata)} publication={post} disabled={!sessionData?.authenticated} />
                         {!sessionData?.authenticated && (
                             <p className="text-sm text-red-500">Login to Lens first</p>
                         )}

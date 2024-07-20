@@ -80,7 +80,7 @@ export function Nav() {
               </li>
               <li>
                 <Link href="/drops/mystic" className="hover:text-gray-700 dark:hover:text-gray-300"  prefetch={false}>
-                <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]} className=" min-w-[15px] m-1">
+                <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]} className="text-gray-900 dark:text-gray-100 min-w-[15px] m-1">
                   Mystic Drop
                   </ShineBorder>
                 </Link>

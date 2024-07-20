@@ -391,5 +391,5 @@ const currentChainId = getChainId(wagmiConfig);
       files: [fileBuffer],
     });
 
-    return uris;
+    return uris[0];
 };

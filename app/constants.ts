@@ -34,12 +34,16 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '/images/dropGrams.jpg',
     '/images/dropAeoife.png',
     '/images/dropLosi.webp',
-    '/images/dropLosi.webp',
+    '/images/dropJessy.png',
+    '/images/dropCarla.webp',
+    '/images/dropAndres.png',
+    '/images/dropAndres.png'
   ]
 
   export const MYSTIC_DROP_IDS = [
     '0x1087-0x0ade', // cristina
     '0x01837b-0x0290', // losi
+    '0x6079-0x127c', // carla
     '0x01bbee-0x2035', // maze mari
     '0x012a99-0x046c', //tiny
     '0x021135-0x018e' , //aeoife
