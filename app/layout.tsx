@@ -7,6 +7,7 @@ import { raleway, lato } from './fonts';
 import { PublicationsProvider } from './publications-provider';
 import  Footer  from '@/components/footer';
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/react"
 
 export default function Layout({ children }) {
   return (
@@ -24,6 +25,7 @@ export default function Layout({ children }) {
           </Web3ModalProvider>
         </ThemeProvider>
         <SpeedInsights/>
+        <Analytics/>
       </body>
     </html>
   );

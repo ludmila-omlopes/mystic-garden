@@ -10,7 +10,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient()
 
-const projectId = process.env.NEXT_PUBLIC_WC_ID || 'placeholder-project-id'
+const projectId = process.env.NEXT_PUBLIC_WC_ID || 'abc380732b9c361293a1bdbd1279c7e6'
 
 const metadata = {
   name: 'Web3Modal',
