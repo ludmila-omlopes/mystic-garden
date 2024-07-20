@@ -21,15 +21,14 @@ export async function decodeInitData(settings, metadata) {
 
 export async function encodeInitData(settings: AuctionInitData, metadata: any) {
   const abi = JSON.parse(metadata.initializeCalldataABI) as ModuleParam[];
-  const encodeBigInt = (value: bigint) => ethers.BigNumber.from(value).toHexString();
   const encodeDate = (value: Date) => Math.floor(value.getTime() / 1000).toString();
 
   const calldata = encodeData(abi, [
     encodeDate(settings.availableSinceTimestamp),
     settings.duration.toString(),
     settings.minTimeAfterBid.toString(),
-    encodeBigInt(settings.reservePrice),
-    encodeBigInt(settings.minBidIncrement),
+    settings.reservePrice.toString(),
+    settings.minBidIncrement.toString(),
     settings.referralFee.toString(),
     settings.currency,
     settings.recipients.map(recipient => [recipient.recipient, recipient.split.toString()]),
@@ -38,6 +37,8 @@ export async function encodeInitData(settings: AuctionInitData, metadata: any) {
     ethers.utils.formatBytes32String(settings.tokenSymbol),
     settings.tokenRoyalty.toString(),
   ]);
+
+  console.log('calldata', calldata);
 
   return calldata;
 }

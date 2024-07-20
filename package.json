@@ -80,7 +80,8 @@
     "url": "^0.11.3",
     "vaul": "^0.9.0",
     "viem": "^2.16.4",
-    "wagmi": "^2.10.8"
+    "wagmi": "^2.10.8",
+    "web3": "^4.11.0"
   },
   "devDependencies": {
     "@graphprotocol/client-cli": "^3.0.3",
