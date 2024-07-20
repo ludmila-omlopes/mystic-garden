@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useCreatePost, useCurrencies, OpenActionType, useLazyModuleMetadata, Erc20 } from '@lens-protocol/react-web';
+import { useCreatePost, useCurrencies, OpenActionType, useLazyModuleMetadata, Erc20, BroadcastingErrorReason } from '@lens-protocol/react-web';
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -161,6 +161,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       setProgressMessage('Creating Post on Lens...');
       const result = await execute({
         metadata: uri,
+        sponsored: false,
         actions: [
           {
             type: OpenActionType.UNKNOWN_OPEN_ACTION,
@@ -169,11 +170,46 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
           }
         ]
       });
-      console.log('Post created', result);
-      setProgress(90);
 
       if (result.isFailure()) {
-        throw new Error(result.error.message || 'There was an error creating the post');
+        switch (result.error.name) {
+          case 'BroadcastingError':
+            console.log('There was an error broadcasting the transaction', result.error.message);
+            window.alert('There was an error broadcasting the transaction: ' + result.error.message);
+            break;
+          case 'PendingSigningRequestError':
+            console.log(
+              'There is a pending signing request in your wallet. ' +
+              'Approve it or discard it and try again.'
+            );
+            window.alert('There is a pending signing request in your wallet. ' + result.error.message);
+            window.alert(result.error.message);
+            break;
+          case 'WalletConnectionError':
+            console.log('There was an error connecting to your wallet', result.error.message);
+            window.alert('There was an error connecting to your wallet: ' + result.error.message);
+            break;
+          case 'UserRejectedError':
+            // the user decided to not sign, usually this is silently ignored by UIs
+            break;
+          default:
+            console.log('An unknown error occurred', result.error.message);
+            window.alert('An unknown error occurred: ' + result.error.message);
+        }
+
+        // Log the error to an external service
+        if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production") {
+          fetch('/api/logError', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              error: result.error.message,
+              stack: result.error.stack,
+            }),
+          });
+        }
+        // eager return
+        return;
       }
 
       if (createPostError) {
@@ -181,6 +217,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error(createPostError.message || 'There was an error creating the post');
       }
 
+      setProgress(90);
       setProgressMessage('Completing post creation on chain...');
       const completion = await result.value.waitForCompletion();
       const createdPostId = completion.unwrap().id;
@@ -207,8 +244,19 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
     } catch (error) {
       const errorMessage = (error instanceof Error) ? error.message : 'There was an error minting the art';
       console.error('Error minting art:', errorMessage);
-      // setErrorMessage(errorMessage);
-      setProgress(0)
+
+      // Log the error to an external service
+      if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production") {
+        fetch('/api/logError', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            error: errorMessage
+          }),
+        });
+      }
+
+      setProgress(0);
 
       toast({
         title: "Mint Failed",
