@@ -208,7 +208,7 @@ export default function Explore() {
                           <div className="text-base font-bold">{auction.reservePrice / 1e18} BONSAI</div>
                         </div>
                         <div>
-                          <div className="text-xs text-muted-foreground">Current Bid</div>
+                          <div className="text-xs text-muted-foreground">Highest Bid</div>
                           <div className="text-base font-bold">{auction.winningBid / 1e18} BONSAI</div>
                         </div>
                       </>
