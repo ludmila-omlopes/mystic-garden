@@ -246,7 +246,7 @@ Love, definn.
                     </div>
                     {auctionStatus === "Active auction" && (
                       <div>
-                        <div className="text-xs text-muted-foreground">Winning Bid</div>
+                        <div className="text-xs text-muted-foreground">Highest Bid</div>
                         <div className="text-base font-bold">{auction.winningBid / 1e18} BONSAI</div>
                       </div>
                     )}
