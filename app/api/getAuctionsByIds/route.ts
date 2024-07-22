@@ -60,6 +60,7 @@ export async function GET(request) {
       auctionsData.map(async (auction) => {
         const { profileId, publicationId } = parseFromLensHex(auction.id);
         const additionalData = await getAdditionalAuctionData(profileId, publicationId);
+
         return { ...auction, ...additionalData };
       })
     );
