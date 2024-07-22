@@ -348,7 +348,10 @@ export function getPublicationAsset(post: Post) {
 export async function validateChainId() {
 const currentChainId = getChainId(wagmiConfig);
     if (currentChainId !== requiredChainId) 
+      {
         await switchChain(wagmiConfig, { chainId: requiredChainId });
+        location.reload();
+      }
   }
 
   export function getCurrentRequiredChainId() {

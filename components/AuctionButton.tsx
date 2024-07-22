@@ -1,11 +1,12 @@
-import { AnyPublication, OpenActionKind, SessionType, useOpenAction } from '@lens-protocol/react-web';
+import { AnyPublication, OpenActionKind, SessionType, TransactionErrorReason, useOpenAction } from '@lens-protocol/react-web';
 import { Button } from './ui/button';
 import { useSession } from '@lens-protocol/react-web';
 import { useReadErc20Allowance, useWriteErc20Approve } from '@/src/generated';
 import { Address } from 'viem';
 import { awardPoints, getCurrentRequiredChainId, validateChainId } from '@/lib/utils';
 import { BID_AWARD, BONSAI_ADDRESS } from '@/app/constants';
-import { polygon, polygonAmoy } from 'wagmi/chains';
+import { ClipLoader } from 'react-spinners';
+import { useState } from 'react';
 
 // This button handles the Open Action for placing a bid on an auction
 
@@ -22,6 +23,7 @@ export function AuctionButton(props: AuctionButtonProps) {
   const { data: sessionData } = useSession();
   const walletAddress = sessionData?.authenticated ? sessionData.address : undefined;
   const chainId = getCurrentRequiredChainId();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: allowance, refetch: refetchAllowance } = useReadErc20Allowance({
     address: BONSAI_ADDRESS,
@@ -42,11 +44,9 @@ export function AuctionButton(props: AuctionButtonProps) {
           chainId: chainId,
           args: [props.address as Address, props.amount]
         });
-
-        await refetchAllowance(); 
       } catch (error) {
         console.error("Failed to approve allowance:", error);
-        window.alert("Failed to approve allowance. Please check your wallet and try again.");
+        window.alert(error + "Failed to approve allowance. Please refresh the page and try again.");
         return false;
       }
     }
@@ -105,6 +105,7 @@ export function AuctionButton(props: AuctionButtonProps) {
     }
 
     try {
+      setIsSubmitting(true);
       validateChainId();
 
       const allowanceApproved = await checkAndApproveAllowance();
@@ -175,13 +176,24 @@ export function AuctionButton(props: AuctionButtonProps) {
       window.alert("Bid executed successfully");
     } catch (err) {
       console.error("Unexpected error during bid execution:", err);
-      window.alert("An unexpected error occurred. Please try again.");
+      window.alert("An unexpected error occurred. Please refresh the page and try again. ");
+    }
+      finally {
+        setIsSubmitting(false);
     }
   };
 
   return (
-    <Button className="w-full" onClick={run} disabled={loading || props.disabled}>
-      {props.disabled ? "Login to Lens first" : "Place Bid"}
-    </Button>
+    <div className="w-full">
+      {isSubmitting && (
+        <div className="flex justify-center items-center mb-4">
+          <ClipLoader size={20} color={"#000"} loading={isSubmitting} />
+          <span className="ml-2">Processing...</span>
+        </div>
+      )}
+      <Button onClick={run} disabled={loading || props.disabled || isSubmitting}>
+        {props.disabled ? "Login to Lens first" : "Place Bid"}
+      </Button>
+    </div>
   );
 }
