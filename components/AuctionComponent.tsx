@@ -83,8 +83,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
     useEffect(() => {
         async function generateCalldata() {
             if (parsedInitData && moduleMetadata) {
-                const amount = bidAmount; // Use the bid amount input by the user
-                console.log("module metadata=" + JSON.stringify(moduleMetadata) + " amount=" + amount);
+                const amount = bidAmount; 
                 const encodedCalldata = await encodeBidData(moduleMetadata, amount);
                 setCalldata(encodedCalldata);
             }

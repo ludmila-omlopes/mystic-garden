@@ -53,7 +53,7 @@ export function AuctionButton(props: AuctionButtonProps) {
     return true;
   };
 
-  const { execute, loading, error } = useOpenAction({
+  const { execute, loading, error: useOAError } = useOpenAction({
     action: {
       kind: OpenActionKind.UNKNOWN,
       address: props.address,
@@ -68,6 +68,31 @@ export function AuctionButton(props: AuctionButtonProps) {
     }
     return true;
   };
+
+  const runUnsponsored = async () => {
+    const selfFunded = await execute({
+      publication: props.publication,
+      sponsored: false
+    });
+
+    if (selfFunded.isFailure()) {
+      switch (selfFunded.error.name) {
+        case 'InsufficientGasError':
+          console.error('Insufficient funds to pay for gas');
+          window.alert(`Error executing self funded bid: ${useOAError?.message}.`);
+          break;
+        case 'InsufficientFundsError':
+          console.error('Insufficient funds to pay for bid');
+          window.alert(`Error executing self funded bid: ${useOAError?.message}.`);
+          break;
+        default:         
+        console.error('Error executing self funded bid:', selfFunded.error);
+        window.alert(`Error executing self funded bid: ${useOAError?.message}.`);
+      }
+    }
+
+    return selfFunded;
+  }
 
   const run = async () => {
     if (!walletAddress) {
@@ -85,23 +110,66 @@ export function AuctionButton(props: AuctionButtonProps) {
       const allowanceApproved = await checkAndApproveAllowance();
       if (!allowanceApproved) return;
 
-      const result = await execute({
+      var result = await execute({
         publication: props.publication,
       });
 
       if (result.isFailure()) {
-        console.error("Error executing bid:", result.error);
-        window.alert(`Error: ${result.error.message}. Please try again later.`);
+        switch (result.error.name) {
+          case 'InsufficientGasError':
+            console.error('Insufficient funds to pay for gas');
+            window.alert(`Error executing the bid: ${useOAError?.message}.`);
+            break;
+          case 'InsufficientFundsError':
+            console.error('Insufficient funds to pay for bid');
+            window.alert(`Error executing the bid: ${useOAError?.message}.`);
+            break;
+          case 'InsufficientAllowanceError':
+            console.error('Insufficient allowance to pay for bid');
+            window.alert(`Error executing the bid: ${useOAError?.message}.`);
+            break;
+          case 'WalletConnectionError':
+            console.error('Error connecting to wallet');
+            window.alert(`Error executing the bid: ${useOAError?.message}.`);
+            break;
+          case 'BroadcastingError':
+            result = await runUnsponsored();
+            break;
+          default:  
+            console.error('Error executing bid:', result.error);
+            window.alert(`Error executing the bid: ${useOAError?.message}.`);
+      
+        }
         return;
       }
 
       const completion = await result.value.waitForCompletion();
 
       if (completion.isFailure()) {
-        console.error("Error completing bid:", completion.error);
-        window.alert(`Error: ${completion.error.message}. Please try again later.`);
+        switch (completion.error.reason) {
+          case TransactionErrorReason.INDEXING_TIMEOUT:
+            console.error(
+              "The tx was broadcasted but it was not indexed within the expected timeout"
+            );
+            break;
+      
+          case TransactionErrorReason.MINING_TIMEOUT:
+            console.error(
+              "The tx was broadcasted but it was not mined within the expected timeout"
+            );
+            break;
+      
+          case TransactionErrorReason.REVERTED:
+            console.error("The tx was reverted");
+            break;
+      
+          case TransactionErrorReason.UNKNOWN:
+            console.error("A not recognized failure");
+            break;
+        }
         return;
       }
+      
 
       awardPoints(walletAddress, BID_AWARD, "bid", null);
       window.alert("Bid executed successfully");
