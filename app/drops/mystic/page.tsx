@@ -12,10 +12,11 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FaPlay } from "react-icons/fa";
 import { AuctionWithPublicationId } from "@/app/types/auction";
-import { formatDistanceToNow, formatDistance } from 'date-fns';
+import { formatDistanceToNow, formatDistance } from "date-fns";
 import SparklesText from "@/components/magicui/sparkles-text";
-import { ClipLoader } from "react-spinners"; 
-
+import { ClipLoader } from "react-spinners";
+import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
+import { cn } from "@/lib/utils";
 
 const renderer = ({ days, hours, minutes, seconds, completed }) => {
   if (completed) {
@@ -57,10 +58,40 @@ const countdownRenderer = ({ days, hours, minutes, seconds, completed }) => {
   }
 };
 
+const activeAuctionRenderer = ({ days, hours, minutes, seconds }) => {
+  if (days > 0) {
+    return (
+      <AnimatedGradientText className="font-bold">
+        <span className={cn(
+            `inline animate-gradient bg-gradient-to-r from-[#ffaa40] via-[#4b0082] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+          )}>
+          {days}d {hours}h left
+        </span>
+      </AnimatedGradientText>
+    );
+  } else if (hours > 0) {
+    return (
+      <span>
+        {hours}h {minutes}m left
+      </span>
+    );
+  } else {
+    return (
+      <span>
+        {minutes}m {seconds}s left
+      </span>
+    );
+  }
+};
+
+const formatBonsaiValue = (value) => {
+  return value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value.toString();
+};
+
 export default function Component() {
   const [daysRemaining, setDaysRemaining] = useState(0);
   const [auctionsData, setAuctionsData] = useState<AuctionWithPublicationId[]>([]);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const targetDate = new Date(Date.UTC(2024, 6, 20, 14, 0, 0)); // July 20, 2024, at 2pm UTC
@@ -74,6 +105,7 @@ export default function Component() {
       try {
         const response = await fetch(`/api/getAuctionsByIds?publicationIds=${MYSTIC_DROP_IDS.join(",")}`);
         const data = await response.json();
+
         setAuctionsData(data.data);
       } catch (error) {
         console.error("Error fetching auctions:", error);
@@ -88,11 +120,14 @@ export default function Component() {
   const getAuctionStatusAndTimeLeft = (auction: AuctionWithPublicationId) => {
     const currentTime = Math.floor(Date.now() / 1000);
     const availableSinceTimestamp = parseInt(auction.availableSinceTimestamp);
-    const endTimestamp = availableSinceTimestamp + auction.duration;
-    const auctionStart = new Date(availableSinceTimestamp * 1000);
+    const endTimestamp = parseInt(auction.endTimestamp);
+    const startTimestamp = parseInt(auction.startTimestamp);
+    const auctionAvailableSince = new Date(availableSinceTimestamp * 1000);
+    const auctionStart = new Date(startTimestamp * 1000);
     const auctionEnd = new Date(endTimestamp * 1000);
+
     let auctionStatus = "Not started";
-    let timeLeft = formatDistanceToNow(auctionStart, { includeSeconds: true });
+    let timeLeft = formatDistanceToNow(auctionAvailableSince, { includeSeconds: true });
 
     if (currentTime >= availableSinceTimestamp) {
       if (parseInt(auction.startTimestamp) === 0) {
@@ -136,12 +171,12 @@ export default function Component() {
           <div className="flex flex-col items-start gap-2">
             <Countdown date={new Date(Date.UTC(2024, 6, 20, 14, 0, 0))} renderer={countdownRenderer} className="text-3xl font-bold tracking-tighter" />
           </div>
-            <p className="mt-4 text-lg text-gray-500 dark:text-gray-400 max-w-xl m-4 italic">
+          <p className="mt-4 text-lg text-gray-500 dark:text-gray-400 max-w-xl m-4 italic">
             Discover an enchanting collection of 13 unique artworks that blur the lines between reality and imagination.
-              </p>
-              <p className="mt-4 text-lg text-gray-500 dark:text-gray-400 max-w-xl m-4 italic">
-              Join me in celebrating the true Lens creative landscape and immerse yourself in the magic of the Mystic Garden. - @definn
-              </p>
+          </p>
+          <p className="mt-4 text-lg text-gray-500 dark:text-gray-400 max-w-xl m-4 italic">
+            Join me in celebrating the true Lens creative landscape and immerse yourself in the magic of the Mystic Garden. - @definn
+          </p>
 
           <button
             onClick={scrollToArtworks}
@@ -171,131 +206,135 @@ export default function Component() {
         <div className="mx-auto max-w-3xl">
           <h2 className="mb-8 text-3xl font-bold tracking-tighter">Exploring the Mystic Garden</h2>
           <p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
-          Welcome to the Mystic Drop, the genesis curated drop of Mystic Garden.
-
-This drop marks the debut of our platform, featuring 13 artists carefully chosen to create pieces that embody the Mystic theme. As you scroll through the displayed artworks, remember that each piece is crafted by OG Lens creators. This collection is a homage to the Lens creative community, so keep an open mind and let the stories unfold before you.
-</p><p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
-What is art? Art can serve many functions—it can evoke emotions, set the mood, and tell a story. Here, you’ll witness the story of Decentralized Social being told through diverse artistic expressions.
-
-From classical music to vibrant illustrations, these artists have been my companions since my early days on Lens. They are pushing the boundaries of on-chain art and, in doing so, are carving their stories into the blockchain.
-</p><p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
-This is art. This is history.
-Are you ready to be enchanted?
-</p>
-<p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
-Love, definn.
+            Welcome to the Mystic Drop, the genesis curated drop of Mystic Garden.
+            This drop marks the debut of our platform, featuring 13 artists carefully chosen to create pieces that embody the Mystic theme. As you scroll through the displayed artworks, remember that each piece is crafted by OG Lens creators. This collection is a homage to the Lens creative community, so keep an open mind and let the stories unfold before you.
+          </p>
+          <p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
+            What is art? Art can serve many functions—it can evoke emotions, set the mood, and tell a story. Here, you’ll witness the story of Decentralized Social being told through diverse artistic expressions.
+            From classical music to vibrant illustrations, these artists have been my companions since my early days on Lens. They are pushing the boundaries of on-chain art and, in doing so, are carving their stories into the blockchain.
+          </p>
+          <p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
+            This is art. This is history.
+            Are you ready to be enchanted?
+          </p>
+          <p className="mb-8 max-w-2xl text-lg text-gray-500 dark:text-gray-400">
+            Love, definn.
           </p>
         </div>
       </section>
       <Separator className="my-8" />
       <section id="artworks" className="container mx-auto px-4 py-12 md:py-24 lg:py-32">
-      {loading ? ( // Show spinner while loading
+        {loading ? ( // Show spinner while loading
           <div className="flex justify-center items-center min-h-[300px]">
             <ClipLoader size={50} color={"#A07CFE"} loading={loading} />
           </div>
         ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-          {auctionsData.map((auction) => {
-            const { auctionStatus, timeLeft } = getAuctionStatusAndTimeLeft(auction);
-            const isVideo = !!auction.metadata.asset.video?.optimized?.uri;
-            const hasCover = !!auction.metadata.asset.cover?.optimized?.uri;
-            const isAudio = !!auction.metadata.asset.audio?.optimized?.uri;
-            const imageUrl = auction.metadata.asset.image?.optimized?.uri ||
-              auction.metadata.asset.cover?.optimized?.uri ||
-              auction.metadata.asset.video?.optimized?.uri ||
-              auction.metadata.asset.audio?.optimized?.uri ||
-              "/no-image-available.jpg";
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+            {auctionsData.map((auction) => {
+              const { auctionStatus, timeLeft } = getAuctionStatusAndTimeLeft(auction);
+              const isVideo = !!auction.metadata.asset.video?.optimized?.uri;
+              const hasCover = !!auction.metadata.asset.cover?.optimized?.uri;
+              const isAudio = !!auction.metadata.asset.audio?.optimized?.uri;
+              const imageUrl = auction.metadata.asset.image?.optimized?.uri ||
+                auction.metadata.asset.cover?.optimized?.uri ||
+                auction.metadata.asset.video?.optimized?.uri ||
+                auction.metadata.asset.audio?.optimized?.uri ||
+                "/no-image-available.jpg";
 
-            return (
-              <div key={auction.id} className="bg-background rounded-lg overflow-hidden shadow-lg">
-                <div className="flex items-center mb-2 p-4">
-                  <Avatar className="w-6 h-6 mr-2">
-                    <AvatarImage src={auction.by.metadata?.picture?.optimized?.uri || "/placeholder-user.jpg"} />
-                    <AvatarFallback>{auction.by.handle.localName.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="text-s font-medium">{auction.by.handle.localName || auction.by.handle.suggestedFormatted.localName}</div>
-                  {auctionStatus === "Active auction" && (
-                    <span className="ml-auto inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-800"><SparklesText className="text-sm" sparklesCount={3} colors={{ first: '#daa520', second: '#72016f' }}	 text="Auction Live" /></span>
-                  )}
-                </div>
-                <Link href={`/gallery/${auction.id}`} passHref>
-                  <div className="relative cursor-pointer">
-                    {hasCover ? (
-                      <>
-                        <img src={auction?.metadata?.asset?.cover?.optimized?.uri} alt={auction.metadata.title} className="w-full h-96 object-cover" />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-t-lg">
-                          <FaPlay className="text-white text-4xl" />
-                        </div>
-                      </>
-                    ) : (
-                      isVideo ? (
-                        <video src={auction?.metadata?.asset?.video?.optimized?.uri} controls className="w-full h-96 object-cover"></video>
-                      ) : (
-                        <img src={imageUrl} alt={auction.metadata.title} className="w-full h-96 object-cover" />
-                      )
-                    )}
-                  </div>
-                </Link>
-                <div className="p-4">
-                  <div className="text-lg font-bold mb-2">{auction.metadata.title}</div>
-                  <hr className="my-2" />
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <div className="text-xs text-muted-foreground">Reserve Price</div>
-                      <div className="text-base font-bold">{auction.reservePrice / 1e18} BONSAI</div>
+                return (
+                  <div key={auction.id} className="bg-background rounded-lg overflow-hidden shadow-lg">
+                    <div className="flex items-center mb-2 p-4">
+                      <Avatar className="w-6 h-6 mr-2">
+                        <AvatarImage src={auction.by.metadata?.picture?.optimized?.uri || "/placeholder-user.jpg"} />
+                        <AvatarFallback>{auction.by.handle.localName.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="text-s font-medium">{auction.by.handle.localName || auction.by.handle.suggestedFormatted.localName}</div>
+                      {auctionStatus === "Active auction" && (
+                        <span className="ml-auto inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-800"><SparklesText className="text-sm" sparklesCount={3} colors={{ first: '#daa520', second: '#72016f' }} text="Auction Live" /></span>
+                      )}
                     </div>
-                    {auctionStatus === "Active auction" && (
-                      <div>
-                        <div className="text-xs text-muted-foreground">Highest Bid</div>
-                        <div className="text-base font-bold">{auction.winningBid / 1e18} BONSAI</div>
+                    <Link href={`/gallery/${auction.id}`} passHref>
+                      <div className="relative cursor-pointer">
+                        {hasCover ? (
+                          <>
+                            <img src={auction?.metadata?.asset?.cover?.optimized?.uri} alt={auction.metadata.title} className="w-full h-96 object-cover" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-t-lg">
+                              <FaPlay className="text-white text-4xl" />
+                            </div>
+                          </>
+                        ) : (
+                          isVideo ? (
+                            <video src={auction?.metadata?.asset?.video?.optimized?.uri} controls className="w-full h-96 object-cover"></video>
+                          ) : (
+                            <img src={imageUrl} alt={auction.metadata.title} className="w-full h-96 object-cover" />
+                          )
+                        )}
                       </div>
-                    )}
-                  </div>
-                  {auctionStatus === "Active auction" || auctionStatus === "Active but not started" ? (
-                    <div className="flex gap-2">
-                      <Link href={`/gallery/${auction.id}`} passHref>
-                        <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]}>
-                          <Button variant="default" size="sm" className="w-full">
-                            Place Bid
+                    </Link>
+                    <div className="p-4">
+                      <div className="text-lg font-bold mb-2">{auction.metadata.title}</div>
+                      <hr className="my-2" />
+                      <div className="flex justify-between items-center mb-4">
+                        {auctionStatus === "Active auction" ? (
+                          <>
+                            <div>
+                              <div className="text-xs text-muted-foreground">Highest Bid</div>
+                              <div className="text-base font-bold">{formatBonsaiValue(auction.winningBid / 1e18)} BONSAI</div>
+                            </div>
+                            <Countdown date={new Date(parseInt(auction.endTimestamp) * 1000)} renderer={activeAuctionRenderer} />
+                          </>
+                        ) : (
+                          <div>
+                            <div className="text-xs text-muted-foreground">Reserve Price</div>
+                            <div className="text-base font-bold">{formatBonsaiValue(auction.reservePrice / 1e18)} BONSAI</div>
+                          </div>
+                        )}
+                      </div>
+                      {auctionStatus === "Active auction" || auctionStatus === "Active but not started" ? (
+                        <div className="flex gap-2">
+                          <Link href={`/gallery/${auction.id}`} passHref>
+                            <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]}>
+                              <Button variant="default" size="sm" className="w-full">
+                                Place Bid
+                              </Button>
+                            </ShineBorder>
+                          </Link>
+                          <Link href={`/gallery/${auction.id}`} passHref className="w-full">
+                            <Button variant="outline" size="sm" className="w-full">
+                              View Details
+                            </Button>
+                          </Link>
+                        </div>
+                      ) : auctionStatus === "Not started" ? (
+                        <div className="flex gap-2">
+                          <Button variant="default" size="sm" className="w-full" disabled>
+                            <Countdown date={new Date(parseInt(auction.availableSinceTimestamp) * 1000)} renderer={renderer} />
                           </Button>
-                        </ShineBorder>
-                      </Link>
-                      <Link href={`/gallery/${auction.id}`} passHref className="w-full">
-                        <Button variant="outline" size="sm" className="w-full">
-                          View Details
-                        </Button>
-                      </Link>
+                          <Link href={`/gallery/${auction.id}`} passHref className="w-full">
+                            <Button variant="outline" size="sm" className="w-full">
+                              View Details
+                            </Button>
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button variant="default" size="sm" className="w-full" disabled>
+                            Sold Out
+                          </Button>
+                          <Link href={`/gallery/${auction.id}`} passHref className="w-full">
+                            <Button variant="outline" size="sm" className="w-full">
+                              View Details
+                            </Button>
+                          </Link>
+                        </div>
+                      )}
                     </div>
-                  ) : auctionStatus === "Not started" ? (
-                    <div className="flex gap-2">
-                      <Button variant="default" size="sm" className="w-full" disabled>
-                        <Countdown date={new Date(parseInt(auction.availableSinceTimestamp) * 1000)} renderer={renderer} />
-                      </Button>
-                      <Link href={`/gallery/${auction.id}`} passHref className="w-full">
-                        <Button variant="outline" size="sm" className="w-full">
-                          View Details
-                        </Button>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button variant="default" size="sm" className="w-full" disabled>
-                        Sold Out
-                      </Button>
-                      <Link href={`/gallery/${auction.id}`} passHref className="w-full">
-                        <Button variant="outline" size="sm" className="w-full">
-                          View Details
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        )}
-      </section>
-    </div>
-  );
-}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </div>
+    );
+  }
