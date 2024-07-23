@@ -132,7 +132,13 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error('Failed to upload metadata');
       }
 
-      const tokenName = "Mystic Garden";
+     /* var tokenName = "Mystic Garden";
+        if (thisSessionData?.type === SessionType.WithProfile) {
+          const displayName = thisSessionData?.profile?.metadata?.displayName || '';
+          const maxLength = 31 - (tokenName.length + 4); // 4 is the length of " by "
+          const truncatedDisplayName = displayName.slice(0, maxLength);
+          tokenName = tokenName + " by " + truncatedDisplayName;
+        }*/
 
       setProgressMessage('Setting up auction...');
       const initAuctionData: AuctionInitData = {
@@ -154,7 +160,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
           },
         ],
         onlyFollowers: false,
-        tokenName: tokenName,
+        tokenName: "Mystic Garden",
         tokenSymbol: "MYST",
         tokenRoyalty: parseInt(tokenRoyalty, 10) * 100,
       };
@@ -188,8 +194,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
               'There is a pending signing request in your wallet. ' +
               'Approve it or discard it and try again.'
             );
-            console.log('There is a pending signing request in your wallet. ' + result.error.message);
-            window.alert(result.error.message);
+            window.alert('There is a pending signing request in your wallet. ' + result.error.message);
             break;
           case 'WalletConnectionError':
             console.log('There was an error connecting to your wallet', result.error.message);
@@ -248,8 +253,9 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       router.push(`/gallery/${createdPostId}`);
 
     } catch (error) {
-      const errorMessage = (error instanceof Error) ? error.message : 'There was an error minting the art';
-      console.error('Error minting art:', errorMessage);
+      const errorMessage = (error instanceof Error) ? error.message : 'There was an error minting the art. Refresh the page and try again.';
+      console.error('Error:', errorMessage);
+      window.alert('Error:' + errorMessage);
 
       // Log the error to an external service
       if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production") {

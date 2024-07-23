@@ -381,7 +381,6 @@ const currentChainId = getChainId(wagmiConfig);
     }
 
     const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "225aae9221a0837de48f5618d4aa0c3c";
-    console.log("clientId: " + clientId);
 
     const client = createThirdwebClient({
       clientId: clientId,
@@ -394,5 +393,11 @@ const currentChainId = getChainId(wagmiConfig);
       files: [fileBuffer],
     });
 
-    return uris[0];
-};
+    console.log("uris: " + uris);
+
+    if (Array.isArray(uris)) {
+      return uris[0];
+    } else {
+      return uris;
+    }
+  };
