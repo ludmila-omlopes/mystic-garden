@@ -8,8 +8,10 @@ import { PublicationsProvider } from './publications-provider';
 import  Footer  from '@/components/footer';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
+import dotenv from 'dotenv';
 
 export default function Layout({ children }) {
+  dotenv.config(); 
   return (
     <html lang="en">
       <body className={lato.className}>
