@@ -350,7 +350,6 @@ const currentChainId = getChainId(wagmiConfig);
     if (currentChainId !== requiredChainId) 
       {
         await switchChain(wagmiConfig, { chainId: requiredChainId });
-        location.reload();
       }
   }
 
@@ -381,7 +380,8 @@ const currentChainId = getChainId(wagmiConfig);
         return '';
     }
 
-    const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "";
+    const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "225aae9221a0837de48f5618d4aa0c3c";
+    console.log("clientId: " + clientId);
 
     const client = createThirdwebClient({
       clientId: clientId,
