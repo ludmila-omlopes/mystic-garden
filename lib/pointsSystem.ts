@@ -11,6 +11,18 @@ export async function getPointsByWallet(wallet: string): Promise<number> {
   }
 }
 
+export async function getBountyPointsByWallet(wallet: string): Promise<number> {
+  try {
+    const response = await fetch(`/api/getBountyPoints?wallet=${wallet}`);
+    const data = await response.json();
+
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching bounty points by wallet:', error);
+    return 0;
+  }
+}
+
 /*export async function getPointsByWalletList(wallets: string[]): Promise<number> {
   try {
     return await stack.getPoints(wallets);
