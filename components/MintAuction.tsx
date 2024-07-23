@@ -132,13 +132,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error('Failed to upload metadata');
       }
 
-      var tokenName = "Mystic Garden";
-        if (thisSessionData?.type === SessionType.WithProfile) {
-          const displayName = thisSessionData?.profile?.metadata?.displayName || '';
-          const maxLength = 31 - (tokenName.length + 4); // 4 is the length of " by "
-          const truncatedDisplayName = displayName.slice(0, maxLength);
-          tokenName = tokenName + " by " + truncatedDisplayName;
-        }
+      const tokenName = "Mystic Garden";
 
       setProgressMessage('Setting up auction...');
       const initAuctionData: AuctionInitData = {
