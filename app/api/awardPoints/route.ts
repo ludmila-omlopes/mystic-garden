@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import stack from "../stackClient";
+import { airdropStack } from "../stackClient";
 
 export async function POST(req: NextRequest) {
   try {
     const { userWallet, points, event , uniqueId } = await req.json();
 
-    await stack.track(event, {
+    await airdropStack.track(event, {
         points: points,
         account: userWallet,
         uniqueId: uniqueId

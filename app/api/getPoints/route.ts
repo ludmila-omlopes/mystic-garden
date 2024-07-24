@@ -1,4 +1,4 @@
-import stack from "@/app/api/stackClient";
+import { airdropStack } from "@/app/api/stackClient";
 import { NextResponse, NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: 'Wallet address is required' }, { status: 400 });
     }
 
-    const points = await stack.getPoints(wallet);
+    const points = await airdropStack.getPoints(wallet);
 
     return NextResponse.json({
       message: 'Points fetched successfully',

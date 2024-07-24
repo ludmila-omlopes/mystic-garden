@@ -1,10 +1,15 @@
 import { StackClient } from "@stackso/js-core";
 
-// Initialize the client
-const stack = new StackClient({
-    // Get your API key and point system id from the Stack dashboard (stack.so)
-    apiKey: process.env.STACK_API_KEY || "", 
-    pointSystemId: 2572,
-  });
-  
-export default stack;
+// Initialize the airdropStack client
+const airdropStack = new StackClient({
+  apiKey: process.env.STACK_API_KEY || "",
+  pointSystemId: 2572,
+});
+
+// Initialize the bountyStack client
+const bountyStack = new StackClient({
+  apiKey: process.env.STACK_API_KEY || "",
+  pointSystemId: 2962,
+});
+
+export { airdropStack, bountyStack };
