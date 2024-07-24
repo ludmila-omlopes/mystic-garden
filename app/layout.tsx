@@ -26,11 +26,9 @@ export default function Layout({ children }) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Web3ModalProvider>
             <LensProvider>
-              <PublicationsProvider>
                 <Nav />
                 {children}
                 <Footer />
-              </PublicationsProvider>
             </LensProvider>
           </Web3ModalProvider>
         </ThemeProvider>

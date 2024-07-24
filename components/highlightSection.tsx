@@ -2,59 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { use1on1PublicationIds } from '@/app/publications-provider';
 import { FEATURED_ARTIST_PROFILE_IDS } from '@/app/constants';
 import { usePublications, Post, profileId, publicationId } from '@lens-protocol/react-web';
 
 export default function HighlightSection() {
-  const [imageUrls, setImageUrls] = useState<string[]>(['', '', '']);
-  const { publicationIds, loading, error } = use1on1PublicationIds();
 
-  const curatedPublicationIds = (() => {
-    const seenArtists = new Set<string>();
-    return publicationIds.filter(id => {
-      const profileIdString = id.split('-')[0];
-      if (FEATURED_ARTIST_PROFILE_IDS.includes(profileIdString) && !seenArtists.has(profileIdString)) {
-        seenArtists.add(profileIdString);
-        return true;
-      }
-      return false;
-    }).map(id => publicationId(id));
-  })();
-
-  const { data: publicationsData, loading: publicationsLoading, error: publicationsError } = usePublications({
-    where: {
-      publicationIds: curatedPublicationIds.slice(0, 40),
-    },
-  });
-
-  useEffect(() => {
-    if (publicationsLoading || publicationsError || !publicationsData) {
-      return;
-    }
-
-    /*const getRandomImageUrls = (publications: Post[]): string[] => {
-      const images: string[] = [];
-      for (let publication of publications) {
-        if (publication.metadata && 'asset' in publication.metadata && publication.metadata.asset?.image?.optimized?.uri) {
-          const optimizedImage = publication.metadata.asset.image.optimized.uri;
-          images.push(optimizedImage);
-        }
-      }
-
-      // Shuffle images using Fisher-Yates algorithm
-      for (let i = images.length - 1; i > 0; i--) {
-        const j = Math.floor((Date.now() + Math.random()) % (i + 1));
-        [images[i], images[j]] = [images[j], images[i]];
-      }
-
-      return images.length > 3 ? images.slice(0, 3) : images;
-    };*/
-
-    //const selectedImages = getRandomImageUrls(publicationsData);
-    const selectedImages = ['/images/featured-artwork-1.webp', '/images/featured-artwork-2.webp', '/images/featured-artwork-3.webp'];
-    setImageUrls(selectedImages);
-  }, [publicationsData, publicationsLoading, publicationsError]);
+  const selectedImages = ['/images/featured-artwork-1.webp', '/images/featured-artwork-2.webp', '/images/featured-artwork-3.webp'];
+  console.log(selectedImages);
 
   return (
     <section className="w-full py-12 md:py-24 lg:py-32">
@@ -66,7 +20,7 @@ export default function HighlightSection() {
           </p>
           <Link
             className="inline-flex h-10 items-center justify-center bg-gray-900 px-8 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-            href="/explore"
+            href="/drops/mystic"
           >
             Explore Now
           </Link>
@@ -77,7 +31,7 @@ export default function HighlightSection() {
               <img
                 alt="Art Piece 1"
                 className="w-full h-full object-cover object-center"
-                src={imageUrls[0]}
+                src={selectedImages[0]}
               />
             </div>
           </div>
@@ -85,14 +39,14 @@ export default function HighlightSection() {
             <img
               alt="Art Piece 2"
               className="w-full h-full object-cover object-center"
-              src={imageUrls[1]}
+              src={selectedImages[1]}
             />
           </div>
           <div className="relative w-full h-full overflow-hidden max-h-[300px] max-w-[450px]">
             <img
               alt="Art Piece 3"
               className="w-full h-full object-cover object-center"
-              src={imageUrls[2]}
+              src={selectedImages[2]}
             />
           </div>
         </div>
