@@ -32,6 +32,7 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '/images/dropchloe.jpg',
     '/images/dropTiny.png',
     '/images/dropGrams.jpg',
+    '/images/dropSoju.gif',
     '/images/dropAeoife.png',
     '/images/dropLosi.webp',
     '/images/dropJessy.png',
@@ -41,6 +42,7 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
   ]
 
   export const MYSTIC_DROP_IDS = [
+    '0xc4b8-0x032b', // Soju
     '0x018ccc-0x2b62', // zo
     '0x021135-0x018e' , //aeoife
     '0xf6b0-0x110b', //andres
