@@ -9,7 +9,7 @@ import {
   MediaAudioMimeType,
   MediaVideoMimeType,
 } from '@lens-protocol/metadata';
-import { Post } from '@lens-protocol/react-web';
+import { Post, Profile } from '@lens-protocol/react-web';
 import { FEATURED_ARTIST_PROFILE_IDS } from '@/app/constants'; // Import the array of curated profile IDs
 import { FALLBACK_IMAGE_URL } from "@/app/constants";
 import { getChainId, switchChain } from "@wagmi/core";
@@ -257,11 +257,13 @@ export function getPostSellType(post: Post): 'auction' | 'buy_now' | 'none' {
  * @returns The concatenated hex format string of profileId and publicationId.
  */
 export function formatToLensHex(profileId: bigint, publicationId: bigint): string {
-  const profileIdHex = profileId.toString(16);
-  const publicationIdHex = publicationId.toString(16);
+  const profileIdHex = convertProfileIdToHex(profileId.toString());
+  const publicationIdHex = convertProfileIdToHex(publicationId.toString());
 
   return `${profileIdHex}-${publicationIdHex}`;
 }
+
+
 
 /**
  * Converts a hex format string to BigInt profileId and publicationId.
@@ -400,4 +402,23 @@ const currentChainId = getChainId(wagmiConfig);
     } else {
       return uris;
     }
+  };
+
+  export const convertProfileIdToHex = (profileId: string): string => {
+    let hexId = BigInt(profileId).toString(16);
+    if (hexId.length % 2 !== 0) { 
+      hexId = '0' + hexId; 
+    }
+    return '0x' + hexId;
+  };
+
+
+  export const getProfileAvatarImageUri = (profile: Profile) => {
+    const profilePictureUri = profile?.metadata?.picture?.__typename === 'ImageSet' 
+    ? profile?.metadata.picture.optimized?.uri 
+    : profile?.metadata?.picture?.__typename === 'NftImage' 
+    ? profile.metadata.picture.image?.optimized?.uri 
+    : '/placeholder-avatar.jpg';
+
+    return profilePictureUri;
   };

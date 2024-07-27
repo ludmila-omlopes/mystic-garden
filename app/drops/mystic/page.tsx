@@ -17,6 +17,7 @@ import SparklesText from "@/components/magicui/sparkles-text";
 import { ClipLoader } from "react-spinners";
 import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
 import { cn } from "@/lib/utils";
+import Leaderboard from "@/components/DropLeaderboard";
 
 const renderer = ({ days, hours, minutes, seconds, completed }) => {
   if (completed) {
@@ -200,6 +201,10 @@ export default function Component() {
             ))}
           </CarouselContent>
         </Carousel>
+      </section>
+      <Separator className="my-8" />
+      <section>
+        <Leaderboard />
       </section>
       <Separator className="my-8" />
       <section className="container mx-auto px-4 py-12 md:py-24 lg:py-32">

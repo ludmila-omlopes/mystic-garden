@@ -8,3 +8,4 @@ sources:
 documents:
   - d:/Lensboard/MysticGarden/src/auctionBidsQuery.graphql
   - d:/Lensboard/MysticGarden/src/exploreBonsaiCreatedAuctions.graphql
+  - d:/Lensboard/MysticGarden/src/auctionActiveBidsQuery.graphql
