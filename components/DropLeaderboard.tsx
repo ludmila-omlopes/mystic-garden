@@ -2,11 +2,19 @@
 
 import React, { useEffect, useState } from 'react';
 import { ClipLoader } from 'react-spinners';
-import { ActiveBidsQueryDocument, ActiveBidsQueryQuery, execute } from '../.graphclient';
+import { ActiveBidsQueryDocument, ActiveBidsQueryQuery, execute, BidPlaced } from '../.graphclient';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ProfileId, profileId, useProfiles } from "@lens-protocol/react-web";
-import { convertProfileIdToHex, formatToLensHex, getProfileAvatarImageUri } from "@/lib/utils";
+import { convertProfileIdToHex, formatToLensHex } from "@/lib/utils";
 import Link from "next/link";
+import { MYSTIC_DROP_IDS } from '@/app/constants';
+
+export function isBidInCurrentDrop(bid: BidPlaced): boolean {
+    const profileId = BigInt(bid.profileId);
+    const publicationId = BigInt(bid.pubId);
+    const lensHex = formatToLensHex(profileId, publicationId);
+    return MYSTIC_DROP_IDS.includes(lensHex);
+  }
 
 const Leaderboard = () => {
   const [currentTimestamp, setCurrentTimestamp] = useState(Math.floor(Date.now() / 1000).toString());
@@ -22,9 +30,11 @@ const Leaderboard = () => {
 
       try {
         const result = await execute(ActiveBidsQueryDocument, { endTimestamp: currentTimestamp });
-        setBidsData(result.data);
-        const ids = result.data.bidPlaceds.map(bid => convertProfileIdToHex(bid.bidderProfileId));
+        const filteredBids = result.data.bidPlaceds.filter(isBidInCurrentDrop);
+        setBidsData({ bidPlaceds: filteredBids });
+        const ids = filteredBids.map(bid => convertProfileIdToHex(bid.bidderProfileId));
         setProfileIds(ids);
+        console.log("ids= " + ids);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -79,7 +89,10 @@ const Leaderboard = () => {
     .sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp))
     .slice(0, 3); // Display only latest 3 bids
 
-  const getProfile = (id: string) => profilesData?.find(profile => profile.id === convertProfileIdToHex(id));
+  const getProfile = (id: string) => {
+    if (!id) return null;
+    return profilesData?.find(profile => profile.id === convertProfileIdToHex(id));
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -89,12 +102,13 @@ const Leaderboard = () => {
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             {topBidders.map((bid) => {
               const profile = getProfile(bid.bidderProfileId);
+              if (!profile || !bid.profileId || !bid.pubId) return null;
               const hexPublicationId = formatToLensHex(BigInt(bid.profileId), BigInt(bid.pubId));
               return (
                 <Link key={bid.id} href={`/gallery/${hexPublicationId}`} className="rounded-lg bg-muted p-4 block">
                   <div className="flex items-center gap-4">
                     <Avatar>
-                      <AvatarImage src={profile ? getProfileAvatarImageUri(profile) : ""} />
+                      <AvatarImage src={profile?.metadata?.picture?.optimized?.uri || "/placeholder-user.jpg"} />
                       <AvatarFallback>{profile?.handle?.localName.slice(-2)}</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-1">
@@ -114,11 +128,12 @@ const Leaderboard = () => {
               const profile = getProfile(bid.bidderProfileId);
               const outbidProfileId = findOutbidProfile(bid);
               const outbidProfile = getProfile(outbidProfileId);
+              if (!profile || !bid.profileId || !bid.pubId) return null;
               const hexPublicationId = formatToLensHex(BigInt(bid.profileId), BigInt(bid.pubId));
               return (
                 <Link key={bid.id} href={`/gallery/${hexPublicationId}`} className="flex items-center gap-4 block">
                   <Avatar>
-                    <AvatarImage src={profile ? getProfileAvatarImageUri(profile) : ""} />
+                    <AvatarImage src={profile?.metadata?.picture?.optimized?.uri || "/placeholder-user.jpg"} />
                     <AvatarFallback>{profile?.handle?.localName.slice(-2)}</AvatarFallback>
                   </Avatar>
                   <div className="grid gap-1">
