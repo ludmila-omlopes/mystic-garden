@@ -1954,7 +1954,8 @@ const merger = new(BareMerger as any)({
         store: rootStore.child('bareMerger')
       })
 const documentHashMap = {
-        "47a48ba8eeea0c0b613b2392f76a00579f2e84f0baef0d02f13b817e0409acad": BidsQueryDocument,
+        "6a46e5843c71146ca364cafd5a44419dd1bbc6ee7591a0597356e91fd6f4ab2b": ActiveBidsQueryDocument,
+"47a48ba8eeea0c0b613b2392f76a00579f2e84f0baef0d02f13b817e0409acad": BidsQueryDocument,
 "fe1dc5e947a2c5de49ebafe6295245aad36cd1b863dba55977dcecda39f0be04": ExploreBonsaiCreatedAuctionsDocument
       }
 additionalEnvelopPlugins.push(usePersistedOperations({
@@ -1977,6 +1978,13 @@ additionalEnvelopPlugins.push(usePersistedOperations({
     get documents() {
       return [
       {
+        document: ActiveBidsQueryDocument,
+        get rawSDL() {
+          return printWithCache(ActiveBidsQueryDocument);
+        },
+        location: 'ActiveBidsQueryDocument.graphql',
+        sha256Hash: '6a46e5843c71146ca364cafd5a44419dd1bbc6ee7591a0597356e91fd6f4ab2b'
+      },{
         document: BidsQueryDocument,
         get rawSDL() {
           return printWithCache(BidsQueryDocument);
@@ -2044,6 +2052,13 @@ export function getBuiltGraphSDK<TGlobalContext = any, TOperationContext = any>(
   const sdkRequester$ = getBuiltGraphClient().then(({ sdkRequesterFactory }) => sdkRequesterFactory(globalContext));
   return getSdk<TOperationContext, TGlobalContext>((...args) => sdkRequester$.then(sdkRequester => sdkRequester(...args)));
 }
+export type ActiveBidsQueryQueryVariables = Exact<{
+  endTimestamp: Scalars['BigInt']['input'];
+}>;
+
+
+export type ActiveBidsQueryQuery = { bidPlaceds: Array<Pick<BidPlaced, 'id' | 'profileId' | 'pubId' | 'referrerProfileIds' | 'amount' | 'bidderOwner' | 'bidderProfileId' | 'endTimestamp' | 'timestamp'>> };
+
 export type BidsQueryQueryVariables = Exact<{
   profileId: Scalars['BigInt']['input'];
   pubId: Scalars['BigInt']['input'];
@@ -2058,6 +2073,21 @@ export type ExploreBonsaiCreatedAuctionsQueryVariables = Exact<{ [key: string]: 
 export type ExploreBonsaiCreatedAuctionsQuery = { auctionCreateds: Array<Pick<AuctionCreated, 'id' | 'duration' | 'minBidIncrement' | 'minTimeAfterBid' | 'onlyFollowers' | 'profileId' | 'pubId' | 'reservePrice' | 'tokenName' | 'tokenRoyalty' | 'tokenSymbol' | 'blockTimestamp' | 'availableSinceTimestamp'>> };
 
 
+export const ActiveBidsQueryDocument = gql`
+    query ActiveBidsQuery($endTimestamp: BigInt!) {
+  bidPlaceds(where: {endTimestamp_gt: $endTimestamp}) {
+    id
+    profileId
+    pubId
+    referrerProfileIds
+    amount
+    bidderOwner
+    bidderProfileId
+    endTimestamp
+    timestamp
+  }
+}
+    ` as unknown as DocumentNode<ActiveBidsQueryQuery, ActiveBidsQueryQueryVariables>;
 export const BidsQueryDocument = gql`
     query BidsQuery($profileId: BigInt!, $pubId: BigInt!) {
   bidPlaceds(where: {profileId: $profileId, pubId: $pubId}) {
@@ -2099,9 +2129,13 @@ export const ExploreBonsaiCreatedAuctionsDocument = gql`
 
 
 
+
 export type Requester<C = {}, E = unknown> = <R, V>(doc: DocumentNode, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
+    ActiveBidsQuery(variables: ActiveBidsQueryQueryVariables, options?: C): Promise<ActiveBidsQueryQuery> {
+      return requester<ActiveBidsQueryQuery, ActiveBidsQueryQueryVariables>(ActiveBidsQueryDocument, variables, options) as Promise<ActiveBidsQueryQuery>;
+    },
     BidsQuery(variables: BidsQueryQueryVariables, options?: C): Promise<BidsQueryQuery> {
       return requester<BidsQueryQuery, BidsQueryQueryVariables>(BidsQueryDocument, variables, options) as Promise<BidsQueryQuery>;
     },

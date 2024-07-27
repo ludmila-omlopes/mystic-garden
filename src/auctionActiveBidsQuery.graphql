@@ -1,0 +1,13 @@
+query ActiveBidsQuery($endTimestamp: BigInt!) {
+  bidPlaceds(where: { endTimestamp_gt: $endTimestamp }) {
+    id
+    profileId
+    pubId
+    referrerProfileIds
+    amount
+    bidderOwner
+    bidderProfileId
+    endTimestamp
+    timestamp
+  }
+}

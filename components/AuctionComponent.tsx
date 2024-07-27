@@ -124,6 +124,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
             auctionStatus = "Art collected";
         }
     }
+    console.log("auctionStatus=" + auctionStatus);
 
     if (auctionStatus === "Not started" && currentTime < availableSinceTimestamp && (availableSinceTimestamp - currentTime) < 86400) {
         timeLeft = formatDistance(currentTime * 1000, auctionStart, { includeSeconds: true });
