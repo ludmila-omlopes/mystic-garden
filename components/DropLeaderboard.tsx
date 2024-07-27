@@ -5,7 +5,7 @@ import { ClipLoader } from 'react-spinners';
 import { ActiveBidsQueryDocument, ActiveBidsQueryQuery, execute, BidPlaced } from '../.graphclient';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ProfileId, profileId, useProfiles } from "@lens-protocol/react-web";
-import { convertProfileIdToHex, formatToLensHex } from "@/lib/utils";
+import { convertProfileIdToHex, formatToLensHex, getProfileAvatarImageUri } from "@/lib/utils";
 import Link from "next/link";
 import { MYSTIC_DROP_IDS } from '@/app/constants';
 
@@ -108,7 +108,7 @@ const Leaderboard = () => {
                 <Link key={bid.id} href={`/gallery/${hexPublicationId}`} className="rounded-lg bg-muted p-4 block">
                   <div className="flex items-center gap-4">
                     <Avatar>
-                      <AvatarImage src={profile?.metadata?.picture?.optimized?.uri || "/placeholder-user.jpg"} />
+                      <AvatarImage src={(getProfileAvatarImageUri(profile)) || "/placeholder-user.jpg"} />
                       <AvatarFallback>{profile?.handle?.localName.slice(-2)}</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-1">
@@ -133,7 +133,7 @@ const Leaderboard = () => {
               return (
                 <Link key={bid.id} href={`/gallery/${hexPublicationId}`} className="flex items-center gap-4 block">
                   <Avatar>
-                    <AvatarImage src={profile?.metadata?.picture?.optimized?.uri || "/placeholder-user.jpg"} />
+                    <AvatarImage src={getProfileAvatarImageUri(profile) || "/placeholder-user.jpg"} />
                     <AvatarFallback>{profile?.handle?.localName.slice(-2)}</AvatarFallback>
                   </Avatar>
                   <div className="grid gap-1">
