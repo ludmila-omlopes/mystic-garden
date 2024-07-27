@@ -204,7 +204,7 @@ export default function Component() {
       </section>
       <Separator className="my-8" />
       <section>
-        <Leaderboard />
+       { /*<Leaderboard /> */}
       </section>
       <Separator className="my-8" />
       <section className="container mx-auto px-4 py-12 md:py-24 lg:py-32">
