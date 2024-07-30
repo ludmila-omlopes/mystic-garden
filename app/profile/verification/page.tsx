@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { ClipLoader } from 'react-spinners';
 import { SessionType, useSession } from '@lens-protocol/react-web';
 import Select from 'react-select';
+import Image from 'next/image';
 import Particles from "@/components/magicui/particles";
 
 export default function Component() {
@@ -17,7 +18,7 @@ export default function Component() {
   const { data: session, loading: sessionLoading } = useSession();
   const [profileId, setProfileId] = useState('');
   const [handle, setHandle] = useState('');
-  const [color, setColor] = useState("#fab74a");
+  const [color, setColor] = useState("#f3bb6c");
 
   useEffect(() => {
     if (session?.authenticated && session.type === SessionType.WithProfile && !sessionLoading) {
@@ -75,21 +76,21 @@ export default function Component() {
       ...provided,
       backgroundColor: state.isFocused ? '#000' : '#000',
       borderColor: state.isFocused ? '#555' : '#444',
-      color: '#ffffff',
+      color: '#ffff',
     }),
     menu: (provided) => ({
       ...provided,
       backgroundColor: '#000',
-      color: '#ffffff',
+      color: '#ffff',
     }),
     multiValue: (provided) => ({
       ...provided,
       backgroundColor: '#333',
-      color: '#ffffff',
+      color: '#ffff',
     }),
     multiValueLabel: (provided) => ({
       ...provided,
-      color: '#ffffff',
+      color: '#ffff',
     }),
     placeholder: (provided) => ({
       ...provided,
@@ -98,35 +99,35 @@ export default function Component() {
     option: (provided, state) => ({
       ...provided,
       backgroundColor: state.isSelected ? '#000' : state.isFocused ? '#333' : '#000',
-      color: '#ffffff',
+      color: '#ffff',
     }),
   };
 
   return (
     <div className="w-full min-h-screen bg-background">
-      <section className="relative w-full py-24">
+      <section className="relative w-full py-24 bg-primary">
         <div className="absolute inset-0">
-          <img src="/images/door-bg.webp" alt="Background" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black opacity-70"></div>
+          <Image src="/images/door-bg.webp" alt="Background" layout="fill" objectFit="cover" />
+          <div className="absolute inset-0 bg-black opacity-60"></div>
         </div>
         <Particles
           className="absolute inset-0"
-          quantity={120}
+          quantity={100}
           ease={80}
           color={color}
           refresh
         />
-        <div className="relative container px-4 md:px-6">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tighter text-white sm:text-5xl md:text-6xl lg:text-7xl">
+        <div className="container relative px-4 md:px-6">
+          <div className="mx-auto max-w-3xl text-center text-white dark:text-white">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
               Mystic Garden Curated Artists Application
             </h1>
-            <div className="mt-6 text-lg text-white space-y-6 md:text-xl lg:text-xl  text-left bg-black bg-opacity-70 p-8 ">
+            <div className="mt-6 text-lg space-y-4 md:text-xl lg:text-xl leading-relaxed text-left">
               <p>
-                Welcome, noble artist, to the Mystic Garden! 🌿✨ We're delighted you're considering joining our enchanted community. 
+                Welcome, noble artist, to the Mystic Garden! 🌿✨ We&apos;re delighted you&apos;re considering joining our enchanted community. 
               </p>
               <p>
-                While any artist can cast their creations into our magical auctions, those who complete this application and pass our mystical verification process will earn the esteemed title of "verified" artist.
+                While any artist can cast their creations into our magical auctions, those who complete this application and pass our mystical verification process will earn the esteemed title of &quot;verified&quot; artist.
               </p>
               <p>
                 This honor grants you additional visibility and opportunities within our sacred grounds. Please fill out the enchanted form below to apply and let your artistic journey in the Mystic Garden begin!
