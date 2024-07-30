@@ -34,7 +34,7 @@ export default function Footer() {
           <Link href="#" className="text-sm text-muted-foreground hover:text-primary" prefetch={false}>
             Terms of Service
           </Link>
-          <Link href="#" className="text-sm text-muted-foreground hover:text-primary" prefetch={false}>
+          <Link href="/profile/verification" className="text-sm text-muted-foreground hover:text-primary" prefetch={false}>
             Submit for Verification
           </Link>
         </div>
