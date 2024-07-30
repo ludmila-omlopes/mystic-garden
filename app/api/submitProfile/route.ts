@@ -1,194 +1,47 @@
-'use client';
+import { GoogleSpreadsheet } from 'google-spreadsheet';
+import { JWT } from 'google-auth-library';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { useForm, Controller } from 'react-hook-form';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input, Textarea } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
-import { ClipLoader } from 'react-spinners';
-import { SessionType, useSession } from '@lens-protocol/react-web';
-import Select from 'react-select';
-import Particles from "@/components/magicui/particles";
+const formatPrivateKey = (key) => key.replace(/\\n/g, '\n');
 
-export default function Component() {
-  const { register, handleSubmit, control, reset } = useForm();
-  const [loading, setLoading] = useState(false);
-  const { data: session, loading: sessionLoading } = useSession();
-  const [profileId, setProfileId] = useState('');
-  const [handle, setHandle] = useState('');
-  const [color, setColor] = useState("#ffffff");
+export async function POST(req: NextRequest) {
+  try {
+    // Initialize auth
+    const serviceAccountAuth = new JWT({
+      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      key: formatPrivateKey(process.env.GOOGLE_PRIVATE_KEY),
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
 
-  useEffect(() => {
-    if (session?.authenticated && session.type === SessionType.WithProfile && !sessionLoading) {
-      setProfileId(session.profile.id);
-      setHandle(session?.profile?.handle?.suggestedFormatted.localName || '');
+    const { email, website, artCategory, profileId, handle, additionalInfo } = await req.json();
+    
+    const doc = new GoogleSpreadsheet("1jnCwXlWmSijkrNmyJQhqDXYk_4zRILR5PTM4GzYrdxc", serviceAccountAuth);
+    await doc.loadInfo();
+    const sheet = doc.sheetsByIndex[0];
+
+    // Ensure headers are set
+    const headers = ['Timestamp','ProfileId','Handle','Email', 'Website', 'ArtCategory', 'Additional'];
+    await sheet.loadHeaderRow(); // Explicitly load the header row
+    if (!sheet.headerValues || sheet.headerValues.length === 0) {
+      await sheet.setHeaderRow(headers);
     }
-  }, [session, sessionLoading]);
 
-  const onSubmit = async (data) => {
-    setLoading(true);
-    const payload = {
-      ...data,
-      profileId,
-      handle,
-      artCategory: data.artCategory.map(option => option.value).join(', '),
-    };
-    try {
-      const response = await fetch('/api/submitProfile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+    // Get the current timestamp
+    const timestamp = new Date().toLocaleString('en-US', { timeZone: 'UTC', hour12: false });
 
-      if (response.ok) {
-        alert('Application submitted successfully!');
-        reset(); // Clear form fields
-      } else {
-        const errorData = await response.json();
-        alert(`Error: ${errorData.error}`);
-      }
-    } catch (error) {
-      console.error('Error submitting profile:', error);
-      alert('There was an error submitting your application. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    await sheet.addRow({
+      Timestamp: timestamp,
+      ProfileId: profileId,
+      Handle: handle,
+      Email: email,
+      Website: website,
+      ArtCategory: artCategory,
+      Additional: additionalInfo     
+    });
 
-  const artCategoryOptions = [
-    { value: 'Illustration', label: 'Illustration' },
-    { value: 'Digital Painting', label: 'Digital Painting' },
-    { value: 'Photography', label: 'Photography' },
-    { value: '3D Art', label: '3D Art' },
-    { value: 'Mixed Media', label: 'Mixed Media' },
-    { value: 'Animation', label: 'Animation' },
-    { value: 'AI Art', label: 'AI Art' },
-    { value: 'Music', label: 'Music' },
-    { value: 'Other', label: 'Other (Please specify)' },
-  ];
-
-  const customStyles = {
-    control: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isFocused ? '#000' : '#000',
-      borderColor: state.isFocused ? '#555' : '#444',
-      color: '#ffff',
-    }),
-    menu: (provided) => ({
-      ...provided,
-      backgroundColor: '#000',
-      color: '#ffff',
-    }),
-    multiValue: (provided) => ({
-      ...provided,
-      backgroundColor: '#333',
-      color: '#ffff',
-    }),
-    multiValueLabel: (provided) => ({
-      ...provided,
-      color: '#ffff',
-    }),
-    placeholder: (provided) => ({
-      ...provided,
-      color: '#aaa',
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isSelected ? '#000' : state.isFocused ? '#333' : '#000',
-      color: '#ffff',
-    }),
-  };
-
-  return (
-    <div className="w-full min-h-screen bg-background">
-      <section className="relative w-full py-24 bg-primary">
-        <div className="absolute inset-0">
-          <img src="/path/to/your/image.jpg" alt="Background" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-        </div>
-        <Particles
-          className="absolute inset-0"
-          quantity={100}
-          ease={80}
-          color={color}
-          refresh
-        />
-        <div className="relative container px-4 md:px-6">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tighter text-primary-foreground sm:text-5xl md:text-6xl lg:text-7xl">
-              Mystic Garden Curated Artists Application
-            </h1>
-            <div className="mt-6 text-lg text-primary-foreground/80 space-y-4 md:text-xl lg:text-xl leading-relaxed text-left bg-black bg-opacity-70 p-6 rounded-lg">
-              <p>
-                Welcome, noble artist, to the Mystic Garden! 🌿✨ We're delighted you're considering joining our enchanted community. 
-              </p>
-              <p>
-                While any artist can cast their creations into our magical auctions, those who complete this application and pass our mystical verification process will earn the esteemed title of "verified" artist.
-              </p>
-              <p>
-                This honor grants you additional visibility and opportunities within our sacred grounds. Please fill out the enchanted form below to apply and let your artistic journey in the Mystic Garden begin!
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section className="w-full py-16">
-        <div className="container px-4 md:px-6">
-          <div className="mx-auto max-w-lg">
-            <Card>
-              <CardHeader>
-                <CardTitle>Submit for Verification</CardTitle>
-                <CardDescription>Fill out the form below with your details and artwork.</CardDescription>
-              </CardHeader>
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <CardContent className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" {...register('email')} placeholder="Enter your email" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="website">Website/Portfolio</Label>
-                    <Input id="website" {...register('website')} placeholder="Enter your Website/Portfolio" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="artCategory">Art Category</Label>
-                    <Controller
-                      name="artCategory"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          {...field}
-                          isMulti
-                          options={artCategoryOptions}
-                          classNamePrefix="react-select"
-                          styles={customStyles}
-                        />
-                      )}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="additionalInfo">Additional Information</Label>
-                    <Textarea id="additionalInfo" {...register('additionalInfo')} placeholder="Enter any additional information" />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" type="submit" disabled={loading || sessionLoading || !session?.authenticated}>
-                    {loading ? <ClipLoader size={20} color={"#FFFFFF"} /> : 'Submit for Verification'}
-                  </Button>
-                  {(!session?.authenticated && !sessionLoading) && (
-                    <p className="mt-4 text-sm text-red-600">
-                      You need to be logged in to submit the form.
-                    </p>
-                  )}
-                </CardFooter>
-              </form>
-            </Card>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
+    return NextResponse.json({ message: 'Profile submitted successfully' });
+  } catch (error) {
+    console.error('Failed to submit profile:', error);
+    return NextResponse.json({ error: 'Failed to submit profile' }, { status: 500 });
+  }
 }
