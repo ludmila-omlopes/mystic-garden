@@ -9,6 +9,13 @@ import  Footer  from '@/components/footer';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
 import dotenv from 'dotenv';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Mystic Garden',
+  description: 'Mystic Garden is the first Lens-native platform for exclusive 1/1 art from curated artists.',
+  metadataBase: new URL('https://www.mysticgarden.xyz/'),
+};
 
 export default function Layout({ children }) {
   dotenv.config(); 
