@@ -23,6 +23,8 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
   export const BID_AWARD = 100; // será que coloco proporcional?
   export const CREATE_NEW_AWARD = 500;
   export const COLLECT_PERCENT_AWARD = 0.2; 
+  export const NEW_PROFILE_AWARD = 1000;
+  export const NEW_PROFILE_AWARD_REFERRAL = 500;
 
   export const MYSTIC_DROP_IMAGES_URLS = [
     '/images/dropMari.webp',

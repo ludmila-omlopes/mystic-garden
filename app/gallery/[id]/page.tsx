@@ -238,7 +238,7 @@ function GalleryPostDetails({ params }) {
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">{postTitle}</h1>
-            <ReactMarkdown className="text-gray-500 dark:text-gray-400">
+            <ReactMarkdown className="text-gray-500 dark:text-gray-400 whitespace-pre-wrap">
               {content || 'This NFT is a unique digital artwork created by the artist.'}
             </ReactMarkdown>
           </div>
