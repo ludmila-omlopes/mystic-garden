@@ -79,17 +79,15 @@ export default function OnboardingPage() {
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background text-foreground">
-      <main className="flex-1 flex flex-col items-center justify-center px-4 md:px-6 py-12 md:py-24">
-        <div className="max-w-[800px] w-full space-y-8">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 md:px-6 py-12 md:py-24 relative">
+        <Image src="/images/door-bg.webp" alt="Background" layout="fill" className="absolute inset-0 w-full h-full object-cover opacity-50" />
+        <Particles className="absolute inset-0" quantity={100} ease={80} color="#f3bb6c" refresh />
+        <div className="max-w-[800px] w-full space-y-8 relative z-[1]">
           <div className="relative text-center space-y-2">
-            <Image src="/images/door-bg.webp" alt="Background" layout="fill" className="absolute inset-0 w-full h-full object-cover opacity-50" />
-            <Particles className="absolute inset-0" quantity={100} ease={80} color="#ffffff" refresh />
-            <div className="relative">
-              <h1 className="text-4xl font-bold">Welcome to Lens Protocol</h1>
-              <p className="text-muted-foreground text-lg">Mint your decentralized social profile in just a few steps.</p>
-            </div>
+            <h1 className="text-4xl font-bold">Welcome to Lens Protocol</h1>
+            <p className="text-muted-foreground text-lg">Mint your decentralized social profile in just a few steps.</p>
           </div>
-          <div className="bg-card rounded-xl p-6 md:p-10 space-y-6 relative">
+          <div className="bg-card rounded-xl p-6 md:p-10 space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="aspect-square w-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold">
