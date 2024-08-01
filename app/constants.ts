@@ -18,6 +18,7 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0x01bbee', // maze mari
     '0x326c', // grams
     '0xf71a',   // internetfase
+    '0x020d1f' //deadstartalk
   ];
 
   export const BID_AWARD = 100; // será que coloco proporcional?
