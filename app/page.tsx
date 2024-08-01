@@ -1,5 +1,6 @@
 'use client';
 
+import CreateProfileSection from "@/components/createProfileSection";
 import FeaturedArtistsSection from "@/components/featuredArtistsSection";
 import HeroSection from "@/components/heroSection";
 import HighlightSection from "@/components/highlightSection";
@@ -13,6 +14,7 @@ export default function Home() {
       <HeroSection />
       <HighlightSection />
       <FeaturedArtistsSection />
+      <CreateProfileSection />
       {/*<LatestCollectionsSection />*/}
       {/*<TestimonialsSection />*/}
       {/*<UpcomingEventsSection />*/}

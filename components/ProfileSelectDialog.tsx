@@ -4,7 +4,6 @@ import { Dialog, DialogTrigger, DialogContent, DialogClose } from '@/components/
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ProfileId, useLogin, useProfilesManaged } from '@lens-protocol/react-web';
-import { useAccount } from 'wagmi';
 import { Button } from './ui/button';
 import Link from 'next/link';
 
