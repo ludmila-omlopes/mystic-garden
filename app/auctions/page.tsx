@@ -80,9 +80,6 @@ export default function Explore() {
     let auctionStatus = "Not started";
     let timeLeft = formatDistanceToNow(auctionStart, { includeSeconds: true });
 
-    console.log("currentTime = ", currentTime);
-    console.log("availableSinceTimestamp = ", availableSinceTimestamp);
-
     if (currentTime >= availableSinceTimestamp) {
       if (parseInt(auction.startTimestamp) === 0) {
         auctionStatus = "Active but not started";
