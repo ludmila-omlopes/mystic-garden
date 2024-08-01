@@ -84,8 +84,8 @@ export default function OnboardingPage() {
         <Particles className="absolute inset-0" quantity={100} ease={80} color="#f3bb6c" refresh />
         <div className="max-w-[800px] w-full space-y-8 relative z-[1]">
           <div className="relative text-center space-y-2">
-            <h1 className="text-4xl font-bold">Welcome to Lens Protocol</h1>
-            <p className="text-muted-foreground text-lg">Mint your decentralized social profile in just a few steps.</p>
+            <h1 className="text-4xl font-bold">Create your new Lens Profile and become part of the Garden!</h1>
+            <p className="text-muted-foreground text-lg">Mystic Garden is built on top of Lens Protocol, an open social network that allows users to own their content and connections. Mint your profile in just a few steps and start taking control of your content.</p>
           </div>
           <div className="bg-card rounded-xl p-6 md:p-10 space-y-6">
             <div className="flex items-center justify-between">

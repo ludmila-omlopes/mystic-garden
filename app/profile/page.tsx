@@ -337,7 +337,7 @@ export default function ProfilePage() {
                   <span className="sr-only">More information</span>
                 </Button>
               </div>
-              <div className="absolute top-0 right-0 mt-8 hidden group-hover:block bg-black text-white text-xs rounded-lg p-2 w-64">
+              <div className="absolute top-100 right-0 mt-8 hidden group-hover:block bg-black text-white text-xs rounded-lg p-2 w-64">
                 Share this referral code for users minting new profiles on Mystic Garden to earn points.
               </div>
             </div>
