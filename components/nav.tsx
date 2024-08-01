@@ -20,7 +20,7 @@ import ShineBorder from './magicui/shine-border';
 
 export function Nav() {
   const { open } = useWeb3Modal();
-  const { address } = useAccount();
+  const { address, isConnecting } = useAccount();
   const { disconnect } = useDisconnect();
   const pathname = usePathname();
   const { execute: exLogout } = useLogout();
@@ -58,7 +58,7 @@ export function Nav() {
   }, [exLogout, logoutLoading]);
 
   useEffect(() => {
-    if (!address && sessionData?.authenticated) {
+    if ((sessionData?.authenticated && !address) || (sessionData?.authenticated && sessionData?.address !== address)) {
       logout();
     }
   }, [address, sessionData, logout]);

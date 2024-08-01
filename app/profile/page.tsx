@@ -11,6 +11,8 @@ import { getPointsByWallet } from '@/lib/pointsSystem';
 import { getPublicationAsset, isCuratedProfile } from '@/lib/utils'; // Import the function
 import { getAllCreatedPublicationsByCreator } from '@/lib/publications'; // Import the function
 import { PublicationId } from '@lens-protocol/metadata';
+import { Button } from '@/components/ui/button';
+import { BugIcon } from '@/components/icons';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -290,99 +292,118 @@ export default function ProfilePage() {
           <p>Wallet-Only Session</p>
         </main>
       );
-    case SessionType.WithProfile:
-      return (
-        <div className="flex min-h-screen flex-col bg-background mt-20">
-          <div className="container mx-auto flex flex-col gap-8 px-4 py-8 md:px-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start">
-              <div className="flex flex-col items-center gap-2 md:items-start">
-                <Avatar className="h-24 w-24">
-                  {sessionData.profile?.metadata?.picture?.__typename === 'ImageSet' ? (
-                    <AvatarImage src={sessionData.profile.metadata.picture.optimized?.uri} />
-                  ) : (
-                    <AvatarFallback>JP</AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="grid gap-1 text-center md:text-left">
-                  <div className="font-bold">@{sessionData.profile?.handle?.localName}</div>
-                  <div className="text-muted-foreground">{sessionData.profile?.metadata?.displayName}</div>
-                </div>
+      case SessionType.WithProfile:
+  return (
+    <div className="flex min-h-screen flex-col bg-background mt-20">
+      <div className="container mx-auto flex flex-col gap-8 px-4 py-8 md:px-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start">
+          <div className="flex flex-col items-center gap-2 md:items-start">
+            <Avatar className="h-24 w-24">
+              {sessionData.profile?.metadata?.picture?.__typename === 'ImageSet' ? (
+                <AvatarImage src={sessionData.profile.metadata.picture.optimized?.uri} />
+              ) : (
+                <AvatarFallback>JP</AvatarFallback>
+              )}
+            </Avatar>
+            <div className="grid gap-1 text-center md:text-left">
+              <div className="font-bold">@{sessionData.profile?.handle?.localName}</div>
+              <div className="text-muted-foreground">{sessionData.profile?.metadata?.displayName}</div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <UsersIcon className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">{sessionData.profile?.stats?.followers} Followers</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <UsersIcon className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">{sessionData.profile?.stats?.following} Following</span>
+            </div>
+            {isCuratedProfile(sessionData.profile.id) && (
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">
+                  <StarIcon className="h-3 w-3 text-primary mr-2" />
+                  <span className="text-xs font-medium">Curated</span>
+                </Badge>
               </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{sessionData.profile?.stats?.followers} Followers</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{sessionData.profile?.stats?.following} Following</span>
-                </div>
-                {isCuratedProfile(sessionData.profile.id) && (
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">
-                      <StarIcon className="h-3 w-3 text-primary mr-2" />
-                      <span className="text-xs font-medium">Curated</span>
-                    </Badge>
-                  </div>
-                )}
+            )}
+          </div>
+          <div className="ml-auto flex flex-col gap-4">
+            <div className="relative group p-4 rounded-lg border">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Referral Code: {sessionData.profile.id}</span>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <BugIcon className="h-4 w-4" />
+                  <span className="sr-only">More information</span>
+                </Button>
+              </div>
+              <div className="absolute top-0 right-0 mt-8 hidden group-hover:block bg-black text-white text-xs rounded-lg p-2 w-64">
+                Share this referral code for users minting new profiles on Mystic Garden to earn points.
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div className="flex items-center gap-2">
-                  <TrophyIcon className="h-6 w-6 text-primary" />
-                  <span className="font-medium">Points Earned</span>
-                </div>
-                <span className="text-2xl font-bold">{points}</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div className="flex items-center gap-2">
-                  <DollarSignIcon className="h-6 w-6 text-primary" />
-                  <span className="font-medium">Revenue</span>
-                </div>
-                <div className="text-2xl font-bold">
-                  <div>Soon...</div>
-                </div>
-              </div>
-              <Link href="#" className="flex items-center justify-between rounded-lg border p-4" prefetch={false}>
-                <div className="flex items-center gap-2">
-                  <UsersIcon className="h-6 w-6 text-primary" />
-                  <span className="font-medium">Collects</span>
-                </div>
-                <span className="text-2xl font-bold">{sessionData.profile?.stats?.collects}</span>
-              </Link>
-            </div>
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="h-4 w-4 text-primary" />
-                  <span className="text-lg font-bold">Created Arts</span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-                {publicationsData && publicationsData.map((publication) => (
-                  <Link key={publication.id} href={'/gallery/'+publication.id} >
-                  <img
-                    key={publication.id}
-                    src={getPublicationAsset(publication as Post).cover}
-                    width={200}
-                    height={200}
-                    alt="Created Art"
-                    className="aspect-square rounded-lg object-cover"
-                  />
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <div className="flex justify-between">
-              <button hidden={!hasPreviousPage} onClick={handlePreviousPage}>Previous</button>
-              <button hidden={!hasNextPage} onClick={handleNextPage}>Next</button>
-            </div>
-          </div> 
+          </div>
         </div>
-      );
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="flex items-center gap-2">
+              <TrophyIcon className="h-6 w-6 text-primary" />
+              <span className="font-medium">Points Earned</span>
+            </div>
+            <span className="text-2xl font-bold">{points}</span>
+          </div>
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="flex items-center gap-2">
+              <DollarSignIcon className="h-6 w-6 text-primary" />
+              <span className="font-medium">Revenue</span>
+            </div>
+            <div className="text-2xl font-bold">
+              <div>Soon...</div>
+            </div>
+          </div>
+          <Link href="#" className="flex items-center justify-between rounded-lg border p-4" prefetch={false}>
+            <div className="flex items-center gap-2">
+              <UsersIcon className="h-6 w-6 text-primary" />
+              <span className="font-medium">Collects</span>
+            </div>
+            <span className="text-2xl font-bold">{sessionData.profile?.stats?.collects}</span>
+          </Link>
+        </div>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4 text-primary" />
+              <span className="text-lg font-bold">Created Arts</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
+            {publicationsData && publicationsData.map((publication) => (
+              <Link key={publication.id} href={'/gallery/' + publication.id}>
+                <img
+                  key={publication.id}
+                  src={getPublicationAsset(publication as Post).cover}
+                  width={200}
+                  height={200}
+                  alt="Created Art"
+                  className="aspect-square rounded-lg object-cover"
+                />
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="flex justify-between">
+          <button hidden={!hasPreviousPage} onClick={handlePreviousPage}>Previous</button>
+          <button hidden={!hasNextPage} onClick={handleNextPage}>Next</button>
+        </div>
+      </div>
+    </div>
+  );
 
+
+
+
+      
     default:
       return <p>Something went wrong.</p>;
   }
 }
+
