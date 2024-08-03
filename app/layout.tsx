@@ -12,7 +12,10 @@ import dotenv from 'dotenv';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Mystic Garden',
+  title: {
+    template: 'Mystic Garden | %s ',
+    default: 'Mystic Garden',
+  },
   description: 'Mystic Garden is the first Lens-native platform for exclusive 1/1 art from curated artists.',
   metadataBase: new URL('https://www.mysticgarden.xyz/'),
 };

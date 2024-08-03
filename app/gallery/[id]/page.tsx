@@ -20,6 +20,8 @@ import { Address } from 'viem';
 import ReactPlayer from 'react-player';
 import { getChainId, switchChain, getBalance  } from '@wagmi/core';
 import { wagmiConfig } from '@/app/web3modal-provider';
+import { Metadata } from 'next';
+import { PublicationId } from '@lens-protocol/metadata';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover?: string } | null {
   if (!post?.metadata) {

@@ -72,15 +72,23 @@ const activeAuctionRenderer = ({ days, hours, minutes, seconds }) => {
     );
   } else if (hours > 0) {
     return (
-      <span>
-        {hours}h {minutes}m left
-      </span>
+      <AnimatedGradientText className="font-bold">
+        <span className={cn(
+            `inline animate-gradient bg-gradient-to-r from-[#ffaa40] via-[#4b0082] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+          )}>
+          {hours}h {minutes}m left
+        </span>
+      </AnimatedGradientText>
     );
   } else {
     return (
-      <span>
-        {minutes}m {seconds}s left
-      </span>
+      <AnimatedGradientText className="font-bold">
+        <span className={cn(
+            `inline animate-gradient bg-gradient-to-r from-[#ffaa40] via-[#4b0082] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+          )}>
+          {minutes}m {seconds}s left
+        </span>
+      </AnimatedGradientText>
     );
   }
 };
