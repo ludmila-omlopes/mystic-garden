@@ -37,13 +37,15 @@ const statusRenderer = ({ days, hours, minutes, seconds, completed }) => {
   const targetDate = new Date(Date.UTC(2024, 6, 20, 14, 0, 0)); // July 20, 2024, at 2pm UTC
   const endDate = new Date(targetDate.getTime() + 2 * 7 * 24 * 60 * 60 * 1000); // 2 weeks after target date
 
-  if (currentDate < targetDate) {
+  return <span className="text-green-500">Live</span>;
+
+  /*if (currentDate < targetDate) {
     return <span className="text-yellow-500">Soon</span>;
   } else if (currentDate >= targetDate && currentDate <= endDate) {
     return <span className="text-green-500">Live</span>;
   } else {
     return <span className="text-red-500">Ended</span>;
-  }
+  }*/
 };
 
 // Custom renderer for the second countdown with styles
