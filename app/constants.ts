@@ -45,12 +45,12 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
   ]
 
   export const MYSTIC_DROP_IDS = [
-    '0x01bbee-0x2035', // maze mari
-    '0x6079-0x127c', // carla
-    '0x012a99-0x046c', //tiny
     '0x021135-0x018e' , //aeoife
     '0xc4b8-0x032b', // Soju
     '0xf6b0-0x110b', //andres
+    '0x01bbee-0x2035', // maze mari
+    '0x6079-0x127c', // carla
+    '0x012a99-0x046c', //tiny
     '0x042318-0x01db', //chloe
     '0x01837b-0x0290', // losi
     '0x326c-0x101f', // grams

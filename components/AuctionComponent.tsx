@@ -73,7 +73,6 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                 const { initData } = await decodeInitData(fetchedSettings, fetchedMetadata);
                 const parsedAuctionInitData = parseAuctionInitData(initData);
                 setParsedInitData(parsedAuctionInitData);
-                console.log("minBidIncrement =" + parsedAuctionInitData.minBidIncrement);
             }
         }
 
@@ -124,15 +123,13 @@ const AuctionComponent = ({ post }: { post: Post }) => {
             auctionStatus = "Art collected";
         }
     }
-    console.log("auctionStatus=" + auctionStatus);
 
     if (auctionStatus === "Not started" && currentTime < availableSinceTimestamp && (availableSinceTimestamp - currentTime) < 86400) {
         timeLeft = formatDistance(currentTime * 1000, auctionStart, { includeSeconds: true });
     }
 
     const isWinner = auctionStatus === "Auction ended, pending collection" && sessionData?.type === SessionType.WithProfile && sessionData?.profile.id === winningProfileId;
-    console.log("auctionStatus=" + auctionStatus);
-    console.log("isWinner=" + isWinner);
+
     if (!parsedInitData) {
         return <div>Loading...</div>;
     }

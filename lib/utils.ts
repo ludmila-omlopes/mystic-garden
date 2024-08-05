@@ -422,3 +422,24 @@ const currentChainId = getChainId(wagmiConfig);
 
     return profilePictureUri;
   };
+
+  export function getPostMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover: string } {
+    if (!post?.metadata) {
+      return { type: 'text', src: FALLBACK_IMAGE_URL, cover: FALLBACK_IMAGE_URL }; //todo: pensar se precisa colocar um tipo "desconhecido"
+    }
+  
+    switch (post.metadata.__typename) {
+      case 'AudioMetadataV3':
+        return {
+          type: 'audio',
+          src: post.metadata.asset?.audio?.optimized?.uri || FALLBACK_IMAGE_URL,
+          cover: post.metadata.asset?.cover?.optimized?.uri || FALLBACK_IMAGE_URL
+        };
+      case 'VideoMetadataV3':
+        return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || FALLBACK_IMAGE_URL, cover: post.metadata.asset?.cover?.optimized?.uri || FALLBACK_IMAGE_URL };
+      case 'ImageMetadataV3':
+        return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || FALLBACK_IMAGE_URL, cover: post.metadata.asset?.image?.optimized?.uri || FALLBACK_IMAGE_URL };
+      default:
+        return { type: 'text', src: FALLBACK_IMAGE_URL, cover: FALLBACK_IMAGE_URL };
+    }
+  }
