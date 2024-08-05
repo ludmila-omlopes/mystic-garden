@@ -11,7 +11,6 @@ const AuctionBids = ({ auctionId, auctionStatus, winningBid, winnerProfileId }) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [profileIds, setProfileIds] = useState<string[]>([]);
-  console.log('winnerProfileId', winnerProfileId);
 
   useEffect(() => {
     const fetchBids = async () => {

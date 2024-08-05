@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     }
 
     const publications = await getPublicationsByIds(publicationIds);
-    const publicationsData = JSON.parse(publications).data.publications.items;
+    const publicationsData = publications.publications.items;
 
     return NextResponse.json({
       message: 'Publications fetched successfully',

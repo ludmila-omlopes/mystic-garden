@@ -31,9 +31,6 @@ export function AuctionButton(props: AuctionButtonProps) {
     args: [walletAddress as Address, props.address as Address]
   });
 
-  console.log("Minimum bid:", props.minimumBid);
-  console.log("Amount:", props.amount);
-
   const { writeContractAsync } = useWriteErc20Approve();
 
   const checkAndApproveAllowance = async () => {
