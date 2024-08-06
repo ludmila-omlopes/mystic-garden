@@ -17,6 +17,7 @@ import { useReadAuctionsOaGetAuctionData } from '@/src/generated';
 import { parseFromLensHex } from '@/lib/utils';
 import AuctionClaimButton from './AuctionClaimButton';
 import { REV_WALLET } from '@/app/constants';
+import ShineBorder from '@/components/magicui/shine-border';
 
 const AuctionComponent = ({ post }: { post: Post }) => {
     const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
@@ -240,20 +241,36 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                             <p className="text-sm text-red-500">Login to Lens first</p>
                         )}
                     </>
-                ) : auctionStatus === "Auction ended, pending collection" || auctionStatus === "Art collected" ? (
+                ) : auctionStatus === "Auction ended, pending collection" ? (
                     <>
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <p className="text-lg font-bold">Sold: {winningBid} BONSAI</p>
                             </div>
                         </div>
-                        {isWinner && (
-                            <>
-                                <AuctionClaimButton collectedPubId={post.id} price={Number(winningBid)} postCreatorAddress={post.by.ownedBy.address} />
-                                <p className="text-green-500 font-semibold mt-2">You are the winner of the auction, claim your art!</p>
-                            </>
-                        )}
+                        <AuctionClaimButton collectedPubId={post.id} price={Number(winningBid)} postCreatorAddress={post.by.ownedBy.address} />
+                        <p className="text-green-500 font-semibold mt-2">The art is ready to be claimed!</p>
                     </>
+                ) :  auctionStatus === "Art collected" ? (
+                    <ShineBorder className='p-4 w-full mb-4' color={["#A07CFE", "#FE8FB5", "#FFBE7B"]}>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">WINNER</p>
+                                    <p className="text-lg font-bold">{winningBid} BONSAI</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Avatar className="w-8 h-8 mr-2">
+                                        <AvatarImage src={winningProfile?.metadata?.picture?.__typename === 'ImageSet' ? winningProfile?.metadata?.picture?.optimized?.uri : "/placeholder-user.jpg"} />
+                                        <AvatarFallback>{winningProfile?.handle?.localName?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="text-sm font-medium">{winningProfile?.handle?.localName}</p>
+                                        <p className="text-xs text-muted-foreground">{winningProfile?.metadata?.displayName}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </ShineBorder>
+                
                 ) : null}
                 <Separator className="my-8" />
                 <Tabs defaultValue="details" className="mt-4">
