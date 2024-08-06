@@ -1,6 +1,7 @@
 export const DEVNET_PROVIDER_URL = "https://rpc-amoy.polygon.technology";
 export const REV_WALLET = "0x2F059872781f8310C65C735720d3F089Dc0eC78F";
 export const FALLBACK_IMAGE_URL = "/images/no-image-available.jpg";
+export const WEBSITE_THUMBNAIL = "/images/site-thumbnail.jpg";
 export const BONSAI_ADDRESS = "0x3d2bD0e15829AA5C362a4144FdF4A1112fa29B5c";
 
 export const FEATURED_ARTIST_PROFILE_IDS = [

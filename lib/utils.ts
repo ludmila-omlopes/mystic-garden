@@ -10,7 +10,7 @@ import {
   MediaVideoMimeType,
 } from '@lens-protocol/metadata';
 import { Post, Profile } from '@lens-protocol/react-web';
-import { FEATURED_ARTIST_PROFILE_IDS } from '@/app/constants'; // Import the array of curated profile IDs
+import { FEATURED_ARTIST_PROFILE_IDS, WEBSITE_THUMBNAIL } from '@/app/constants'; // Import the array of curated profile IDs
 import { FALLBACK_IMAGE_URL } from "@/app/constants";
 import { getChainId, switchChain } from "@wagmi/core";
 import { wagmiConfig } from "@/app/web3modal-provider";
@@ -436,7 +436,7 @@ const currentChainId = getChainId(wagmiConfig);
           cover: post.metadata.asset?.cover?.optimized?.uri || FALLBACK_IMAGE_URL
         };
       case 'VideoMetadataV3':
-        return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || FALLBACK_IMAGE_URL, cover: post.metadata.asset?.cover?.optimized?.uri || post.metadata.asset?.video?.optimized?.uri || FALLBACK_IMAGE_URL };
+        return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || FALLBACK_IMAGE_URL, cover: post.metadata.asset?.cover?.optimized?.uri || WEBSITE_THUMBNAIL };
       case 'ImageMetadataV3':
         return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || FALLBACK_IMAGE_URL, cover: post.metadata.asset?.image?.optimized?.uri || FALLBACK_IMAGE_URL };
       default:
