@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     default: 'Mystic Garden',
   },
   description: 'Mystic Garden is the first Lens-native platform for exclusive 1/1 art from curated artists.',
+  keywords: ['NFT', 'Crypto Art', 'Digital Art', 'Lens Protocol', 'Lens NFT', 'Mystic Garden'],
   metadataBase: new URL('https://www.mysticgarden.xyz/'),
 };
 
