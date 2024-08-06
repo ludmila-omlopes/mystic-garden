@@ -43,20 +43,38 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   const title = post && post.metadata && "title" in post.metadata ? post.metadata.title : 'Exclusive art from curated artists.';
   const description = (post && post.metadata && "content" in post.metadata) ? truncateDescription(post.metadata.content) : 'No description available.';
 
-  return {
+  const mediaSource = getPostMediaSource(post);
+
+  const metadata: Metadata = {
     title: title,
     description: description,
+    twitter: {
+      card: 'summary_large_image',
+      site: '@mysticgardenxyz',
+      creator: '@definnthefarmer',
+    },
     openGraph: {
       type: 'article',
       title: title,
       description: description,
       images: [
         {
-          url: getPostMediaSource(post).cover,
+          url: mediaSource.cover,
+          alt: title,
         },
       ],
     },
   };
+
+  if (mediaSource.type === 'video' && metadata.openGraph) {
+    metadata.openGraph.videos = [
+      {
+        url: mediaSource.src,
+      },
+    ];
+  }
+
+  return metadata;
 }
 
 export default async function GalleryPage({ params }) {

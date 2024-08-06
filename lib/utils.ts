@@ -436,7 +436,7 @@ const currentChainId = getChainId(wagmiConfig);
           cover: post.metadata.asset?.cover?.optimized?.uri || FALLBACK_IMAGE_URL
         };
       case 'VideoMetadataV3':
-        return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || FALLBACK_IMAGE_URL, cover: post.metadata.asset?.cover?.optimized?.uri || FALLBACK_IMAGE_URL };
+        return { type: 'video', src: post.metadata.asset?.video?.optimized?.uri || FALLBACK_IMAGE_URL, cover: post.metadata.asset?.cover?.optimized?.uri || post.metadata.asset?.video?.optimized?.uri || FALLBACK_IMAGE_URL };
       case 'ImageMetadataV3':
         return { type: 'image', src: post.metadata.asset?.image?.optimized?.uri || FALLBACK_IMAGE_URL, cover: post.metadata.asset?.image?.optimized?.uri || FALLBACK_IMAGE_URL };
       default:
