@@ -18,6 +18,7 @@ import { ClipLoader } from "react-spinners";
 import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
 import { cn } from "@/lib/utils";
 import Leaderboard from "@/components/DropLeaderboard";
+import ThankYouComponent from "@/components/ThankYouComponent";
 
 const renderer = ({ days, hours, minutes, seconds, completed }) => {
   if (completed) {
@@ -37,7 +38,7 @@ const statusRenderer = ({ days, hours, minutes, seconds, completed }) => {
   const targetDate = new Date(Date.UTC(2024, 6, 20, 14, 0, 0)); // July 20, 2024, at 2pm UTC
   const endDate = new Date(targetDate.getTime() + 2 * 7 * 24 * 60 * 60 * 1000); // 2 weeks after target date
 
-  return <span className="text-green-500">Live</span>;
+  return <span>Live Auctions</span>;
 
   /*if (currentDate < targetDate) {
     return <span className="text-yellow-500">Soon</span>;
@@ -51,7 +52,7 @@ const statusRenderer = ({ days, hours, minutes, seconds, completed }) => {
 // Custom renderer for the second countdown with styles
 const countdownRenderer = ({ days, hours, minutes, seconds, completed }) => {
   if (completed) {
-    return <span className="text-3xl font-bold tracking-tighter text-green-500">Live Now</span>;
+    return <span className="text-3xl font-bold tracking-tighter text-red-500">Ended</span>;
   } else {
     return (
       <span className="text-3xl font-bold tracking-tighter">
@@ -177,7 +178,7 @@ export default function Component() {
             <Separator orientation="vertical" className="h-4" />
             <Countdown date={new Date(Date.UTC(2024, 6, 20, 14, 0, 0))} renderer={statusRenderer} />
             <Separator orientation="vertical" className="h-4" />
-            <span>For 2 Weeks</span>
+            <span>July 20th, 2024</span>
           </div>
           <div className="flex flex-col items-start gap-2">
             <Countdown date={new Date(Date.UTC(2024, 6, 20, 14, 0, 0))} renderer={countdownRenderer} className="text-3xl font-bold tracking-tighter" />
@@ -214,7 +215,7 @@ export default function Component() {
       </section>
       <Separator className="my-8" />
       <section>
-       { <Leaderboard /> }
+       { <ThankYouComponent /> }
       </section>
       <Separator className="my-8" />
       <section className="container mx-auto px-4 py-12 md:py-24 lg:py-32">
