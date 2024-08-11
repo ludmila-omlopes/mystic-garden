@@ -10,60 +10,21 @@ import { REV_WALLET } from '@/app/constants';
 import { awardPoints } from '@/lib/utils';
 import { CREATE_NEW_AWARD } from '@/app/constants';
 import { createMetadata } from '@/lib/utils';
-import { profile } from 'console';
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/components/ui/use-toast";
+import { uploadFile, uploadData } from '@/lib/utils';
 
 const MintRegular = ({ isAuthenticated, sessionData, title, description, file, fileName, coverFile }) => {
-  const { execute, error, loading: createPostLoading } = useCreatePost();
+  const { execute, error: createPostError, loading: createPostLoading } = useCreatePost();
   const { data: currencies } = useCurrencies();
   const [price, setPrice] = useState('');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const { toast } = useToast();
   const bonsaiCurrency = currencies?.find((c) => c.symbol === 'BONSAI');
-
-  const uploadData = async (metadata) => {
-    try {
-      const response = await fetch('/api/uploadMetadata', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ metadata }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
-      return data.receiptId;
-    } catch (error) {
-      throw new Error('Error uploading metadata');
-    }
-  };
-
-  const uploadFile = async (fileToUpload) => {
-    if (!fileToUpload) return '';
-
-    const formData = new FormData();
-    formData.append('file', fileToUpload);
-
-    try {
-      const response = await fetch('/api/uploadFile', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('File upload failed');
-      }
-
-      const data = await response.json();
-      return data.ipfsUri;
-    } catch (error) {
-      throw new Error('Error uploading file to IPFS');
-    }
-  };
 
   const validateFields = () => {
     if (!title || !description || !file) {
@@ -84,10 +45,23 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
     }
 
     setLoading(true);
+    setProgress(10);
+    setProgressMessage('Starting the minting process...');
     setErrorMessage('');
+
     try {
+      if (!sessionData?.authenticated) {
+        throw new Error('User not logged in on Lens');
+      }
+
+      setProgress(20);
       const currency = bonsaiCurrency;
+
+      setProgress(30);
+      setProgressMessage('Uploading the main file...');
       const fileUrl = await uploadFile(file);
+
+      setProgressMessage('Uploading the cover file (if any)...');
       const coverUrl = coverFile ? await uploadFile(coverFile) : undefined;
 
       if (!currency) {
@@ -98,21 +72,20 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error('File upload failed');
       }
 
-      if (!sessionData?.authenticated) {
-        throw new Error('User not logged in on Lens');
-      }
-
-      console.log("fileUrl", fileUrl);
-      console.log("coverUrl", coverUrl);
+      setProgress(50);
+      setProgressMessage('Creating metadata...');
       const metadata = createMetadata(fileUrl, title, description, file, coverUrl);
-      console.log("metadata", metadata); 
 
+      setProgressMessage('Uploading metadata to Irys...');
       const arweaveID = await uploadData(metadata);
       const uri = `https://gateway.irys.xyz/${arweaveID}`;
+
       if (!uri) {
         throw new Error('Failed to upload metadata');
       }
 
+      setProgress(70);
+      setProgressMessage('Creating the post on Lens...');
       const result = await execute({
         metadata: uri,
         actions: [
@@ -122,14 +95,8 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
             followerOnly: false,
             collectLimit: 1,
             recipients: [
-              {
-                recipient: REV_WALLET,
-                split: 2, // 2% for the platform
-              },
-              {
-                recipient: sessionData?.address,
-                split: 98, // 98% for the creator
-              },
+              { recipient: REV_WALLET, split: 2 },
+              { recipient: sessionData?.address, split: 98 },
             ],
           }
         ]
@@ -139,6 +106,8 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
         throw new Error(result.error.message || 'There was an error creating the post');
       }
 
+      setProgress(90);
+      setProgressMessage('Completing post creation on chain...');
       const completion = await result.value.waitForCompletion();
       const createdPostId = completion.unwrap().id;
 
@@ -147,20 +116,17 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
       }
 
       const currentDate = new Date();
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDate.getDate()).padStart(2, '0');
-      const awardUniqueId = `${year}-${month}-${day}-${sessionData?.address}`;
+      const awardUniqueId = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}-${sessionData?.address}`;
 
       awardPoints(sessionData?.address, CREATE_NEW_AWARD, 'New Mint', awardUniqueId);
 
-      console.log('Post created', completion.value);
-
-      // Redirect to the gallery with the created post ID
+      setProgress(100);
+      setProgressMessage('Post created and awarded successfully. Redirecting to the gallery...');
       router.push(`/gallery/${createdPostId}`);
     } catch (error) {
-      console.error('Error minting art:', error);
-      setErrorMessage('Error minting art');
+      const errorMessage = error instanceof Error ? error.message : 'There was an error minting the art. Reload the page and try again.';
+      setErrorMessage(errorMessage);
+      toast({ title: "Mint Failed", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -175,16 +141,15 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
           BONSAI
         </div>
       </div>
+      <Progress value={progress} />
+      {progress > 0 && <p className="mt-2 text-center text-gray-500">{progressMessage}</p>}
       <div className="mt-8 flex justify-end">
         <Button onClick={mintArt} disabled={loading || !isAuthenticated}>
           {loading ? 'Creating...' : !isAuthenticated ? 'Login to Lens first' : 'Create NFT'}
         </Button>
       </div>
-      {errorMessage && (
-        <div className="mt-4 text-red-500">
-          {errorMessage}
-        </div>
-      )}
+      {errorMessage && <div className="mt-4 text-red-500">{errorMessage}</div>}
+      {createPostError && <div className="mt-4 text-red-500">{createPostError.name + " - " + createPostError.message}</div>}
     </div>
   );
 };
