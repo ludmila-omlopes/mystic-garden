@@ -116,7 +116,6 @@ const darkThemeStyles = {
   useEffect(() => {
     if (searchTerm) {
       setLoading(true);
-      console.log(themeStyles);
       setError('');
       debouncedFetchProfiles(searchTerm, profiles => {
         setProfiles(profiles);

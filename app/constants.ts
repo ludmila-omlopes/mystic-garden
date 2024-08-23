@@ -1,10 +1,14 @@
+import { polygon, polygonAmoy } from "wagmi/chains";
+
 export const DEVNET_PROVIDER_URL = "https://rpc-amoy.polygon.technology";
 export const REV_WALLET = "0x2F059872781f8310C65C735720d3F089Dc0eC78F";
 export const FALLBACK_IMAGE_URL = "/images/no-image-available.jpg";
 export const WEBSITE_THUMBNAIL = "/images/site-thumbnail.jpg";
 export const BONSAI_ADDRESS = "0x3d2bD0e15829AA5C362a4144FdF4A1112fa29B5c";
+export const AUCTION_OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
+export const CURRENT_CHAIN_ID = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
 
-export const FEATURED_ARTIST_PROFILE_IDS = [
+export const GENESIS_ARTIST_PROFILE_IDS = [
     '0x021135', // aoife
     '0x73b1',   // jessy 
     '0x012a99',  //  tiny
@@ -18,8 +22,27 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
     '0x01c90b', // gremiana
     '0x01bbee', // maze mari
     '0x326c', // grams
+    '0x01a14e' //definn*
+  ];
+
+  export const VERIFIED_ARTIST_PROFILE_IDS = [
+    '0x021135', // aoife
+    '0x73b1',   // jessy 
+    '0x012a99',  //  tiny
+    '0x1087', // christina spinei
+    '0xf6b0', // Andres Briceno
+    '0x018ccc', // zo
+    '0x01837b', // losi
+    '0x042318', //chloee
+    '0x6079', //carla mooni
+    '0xc4b8', // soju
+    '0x01c90b', // gremiana
+    '0x01bbee', // maze mari
+    '0x326c', // grams --------Genesis artists
     '0xf71a',   // internetfase
-    '0x020d1f' //deadstartalk
+    '0x020d1f', //deadstartalk
+    '0x02152a', //princesstutti
+    '0x01a14e' //definn*
   ];
 
   export const BID_AWARD = 100; // será que coloco proporcional?
@@ -46,6 +69,23 @@ export const FEATURED_ARTIST_PROFILE_IDS = [
   ]
 
   export const MYSTIC_DROP_IDS = [
+    '0x021135-0x018e' , //aeoife
+    '0xc4b8-0x032b', // Soju
+    '0xf6b0-0x110b', //andres
+    '0x01bbee-0x2035', // maze mari
+    '0x6079-0x127c', // carla
+    '0x012a99-0x046c', //tiny
+    '0x042318-0x01db', //chloe
+    '0x01837b-0x0290', // losi
+    '0x326c-0x101f', // grams
+    '0x01c90b-0x023f', //gremiana
+    '0x73b1-0x59b5', //jessy
+    '0x018ccc-0x2b62', // zo
+    '0x1087-0x0ade', // cristina
+    
+  ]
+
+  export const FEATURED_IDS = [
     '0x021135-0x018e' , //aeoife
     '0xc4b8-0x032b', // Soju
     '0xf6b0-0x110b', //andres

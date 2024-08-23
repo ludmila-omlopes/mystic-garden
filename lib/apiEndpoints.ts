@@ -7,6 +7,7 @@ export function getApiEndpoint(endpoint: string): string {
       get1editionsBonsai: `${baseUrl}/get1editionsBonsai${envSufix}`,
       get1editionsBonsaiByCreator: `${baseUrl}/get1editionsBonsaiByCreator${envSufix}`,
       listProfileIdsLikeHandle: `${baseUrl}/listProfileIdsLikeHandle${envSufix}`,
+      getAllPublications: `${baseUrl}/get1AllAuctionsAnd1on1s${envSufix}`,
       // Add other endpoints here
     };
   

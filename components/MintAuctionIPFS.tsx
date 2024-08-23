@@ -177,7 +177,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
       awardPoints(sessionData?.address, CREATE_NEW_AWARD, 'New Auction', awardUniqueId);
       
-      console.log('Post created', completion.value);
       setProgress(100);
 
       toast({

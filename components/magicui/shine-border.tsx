@@ -38,7 +38,7 @@ export default function ShineBorder({
         } as React.CSSProperties
       }
       className={cn(
-        "relative grid min-h-[40px] w-fit min-w-[200px] place-items-center bg-transparent text-white p-1 dark:bg-transparent",
+        "relative grid w-fit place-items-center bg-transparent text-white dark:bg-transparent",  //min-w-[200px]  min-h-[40px] p-1
         className,
       )}
     >

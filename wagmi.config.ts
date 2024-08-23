@@ -1,6 +1,6 @@
 import { defineConfig } from '@wagmi/cli'
 import { etherscan, react } from '@wagmi/cli/plugins'
-import { erc20Abi } from 'viem'
+import { erc20Abi, erc721Abi } from 'viem'
 import { polygon } from 'wagmi/chains'
 import dotenv from 'dotenv';
 
@@ -13,6 +13,10 @@ export default defineConfig({
       name: 'erc20',
       abi: erc20Abi,
     },
+    {
+      name: 'erc721',
+      abi: erc721Abi,
+    },
   ],
   plugins: [
     etherscan({
@@ -21,7 +25,7 @@ export default defineConfig({
       contracts: [
         {
           name: 'AuctionsOA',
-          address: '0x857b5e09d54AD26580297C02e4596537a2d3E329',
+          address: '0x857b5e09d54AD26580297C02e4596537a2d3E329', 
         },
       ],
     }),

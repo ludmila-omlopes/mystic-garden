@@ -10,7 +10,7 @@ import {
   MediaVideoMimeType,
 } from '@lens-protocol/metadata';
 import { Post, Profile } from '@lens-protocol/react-web';
-import { FEATURED_ARTIST_PROFILE_IDS, WEBSITE_THUMBNAIL } from '@/app/constants'; // Import the array of curated profile IDs
+import { AUCTION_OPEN_ACTION_MODULE_ADDRESS, GENESIS_ARTIST_PROFILE_IDS, VERIFIED_ARTIST_PROFILE_IDS, WEBSITE_THUMBNAIL } from '@/app/constants'; // Import the array of curated profile IDs
 import { FALLBACK_IMAGE_URL } from "@/app/constants";
 import { getChainId, switchChain } from "@wagmi/core";
 import { wagmiConfig } from "@/app/web3modal-provider";
@@ -18,8 +18,8 @@ import { polygon, polygonAmoy } from "wagmi/chains";
 import { ThirdwebStorage } from "@thirdweb-dev/storage";
 import { createThirdwebClient } from "thirdweb";
 import { upload } from "thirdweb/storage";
+import { AuctionWithPublicationId } from "@/app/types/auction";
 
-const AUCTION_OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
 const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
 const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB per chunk
 
@@ -34,7 +34,7 @@ export const getTitle = (publication) => {
     return 'Untitled';
   }
 
-  const title = publication.metadata.marketplace?.name;
+  const title = publication.metadata.marketplace?.name || publication.metadata.title;
   const description = publication.metadata.content;
 
   if (title && !title.toLowerCase().startsWith("image by") && !title.toLowerCase().startsWith("video by") && !title.toLowerCase().startsWith("post by") && !title.toLowerCase().startsWith("text by") && !title.toLowerCase().startsWith("audio by")) {
@@ -172,9 +172,6 @@ export const createMetadata = (fileUrl: string, title: string, description: stri
   }
 
   const extension = file?.name?.split('.')?.pop()?.toLowerCase();
-  console.log("file : " +   file);
-  console.log("file name: " + file?.name);
-  console.log("extension: " + extension);
 
   switch (extension) {
     case 'jpg':
@@ -229,6 +226,7 @@ export const createMetadata = (fileUrl: string, title: string, description: stri
 };
 
 export function getPostSellType(post: Post): 'auction' | 'buy_now' | 'none' {
+
   if (!post.openActionModules || post.openActionModules.length === 0) {
     return 'none';
   }
@@ -276,7 +274,6 @@ export function parseFromLensHex(hexString: string): { profileId: bigint; public
 
   const profileId = BigInt(profileIdHex);
   const publicationId = BigInt(publicationIdHex);
-  //console.log("converted: " + profileId + " - " + publicationId)
 
   return { profileId, publicationId };
 }
@@ -318,8 +315,12 @@ export const awardPoints = async (userWallet, points, event , uniqueId): Promise
  * @param profileId - The profile ID to check.
  * @returns {boolean} - True if the profile is curated, false otherwise.
  */
-export function isCuratedProfile(profileId: string): boolean {
-  return FEATURED_ARTIST_PROFILE_IDS.includes(profileId);
+export function isVerifiedProfile(profileId: string): boolean {
+  return VERIFIED_ARTIST_PROFILE_IDS.includes(profileId);
+}
+
+export function isGenesisDropArtist(profileId: string): boolean {
+  return GENESIS_ARTIST_PROFILE_IDS.includes(profileId);
 }
 
 export function getPublicationAsset(post: Post) {
@@ -395,8 +396,6 @@ const currentChainId = getChainId(wagmiConfig);
       files: [fileBuffer],
     });
 
-    console.log("uris: " + uris);
-
     if (Array.isArray(uris)) {
       return uris[0];
     } else {
@@ -442,4 +441,32 @@ const currentChainId = getChainId(wagmiConfig);
       default:
         return { type: 'text', src: FALLBACK_IMAGE_URL, cover: FALLBACK_IMAGE_URL };
     }
+  }
+
+  export function getAuctionMediaSource(auction: AuctionWithPublicationId): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover: string } {
+    if (!auction?.metadata) {
+      return { type: 'text', src: FALLBACK_IMAGE_URL, cover: FALLBACK_IMAGE_URL }; //todo: pensar se precisa colocar um tipo "desconhecido"
+    }
+  
+    const isVideo = !!auction.metadata.asset.video?.optimized?.uri;
+    const isAudio = !!auction.metadata.asset.audio?.optimized?.uri;
+    const isImage = !!auction.metadata.asset.image?.optimized?.uri;
+    const coverUrl = auction.metadata.asset.cover?.optimized?.uri || WEBSITE_THUMBNAIL;  //todo: pensar um cover melhor
+
+    if (isVideo) {
+      const videoUrl = auction.metadata.asset.video?.optimized?.uri || FALLBACK_IMAGE_URL;
+      return { type: 'video', src: videoUrl, cover: coverUrl };
+    } 
+    else if (isAudio) {
+      const audioUrl = auction.metadata.asset.audio?.optimized?.uri || FALLBACK_IMAGE_URL;
+      return { type: 'audio', src: audioUrl, cover: coverUrl };
+    } 
+    else if (isImage) {
+      const imageUrl = auction.metadata.asset.image?.optimized?.uri || FALLBACK_IMAGE_URL;
+      return { type: 'image', src: imageUrl, cover: imageUrl };
+    } 
+    else {
+      return { type: 'text', src: FALLBACK_IMAGE_URL, cover: coverUrl };
+    }
+
   }

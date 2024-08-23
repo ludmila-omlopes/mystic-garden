@@ -106,13 +106,11 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
       const currency = BONSAI_ADDRESS;
       const fileUrl = await uploadFileFront(file);
-      console.log('File uploaded', fileUrl);
       setProgress(40);
 
       setProgressMessage('Uploading cover, if any...');
       const coverUrl = coverFile ? await uploadFileFront(coverFile) : undefined;
       setProgress(60);
-      console.log('Cover uploaded', coverUrl);
 
       if (!fileUrl) {
         throw new Error('File upload failed');
@@ -121,11 +119,9 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       setProgressMessage('Creating metadata...');
       const metadata = createMetadata(fileUrl, title, description, file, coverUrl);
       setProgress(70);
-      console.log('Metadata created', JSON.stringify(metadata));
 
       setProgressMessage('Uploading metadata...');
       const arweaveID = await uploadData(metadata);
-      console.log('Metadata uploaded', arweaveID);
       setProgress(80);
       const uri = `https://gateway.irys.xyz/${arweaveID}`;
       if (!uri) {
@@ -165,7 +161,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
         tokenRoyalty: parseInt(tokenRoyalty, 10) * 100,
       };
 
-      console.log('Auction init data = ', initAuctionData);
 
       setProgressMessage('Encoding auction...');
       const fetchedMetadata = await fetchModuleMetadata(OPEN_ACTION_MODULE_ADDRESS);
@@ -186,18 +181,12 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       if (result.isFailure()) {
         switch (result.error.name) {
           case 'BroadcastingError':
-            console.log('There was an error broadcasting the transaction', result.error.message);
             window.alert('There was an error broadcasting the transaction: ' + result.error.message);
             break;
           case 'PendingSigningRequestError':
-            console.log(
-              'There is a pending signing request in your wallet. ' +
-              'Approve it or discard it and try again.'
-            );
-            window.alert('There is a pending signing request in your wallet. ' + result.error.message);
+            window.alert('There is a pending signing request in your wallet. Approve it or discard it and try again.' + result.error.message);
             break;
           case 'WalletConnectionError':
-            console.log('There was an error connecting to your wallet', result.error.message);
             window.alert('There was an error connecting to your wallet: ' + result.error.message);
             break;
           case 'UserRejectedError':
@@ -232,7 +221,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       setProgressMessage('Completing post creation on chain...');
       const completion = await result.value.waitForCompletion();
       const createdPostId = completion.unwrap().id;
-      console.log('Post completed', createdPostId);
 
       if (completion.isFailure()) {
         throw new Error(completion.error.message || 'There was an error processing the transaction');
@@ -246,7 +234,6 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
       awardPoints(sessionData?.address, CREATE_NEW_AWARD, 'New Auction', awardUniqueId);
       
-      console.log('Post awarded', completion.value);
       setProgress(100);
       setProgressMessage('Post created and awarded successfully. You will be redirected to the gallery shortly.');
 
@@ -263,7 +250,8 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            error: errorMessage
+            error: errorMessage,
+            stack: (error instanceof Error) ? error.stack : 'Not Error type.',
           }),
         });
       }

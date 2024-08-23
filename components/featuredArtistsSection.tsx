@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useProfiles, profileId, URI } from '@lens-protocol/react-web';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
-import { FEATURED_ARTIST_PROFILE_IDS } from '@/app/constants';
+import { VERIFIED_ARTIST_PROFILE_IDS } from '@/app/constants';
 //import Autoplay from 'embla-carousel-autoplay';
 import AutoScroll from 'embla-carousel-auto-scroll'
 
@@ -19,7 +19,7 @@ export default function FeaturedArtistsSection() {
   const [artists, setArtists] = useState<Artist[]>([]);
   const { data: profiles, loading, error } = useProfiles({
     where: {
-      profileIds: FEATURED_ARTIST_PROFILE_IDS.map(id => profileId(id)),
+      profileIds: VERIFIED_ARTIST_PROFILE_IDS.map(id => profileId(id)),
     }
   });
 

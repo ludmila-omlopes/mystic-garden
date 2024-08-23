@@ -1,5 +1,5 @@
 // src/types/auction.ts
-
+// tentar trazer o tipo de metadado
 export interface AuctionWithPublicationId {
     id: string;
     metadata: {

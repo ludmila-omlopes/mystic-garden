@@ -20,7 +20,6 @@ export async function decodeInitData(settings, metadata) {
 }
 
 export async function encodeInitData(settings: AuctionInitData, metadata: any) {
-  console.log('initializing encodeInitData');
       try {
 
         const abi = JSON.parse(metadata.initializeCalldataABI) as ModuleParam[];
@@ -41,8 +40,6 @@ export async function encodeInitData(settings: AuctionInitData, metadata: any) {
           settings.tokenRoyalty.toString(),
         ]);
 
-        console.log('calldata = ', calldata);
-
         return calldata;
       }
       catch (e) {
@@ -53,9 +50,8 @@ export async function encodeInitData(settings: AuctionInitData, metadata: any) {
 
 export async function encodeBidData(metadata: any, bidAmount: bigint) {
   const abi = JSON.parse(metadata.processCalldataABI) as ModuleParam[];
-  console.log('auction abi', abi);
   const encodeBigInt = (value: bigint) => BigInt(value).toString();
-  console.log('bidAmount', encodeBigInt(bidAmount));
+
 
   /*const calldata = encodeData([
     { name: "bidAmount", type: "uint256" },

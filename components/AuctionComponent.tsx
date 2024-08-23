@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { decodeInitData, encodeBidData } from '../app/api/lib/lensModuleUtils';
 import { parseAuctionInitData, AuctionInitData } from '../lib/parseAuctionData';
-import { useLazyModuleMetadata, Post, useProfile, SessionType, useSession, ProfileId } from "@lens-protocol/react-web";
+import { useLazyModuleMetadata, Post, useProfile, SessionType, useSession, ProfileId, useLastLoggedInProfile } from "@lens-protocol/react-web";
 import { UnknownOpenActionModuleSettings, useCurrencies } from "@lens-protocol/react-web";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -13,11 +13,13 @@ import AuctionBids from './AuctionBids';
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { AuctionButton } from './AuctionButton';
-import { useReadAuctionsOaGetAuctionData } from '@/src/generated';
-import { parseFromLensHex } from '@/lib/utils';
+import { useReadAuctionsOaGetAuctionData, useReadAuctionsOaGetCollectNft, useReadErc721OwnerOf } from '@/src/generated';
+import { getProfileAvatarImageUri, parseFromLensHex } from '@/lib/utils';
 import AuctionClaimButton from './AuctionClaimButton';
 import { REV_WALLET } from '@/app/constants';
 import ShineBorder from '@/components/magicui/shine-border';
+import { polygon, polygonAmoy } from 'viem/chains';
+import Link from 'next/link';
 
 const AuctionComponent = ({ post }: { post: Post }) => {
     const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
@@ -36,6 +38,21 @@ const AuctionComponent = ({ post }: { post: Post }) => {
         args: [intPublicationId.profileId, intPublicationId.publicationId],
         chainId: process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? 137 : 80002,  //amoy 80002  polygon 137
     });
+
+    const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
+
+  const { data: auctionNFTAddress } = useReadAuctionsOaGetCollectNft({
+    args: [intPublicationId.profileId, intPublicationId.publicationId],
+    chainId: requiredChainId,
+  });
+
+  const { data: nftOwnerAddress } = useReadErc721OwnerOf({
+    args: [BigInt(1)],
+    address: auctionNFTAddress,
+    chainId: requiredChainId,
+  });
+
+  const { data: ownerProfile } = useLastLoggedInProfile({ for: nftOwnerAddress ? nftOwnerAddress : '' });
 
     async function fetchModuleMetadata(moduleAddress: string) {
         if (isFetchingMetadata) return;
@@ -248,7 +265,7 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                                 <p className="text-lg font-bold">Sold: {winningBid} BONSAI</p>
                             </div>
                         </div>
-                        <AuctionClaimButton collectedPubId={post.id} price={Number(winningBid)} postCreatorAddress={post.by.ownedBy.address} />
+                        <AuctionClaimButton collectedPubId={post.id} price={Number(winningBid)} postCreatorAddress={post.by.ownedBy.address} winnerAddress={winningProfile?.ownedBy.address} />
                         <p className="text-green-500 font-semibold mt-2">The art is ready to be claimed!</p>
                     </>
                 ) :  auctionStatus === "Art collected" ? (
@@ -279,33 +296,69 @@ const AuctionComponent = ({ post }: { post: Post }) => {
                         <TabsTrigger value="activity">Activity</TabsTrigger>
                     </TabsList>
                     <TabsContent value="details">
-                        <div className="p-4">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-base font-semibold">Recipients</h3>
-                                <Badge variant="secondary">{parsedInitData.onlyFollowers ? "Followers only" : "Public"}</Badge>
-                            </div>
-                            <div className="mb-4">
-                                {parsedInitData.recipients.map((recipient, index) => (
-                                    <div key={index} className="flex items-center gap-4 mb-2">
-                                        <Avatar>
-                                            <AvatarImage src="/placeholder-user.jpg" />
-                                            <AvatarFallback>{recipient.recipient.slice(-2)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="text-xs">
-                                            {recipient.recipient === REV_WALLET 
-                                                ? "Mystic Garden Minting Fee" 
-                                                : `${recipient.recipient.slice(0, 10)}...`}
-                                        </div>
-                                        <div className="text-xs">{recipient.split / 100}%</div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="mb-4">
-                                <h3 className="text-base font-semibold mb-2">Royalty</h3>
-                                <p className="text-xs">{parsedInitData.tokenRoyalty / 100}%</p>
-                            </div>
-                        </div>
-                    </TabsContent>
+  <div className="p-4">
+    {auctionStatus === "Art collected" && (
+      <>
+        <h3 className="text-base font-semibold mb-2">On-Chain Data</h3>
+        <div className="text-sm">
+          <a href={`https://opensea.io/assets/matic/${auctionNFTAddress}/1`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+            View on OpenSea
+          </a>
+        </div>
+       
+        <div className="mt-4">
+          <h3 className="text-base font-semibold">Current Owner</h3>
+          {ownerProfile ? (
+            <div className="flex items-center mt-2">
+            <Link className="flex items-center mt-2" href={`/${ownerProfile.handle?.localName}`}>
+                <Avatar className="w-8 h-8">
+                    <AvatarImage src={getProfileAvatarImageUri(ownerProfile)} />
+                    <AvatarFallback>{ownerProfile.handle?.localName.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="ml-2">{ownerProfile.handle?.localName}</div>
+              </Link>
+            </div>
+          ) : nftOwnerAddress ? (
+            <div className="flex items-center mt-2">
+              <a href={`https://opensea.io/${nftOwnerAddress}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                {nftOwnerAddress.slice(0, 8)}
+              </a>
+            </div>
+          ) : (
+            <p>No owner information available</p>
+          )}
+        </div>
+        </>
+    )}
+        <div className="mt-4">
+          <h3 className="text-base font-semibold">Revenue Split</h3>
+          <div className="p-4">
+            <div className="mb-4">
+              {parsedInitData.recipients.map((recipient, index) => (
+                <div key={index} className="flex items-center gap-4 mb-2">
+                  <Avatar>
+                    <AvatarImage src="/placeholder-user.jpg" />
+                    <AvatarFallback>{recipient.recipient.slice(-2)}</AvatarFallback>
+                  </Avatar>
+                  <div className="text-xs">
+                    {recipient.recipient === REV_WALLET 
+                      ? "Mystic Garden Minting Fee" 
+                      : recipient.recipient.slice(0, 10)}...
+                  </div>
+                  <div className="text-xs">{recipient.split / 100}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mb-4">
+            <h3 className="text-base font-semibold mb-2">Secondary Sales Royalty</h3>
+            <p className="text-xs">{parsedInitData.tokenRoyalty / 100}%</p>
+          </div>
+        </div>
+
+  </div>
+</TabsContent>
+
                     <TabsContent value="activity">
                         <div className="p-4">
                             <AuctionBids auctionId={post.id} auctionStatus={auctionStatus} winningBid={winningBid} winnerProfileId={auctionData?.winnerProfileId} />

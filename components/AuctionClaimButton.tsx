@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
 import { awardPoints, getCurrentRequiredChainId, validateChainId } from '@/lib/utils';
 import { COLLECT_PERCENT_AWARD, BONSAI_ADDRESS } from '@/app/constants';
-import { getChainId } from '@wagmi/core'
-import { wagmiConfig } from '@/app/web3modal-provider'
 import { 
     type BaseError,
   } from 'wagmi'
@@ -19,10 +17,11 @@ import { switchChain } from '@wagmi/core'
 interface AuctionClaimButtonProps {
     collectedPubId: string,
     price: number,
-    postCreatorAddress: string;
+    postCreatorAddress: string,
+    winnerAddress: string | undefined;
 }
 
-const AuctionClaimButton: React.FC<AuctionClaimButtonProps> = ({ collectedPubId, price, postCreatorAddress }) => {
+const AuctionClaimButton: React.FC<AuctionClaimButtonProps> = ({ collectedPubId, price, postCreatorAddress, winnerAddress }) => {
     const [loading, setLoading] = useState(false);
     const { data: sessionData } = useSession();
     const { data, writeContractAsync, isPending, error: claimError } = useWriteAuctionsOaClaim();
@@ -48,19 +47,19 @@ const AuctionClaimButton: React.FC<AuctionClaimButtonProps> = ({ collectedPubId,
                 throw claimError;
             };
 
-            if (walletAddress != postCreatorAddress) {
-                awardPoints(walletAddress, COLLECT_PERCENT_AWARD * price, 'Auction Claim (Buyer)', null);
+            if (winnerAddress != postCreatorAddress) {
+                awardPoints(winnerAddress, COLLECT_PERCENT_AWARD * price, 'Auction Claim (Buyer)', null);
                 awardPoints(postCreatorAddress, COLLECT_PERCENT_AWARD * price, 'Auction Claim (Seller)', null);
             }
             else {
-                awardPoints(walletAddress, 0, 'Try selling to someone else =)', null); 
+                awardPoints(postCreatorAddress, 0, 'Try selling to someone else =)', null); 
             }
             
-            toast.success('Successfully claimed!');
+            toast.success('Successfully settled!');
             window.location.reload();
         } catch (error: any) {
             console.error(error);
-            toast.error(`Claim failed. ${error.message}`);
+            toast.error(`Settle failed. ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -72,7 +71,7 @@ const AuctionClaimButton: React.FC<AuctionClaimButtonProps> = ({ collectedPubId,
             onClick={handleClaim} 
             disabled={isPending}
         >
-            {isPending ? 'Claiming...' : 'Claim'}
+            {isPending ? 'Loading...' : 'Settle Auction'}
 
         </Button>
         {claimError && (
