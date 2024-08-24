@@ -1,54 +1,55 @@
-'use client';
-
-import { useTheme } from 'next-themes';
+'use client'
+import React from 'react';
 import { useEffect, useState } from 'react';
-import { useProfile, usePublications, Post, PublicationId, ProfilesOrderBy } from '@lens-protocol/react-web';
+import { useProfile, usePublications, Post, PublicationId } from '@lens-protocol/react-web';
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
-import { getTitle } from '@/lib/utils';
-import { FaPlay } from 'react-icons/fa';
-import { FALLBACK_IMAGE_URL} from '../constants';
-import { getApiEndpoint } from '@/lib/apiEndpoints';
+import { getPostSellType, isGenesisDropArtist } from '@/lib/utils';
 import { getAllCreatedPublicationsByCreator } from '@/lib/publications';
+import { AuctionCard } from '@/components/AuctionCard';
+import { BuyNowCard } from '@/components/BuyNowCard';
+import ClipLoader from 'react-spinners/ClipLoader';
+import ShineBorder from '@/components/magicui/shine-border';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 const ProfilePage = ({ params }) => {
   const ITEMS_PER_PAGE = 40;
-  const { theme } = useTheme();
   const profileHandle = "lens/" + params.id;
   const [selectedTab, setSelectedTab] = useState('created');
   const [publicationIds, setPublicationIds] = useState<PublicationId[]>([]);
+  const [collectedPublications, setCollectedPublications] = useState<Post[]>([]);
   const [isLoadingPublications, setLoadingPublications] = useState(false);
+  const [isLoadingCollectedPublications, setLoadingCollectedPublications] = useState(false);
+  const [totalCreated, setTotalCreated] = useState(0);  // State for total created count
+  const [totalCollected, setTotalCollected] = useState(0);  // State for total collected count
 
   const { data: profile, error: profileError, loading: profileLoading } = useProfile({ forHandle: profileHandle });
   const profileAvatarUri = (profile?.metadata?.picture && 'optimized' in profile.metadata.picture) ? profile.metadata?.picture?.optimized?.uri  : '';
 
   useEffect(() => {
-    const fetchData = async () => {/*
-    if (profile?.id) {
-      const endpoint = getApiEndpoint('get1editionsBonsaiByCreator');
-      const url = new URL(endpoint);
-      console.log(profile)
-      url.search = new URLSearchParams({ profileId: profile.id }).toString();
-      fetch(url.toString())
-        .then(response => response.json())
-        .then(data => {
-          if (data.result) {
-            const result = JSON.parse(data.result);
-            const publicationsList = result.publicationsList as PublicationId[];
-            setPublicationIds(publicationsList);
-          }
-        })
-        .catch(error => console.log('Error:', error));
+    if (profile) {
+      setLoadingPublications(true);
+      setLoadingCollectedPublications(true);
+
+      Promise.all([
+        getAllCreatedPublicationsByCreator(profile.id),
+        fetch(`/api/getCollectedPublicationsByProfile?profileId=${profile.id}`).then(res => res.json())
+      ])
+      .then(([createdPublications, collectedData]) => {
+        setPublicationIds(createdPublications as PublicationId[]);
+        setCollectedPublications(collectedData.publications);
+        setTotalCreated(createdPublications.length);  // Set total created count
+        setTotalCollected(collectedData.publications.length);  // Set total collected count
+      })
+      .catch(error => {
+        console.error("Error fetching data:", error);
+      })
+      .finally(() => {
+        setLoadingPublications(false);
+        setLoadingCollectedPublications(false);
+      });
     }
-  */
- if (profile) {
-    const publicationsList = await getAllCreatedPublicationsByCreator(profile.id) as PublicationId[];
-    console.log('publicationsList:', publicationsList);
-    setPublicationIds(publicationsList);
-  } };
-  fetchData();
   }, [profile]);
 
   const publicationsQueryParams = {
@@ -59,85 +60,8 @@ const ProfilePage = ({ params }) => {
 
   const { data: publications, loading: publicationsLoading, error: publicationsError } = usePublications(publicationsQueryParams);
 
-  const renderMedia = (publication) => {
-    const mediaContainerClass = "h-[400px] w-full object-cover rounded-t-lg";
-
-    switch (publication.metadata.__typename) {
-      case 'ImageMetadataV3':
-        return (
-          <img src={publication.metadata.asset?.image?.optimized?.uri} alt="Art Image" className={mediaContainerClass} />
-        );
-      case 'VideoMetadataV3':
-      case 'AudioMetadataV3':
-        { if (publication.metadata.asset?.cover?.optimized?.uri) {
-            return (
-              <div className="relative">
-                <img src={publication.metadata.asset?.cover?.optimized?.uri} alt="Post cover" className={mediaContainerClass} />
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-t-lg">
-                  <FaPlay className="text-white text-4xl" />
-                </div>
-              </div>
-            );
-          }
-          else {
-            return (
-              <video src={publication?.metadata?.asset?.video?.optimized?.uri} controls className={mediaContainerClass}></video>
-            );
-          }
-        }
-      default:
-          return (
-            <img src={ FALLBACK_IMAGE_URL } alt="Art Image"  />
-          );
-    }
-  };
-
-  const formatPrice = (publication) => {
-    let postPrice: number | null = null;
-
-    if (publication && publication.openActionModules) {
-      for (let actionModule of publication.openActionModules) {
-        if (actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings" && Number(actionModule.amount.value) > 0) {
-          postPrice = Math.floor(Number(actionModule.amount.value));
-          break;
-        }
-      }
-    }
-    const formattedPrice = postPrice ? `${postPrice} BONSAI` : 'Auction';
-    return (<p className="font-semibold">{formattedPrice}</p>);
-  };
-
-  const isSoldOut = (publication) => {
-    return publication && publication.__typename === 'Post' && publication?.stats?.collects > 0;
-  };
-
-  const isSaleEnded = (publication) => {
-    if (publication && publication.openActionModules) {
-      for (let actionModule of publication.openActionModules) {
-        if (actionModule.__typename === "SimpleCollectOpenActionSettings" || actionModule.__typename === "MultirecipientFeeCollectOpenActionSettings") {
-          const endsAt = actionModule.endsAt;
-          if (endsAt && new Date(endsAt) < new Date()) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  };
-
-  const isAuction = (publication) => {
-    if (publication && publication.openActionModules) {
-      for (let actionModule of publication.openActionModules) {
-        if (actionModule.__typename === "UnknownOpenActionModule") {   // lógica fraca
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   if (profileLoading) {
-    return <div className="flex justify-center items-center h-screen">Loading profile...</div>;
+    return <div className="flex justify-center items-center h-screen"><ClipLoader color="#36d7b7" /></div>;
   }
 
   if (profileError && !profileLoading) {
@@ -151,23 +75,28 @@ const ProfilePage = ({ params }) => {
   return (
     <div className="w-full">
       <div className="relative h-[200px] sm:h-[300px] lg:h-[300px]">
-        <img
-          alt="Header Image"
-          className="h-full w-full object-cover"
-          height="300"
-          src={profile.metadata?.coverPicture?.optimized?.uri || '/placeholder.svg'}
-          style={{
-            aspectRatio: "1200/300",
-            objectFit: "cover",
-          }}
-          width="1200"
-        />
+        {/* Header Image */}
+        <img alt="Header Image" className="h-full w-full object-cover" height="300" src={profile.metadata?.coverPicture?.optimized?.uri || '/images/background-image.webp'} style={{ aspectRatio: "1200/300", objectFit: "cover" }} width="1200" />
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent p-6 sm:p-8 lg:p-10">
           <div className="flex items-end gap-4">
-            <Avatar className="h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28">
-              <AvatarImage alt={profile.metadata?.displayName || "Profile Avatar"} src={profileAvatarUri || '/placeholder-avatar.jpg'} />
-              <AvatarFallback>{profile.metadata?.displayName?.charAt(0) || 'A'}</AvatarFallback>
-            </Avatar>
+            <HoverCard>
+              {isGenesisDropArtist(profile.id) ? (
+                <HoverCardTrigger>
+                  <HoverCardContent className="text-sm">{profile.metadata?.displayName} is a Genesis Artist.</HoverCardContent>
+                  <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]} borderRadius={99} className="h-22 w-22 sm:h-26 sm:w-26 lg:h-30 lg:w-30 p-1" borderWidth={8}>
+                    <Avatar className="h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28">
+                      <AvatarImage alt={profile.metadata?.displayName || "Profile Avatar"} src={profileAvatarUri || '/placeholder-avatar.jpg'} />
+                      <AvatarFallback>{profile.metadata?.displayName?.charAt(0) || 'A'}</AvatarFallback>
+                    </Avatar>
+                  </ShineBorder>
+                </HoverCardTrigger>
+              ) : (
+                <Avatar className="h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28">
+                  <AvatarImage alt={profile.metadata?.displayName || "Profile Avatar"} src={profileAvatarUri || '/placeholder-avatar.jpg'} />
+                  <AvatarFallback>{profile.metadata?.displayName?.charAt(0) || 'A'}</AvatarFallback>
+                </Avatar>
+              )}
+            </HoverCard>
             <div className="flex-1 space-y-1 text-white">
               <h1 className="text-2xl font-bold sm:text-3xl lg:text-4xl">{profile.metadata?.displayName || 'Unnamed Artist'}</h1>
               <p className="text-sm sm:text-base lg:text-lg">@{profile.handle?.localName}</p>
@@ -180,77 +109,69 @@ const ProfilePage = ({ params }) => {
           <ReactMarkdown>{profile.metadata?.bio || 'This artist has not provided a bio.'}</ReactMarkdown>
         </div>
       </div>
+  
+      {/* Display Total Counts */}
+      <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex justify-center gap-8">
+          <div className="text-center">
+            <h2 className="text-xl font-bold">{totalCreated}</h2>
+            <p className="text-sm text-gray-500">Total Created</p>
+          </div>
+          <div className="text-center">
+            <h2 className="text-xl font-bold">{totalCollected}</h2>
+            <p className="text-sm text-gray-500">Total Collected</p>
+          </div>
+        </div>
+      </div>
+  
       <section className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <Tabs
-          className="mb-8 rounded-lg border border-gray-200 bg-white dark:bg-gray-950 dark:border-transparent"
-          defaultValue="created"
-        >
+        <Tabs className="mb-8 rounded-lg border border-gray-200 bg-white dark:bg-gray-950 dark:border-transparent" defaultValue="created">
           <TabsList className="flex justify-center border-b border-gray-200 dark:border-gray-800">
-            <TabsTrigger
-              className="flex-1 rounded-t-md py-2 px-4 text-sm font-medium transition-colors hover:bg-gray-100 data-[state=active]:bg-gray-200 data-[state=active]:text-gray-900 dark:hover:bg-gray-800 dark:data-[state=active]:bg-black dark:data-[state=active]:text-white"
-              value="created"
-              onClick={() => setSelectedTab('created')}
-            >
-              Created
-            </TabsTrigger>
-            <TabsTrigger
-              className="flex-1 rounded-t-md py-2 px-4 text-sm font-medium transition-colors hover:bg-gray-100 data-[state=active]:bg-gray-200 data-[state=active]:text-gray-900 dark:hover:bg-gray-800 dark:data-[state=active]:bg-black dark:data-[state=active]:text-white"
-              value="collected"
-              onClick={() => setSelectedTab('collected')}
-            >
-              Collected
-            </TabsTrigger>
+            <TabsTrigger value="created" onClick={() => setSelectedTab('created')}>Created</TabsTrigger>
+            <TabsTrigger value="collected" onClick={() => setSelectedTab('collected')}>Collected</TabsTrigger>
           </TabsList>
           <TabsContent value="created">
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {publicationIds.length === 0 && !isLoadingPublications && !publicationsLoading ? (
                 <div>No art has been created yet.</div>
-              ) : isLoadingPublications ? (
-                <div>Loading publications...</div>
+              ) : isLoadingPublications || publicationsLoading ? (
+                <div className="flex justify-center items-center w-full h-40"><ClipLoader color="#36d7b7" /></div>
               ) : (
                 publications?.map((publication) => (
-                  <Link href={`/gallery/${publication.id}`} key={publication.id} passHref>
-                    <div className="bg-white dark:bg-gray-950 rounded-lg overflow-hidden relative w-full border border-gray-200 dark:border-gray-800">
-                      {renderMedia(publication)}
-                      <div className="p-4 flex flex-col h-[80px]">
-                        <h3 className="text-lg font-bold mb-2">{getTitle(publication)}</h3>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage alt={profile.metadata?.displayName || "Image by Mystic Garden"} src={profileAvatarUri || '/placeholder-avatar.jpg'} />
-                              <AvatarFallback>{profile.metadata?.displayName?.charAt(0) || 'A'}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">@{profile.handle?.localName}</span>
-                          </div>
-                          <div className="text-lg font-bold">{formatPrice(publication)}</div>
-                        </div>
-                      </div>
-                      {isSoldOut(publication) ? (
-                        <div className="absolute top-4 right-4 bg-fuchsia-800 text-white px-3 py-1 rounded-md text-sm font-medium">
-                          Sold Out
-                        </div>
-                      ) : isSaleEnded(publication) && (
-                        <div className="absolute top-4 right-4 bg-amber-600 text-white px-3 py-1 rounded-md text-sm font-medium">
-                          Sale Ended
-                        </div>
-                      )}
-                    </div>
-                  </Link>
+                  <div key={publication.id}>
+                    {getPostSellType(publication as Post) === 'auction' ? (
+                      <AuctionCard publication={publication as Post} />
+                    ) : (
+                      <BuyNowCard publication={publication as Post} />
+                    )}
+                  </div>
                 ))
               )}
             </div>
           </TabsContent>
           <TabsContent value="collected">
-            <div className="grid grid-cols-3 gap-4 p-4">
-              Coming Soon...
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {(!collectedPublications || collectedPublications.length === 0) && !isLoadingCollectedPublications ? (
+                <div>No collected art yet.</div>
+              ) : isLoadingCollectedPublications ? (
+                <div className="flex justify-center items-center w-full h-40"><ClipLoader color="#36d7b7" /></div> 
+              ) : (
+                collectedPublications.map((publication) => (
+                  <div key={publication.id}>
+                    {getPostSellType(publication as Post) === 'auction' ? (
+                      <AuctionCard publication={publication as Post} />
+                    ) : (
+                      <BuyNowCard publication={publication as Post} />
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </TabsContent>
         </Tabs>
       </section>
     </div>
-  );
+  );  
 };
 
 export default ProfilePage;

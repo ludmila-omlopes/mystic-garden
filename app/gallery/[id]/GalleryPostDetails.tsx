@@ -1,26 +1,27 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Post, usePublication, useSession } from '@lens-protocol/react-web';
+import { Post, useLastLoggedInProfile, usePublication, useSession } from '@lens-protocol/react-web';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { useOpenAction, OpenActionKind } from '@lens-protocol/react-web';
 import { useAccount } from 'wagmi';
 import Link from "next/link";
-import { getTitle, getPostSellType } from '@/lib/utils';
+import { getTitle, getPostSellType, getProfileAvatarImageUri } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import { FALLBACK_IMAGE_URL } from '../../constants';
 import AuctionComponent from '../../../components/AuctionComponent';
 import { awardPoints } from '@/lib/utils';
 import { COLLECT_PERCENT_AWARD, BONSAI_ADDRESS } from '@/app/constants';
-import { useReadErc20Allowance, useWriteErc20Approve } from '@/src/generated';
+import { useReadErc20Allowance, useReadErc721OwnerOf, useWriteErc20Approve } from '@/src/generated';
 import { polygon, polygonAmoy } from 'wagmi/chains';
 import { Address } from 'viem';
 import ReactPlayer from 'react-player';
 import { getChainId, switchChain, getBalance } from '@wagmi/core';
 import { wagmiConfig } from '@/app/web3modal-provider';
 import { PublicationId } from '@lens-protocol/metadata';
+import { getSimpleOrMultirecipientFeeCollectOpenActionModule } from '@/lib/publications';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover?: string } | null {
   if (!post?.metadata) {
@@ -47,7 +48,7 @@ function GalleryPostDetails({ id}: { id: PublicationId }) {
   const fallbackImage = '/images/fallback-image.png';
   const CHAIN_ID = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? polygon.id : polygonAmoy.id;
   const OPEN_ACTION_MODULE_ADDRESS = process.env.NEXT_PUBLIC_ENVIRONMENT === "production" ? '0x857b5e09d54AD26580297C02e4596537a2d3E329' : '0xd935e230819AE963626B31f292623106A3dc3B19';
-
+  
   const [isCollected, setIsCollected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaleEnded, setIsSaleEnded] = useState(false);
@@ -58,6 +59,17 @@ function GalleryPostDetails({ id}: { id: PublicationId }) {
   const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
   const { data, error, loading } = usePublication({ forId: id });
   const post = data as Post;
+
+  const collectModule = getSimpleOrMultirecipientFeeCollectOpenActionModule(post);
+  const nftAddress = collectModule?.collectNft;
+
+  const { data: nftOwnerAddress, error: nftOwnerError, isLoading: isOwnerLoading } = useReadErc721OwnerOf({
+    args: [BigInt(1)],
+    address: collectModule?.collectNft ? collectModule.collectNft : '',
+    chainId: requiredChainId,
+  });
+
+  const { data: ownerProfile, error: profileError, loading: isProfileLoading } = useLastLoggedInProfile({ for: nftOwnerAddress || "0x1234567890123456789012345678901234567890" });
 
 
 
@@ -187,7 +199,7 @@ function GalleryPostDetails({ id}: { id: PublicationId }) {
   if (error) return <div>Error: {error.message}</div>;
   if (!data) return <div>Post not found!</div>;
 
-  const formattedPrice = postPrice ? `${postPrice} BONSAI` : 'Not for sale';
+  const formattedPrice = postPrice ? ` ${postPrice} BONSAI` : 'Not for sale';
 
   const mediaSource = getMediaSource(post);
   const isPlayable = post ? post.metadata?.__typename === 'AudioMetadataV3' || post.metadata?.__typename === 'VideoMetadataV3' : false;
@@ -249,15 +261,54 @@ function GalleryPostDetails({ id}: { id: PublicationId }) {
             <Separator className="my-4" />
             {sellType === 'buy_now' && (
               <div>
-                <div className="grid mb-4">
-                  <div>
-                    <h3 className="text-s font-thin">List Price: <span className="text-xl font-semibold">{formattedPrice}</span></h3>
-                  </div>
-                </div>
-                <Button className='rounded-sm w-full' onClick={collect} disabled={isCollected || isLoading || isSaleEnded || !sessionData?.authenticated}>
+  <div className="grid mb-4">
+    <div>
+      <h3 className="text-s font-thin">
+        {ownerProfile || nftOwnerAddress ? "Last Sold" : "List Price"}: 
+        <span className="text-xl font-semibold">{formattedPrice}</span>
+      </h3>
+    </div>
+  </div>
+  <Button className='rounded-sm w-full' onClick={collect} disabled={isCollected || isLoading || isSaleEnded || !sessionData?.authenticated}>
                   {isLoading ? 'Loading...' : !sessionData?.authenticated ? 'Login to Lens First.' : isCollected ? 'Sold Out' : isSaleEnded ? 'Sale Ended' : 'BUY NOW'}
                 </Button>
-              </div>
+  <div className="mt-4">
+    {ownerProfile ? (
+      <>
+          <h3 className="text-base font-semibold">Current Owner</h3>
+      <div className="flex items-center mt-2">
+        <Link className="flex items-center mt-2" href={`/${ownerProfile.handle?.localName}`}>
+        <Avatar className="w-8 h-8">
+          <AvatarImage src={getProfileAvatarImageUri(ownerProfile)} />
+          <AvatarFallback>{ownerProfile.handle?.localName.charAt(0)}</AvatarFallback>
+        </Avatar>
+
+        <div className="ml-2">{ownerProfile.handle?.localName}</div>
+        </Link>
+      </div>
+       <h3 className="text-base font-semibold mb-2 mt-4">On-Chain Data</h3>
+       <div className="text-sm">
+         <a href={`https://opensea.io/assets/matic/${nftAddress}/1`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+           View on OpenSea
+         </a>
+       </div>
+       </>
+      
+    ) : nftOwnerAddress ? (
+      <>
+      <h3 className="text-base font-semibold">Current Owner</h3>
+      <div className="flex items-center mt-2">
+        <a href={`https://opensea.io/${nftOwnerAddress}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+          {nftOwnerAddress.slice(0, 8)}
+        </a>
+      </div>
+      </>
+    ) : (
+<></>
+    )}
+  </div>
+</div>
+
             )}
             {sellType === 'auction' && (
               <AuctionComponent post={post} />

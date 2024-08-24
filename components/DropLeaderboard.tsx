@@ -34,7 +34,6 @@ const Leaderboard = () => {
         setBidsData({ bidPlaceds: filteredBids });
         const ids = filteredBids.map(bid => convertProfileIdToHex(bid.bidderProfileId));
         setProfileIds(ids);
-        console.log("ids= " + ids);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);

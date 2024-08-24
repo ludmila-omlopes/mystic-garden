@@ -8,11 +8,15 @@ import { useAccount } from 'wagmi';
 import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
 import { getPointsByWallet } from '@/lib/pointsSystem';
-import { getPublicationAsset, isCuratedProfile } from '@/lib/utils'; // Import the function
+import { getPublicationAsset, isVerifiedProfile, isGenesisDropArtist } from '@/lib/utils'; // Import the function
 import { getAllCreatedPublicationsByCreator } from '@/lib/publications'; // Import the function
 import { PublicationId } from '@lens-protocol/metadata';
 import { Button } from '@/components/ui/button';
 import { BugIcon } from '@/components/icons';
+import ShineBorder from '@/components/magicui/shine-border';
+import { BorderBeam } from '@/components/magicui/border-beam';
+import { red } from '@mui/material/colors';
+import MysticIcon from '@/components/mysticIcon';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -182,7 +186,6 @@ export default function ProfilePage() {
       var points = 0;
       if (sessionData?.authenticated && sessionData.type === SessionType.WithProfile) {
         points = await getPointsByWallet(sessionData.address);
-        console.log("points: ", points);
       }
       setPoints(points);
     }
@@ -198,9 +201,6 @@ export default function ProfilePage() {
         publicationRevenue.revenue.forEach((revenueAggregate) => {
           const { value, asset, rate } = revenueAggregate.total;
 
-          console.log("revenueAggregate value: ", JSON.stringify(value));
-          console.log("revenueAggregate asset: ", JSON.stringify(asset.symbol));
-
           if (!tokenRevenue[asset.contract.address]) {
             tokenRevenue[asset.contract.address] = { total: 0, symbol: asset.symbol };
           }
@@ -213,7 +213,6 @@ export default function ProfilePage() {
       });
 
       setRevenueByToken(tokenRevenue);
-      console.log("tokenRevenue size: ", revenueData.length);
       setTotalFiatRevenue(fiatTotal);
     }
   }, [revenueData]);
@@ -319,12 +318,21 @@ export default function ProfilePage() {
               <UsersIcon className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">{sessionData.profile?.stats?.following} Following</span>
             </div>
-            {isCuratedProfile(sessionData.profile.id) && (
+            
+            {isVerifiedProfile(sessionData.profile.id) && (
               <div className="flex items-center gap-2">
                 <Badge variant="outline">
                   <StarIcon className="h-3 w-3 text-primary mr-2" />
-                  <span className="text-xs font-medium">Curated</span>
+                  <span className="text-xs font-medium">Verified</span>
                 </Badge>
+              </div>
+            )}
+            {isGenesisDropArtist(sessionData.profile.id) && (
+              <div className="flex items-center gap-2">
+                  <Badge variant="outline">
+                    <MysticIcon className="h-3 w-3 text-primary text-green-400 mr-2" />
+                    <span className="text-xs font-medium">Genesis Drop Artist</span>
+                  </Badge>
               </div>
             )}
           </div>

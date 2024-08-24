@@ -20,6 +20,38 @@ import { cn } from "@/lib/utils";
 import Leaderboard from "@/components/DropLeaderboard";
 import ThankYouComponent from "@/components/ThankYouComponent";
 
+const getAuctionStatusAndTimeLeft = (auction: AuctionWithPublicationId) => {
+  const currentTime = Math.floor(Date.now() / 1000);
+  const availableSinceTimestamp = parseInt(auction.availableSinceTimestamp);
+  const endTimestamp = parseInt(auction.endTimestamp);
+  const startTimestamp = parseInt(auction.startTimestamp);
+  const auctionAvailableSince = new Date(availableSinceTimestamp * 1000);
+  const auctionStart = new Date(startTimestamp * 1000);
+  const auctionEnd = new Date(endTimestamp * 1000);
+
+  let auctionStatus = "Not started";
+  let timeLeft = formatDistanceToNow(auctionAvailableSince, { includeSeconds: true });
+
+  if (currentTime >= availableSinceTimestamp) {
+    if (parseInt(auction.startTimestamp) === 0) {
+      auctionStatus = "Active but not started";
+    } else if (currentTime <= endTimestamp) {
+      auctionStatus = "Active auction";
+      timeLeft = formatDistanceToNow(auctionEnd, { includeSeconds: true });
+    } else if (BigInt(auction.winnerProfileId) !== 0n && !auction.collected) {
+      auctionStatus = "Auction ended, pending collection";
+    } else if (auction.collected) {
+      auctionStatus = "Art collected";
+    }
+  }
+
+  if (auctionStatus === "Not started" && currentTime < availableSinceTimestamp && (availableSinceTimestamp - currentTime) < 86400) {
+    timeLeft = formatDistance(currentTime * 1000, auctionStart, { includeSeconds: true });
+  }
+
+  return { auctionStatus, timeLeft };
+};
+
 const renderer = ({ days, hours, minutes, seconds, completed }) => {
   if (completed) {
     return <span>Auction started!</span>;
@@ -128,38 +160,6 @@ export default function Component() {
 
     fetchAuctions();
   }, []);
-
-  const getAuctionStatusAndTimeLeft = (auction: AuctionWithPublicationId) => {
-    const currentTime = Math.floor(Date.now() / 1000);
-    const availableSinceTimestamp = parseInt(auction.availableSinceTimestamp);
-    const endTimestamp = parseInt(auction.endTimestamp);
-    const startTimestamp = parseInt(auction.startTimestamp);
-    const auctionAvailableSince = new Date(availableSinceTimestamp * 1000);
-    const auctionStart = new Date(startTimestamp * 1000);
-    const auctionEnd = new Date(endTimestamp * 1000);
-
-    let auctionStatus = "Not started";
-    let timeLeft = formatDistanceToNow(auctionAvailableSince, { includeSeconds: true });
-
-    if (currentTime >= availableSinceTimestamp) {
-      if (parseInt(auction.startTimestamp) === 0) {
-        auctionStatus = "Active but not started";
-      } else if (currentTime <= endTimestamp) {
-        auctionStatus = "Active auction";
-        timeLeft = formatDistanceToNow(auctionEnd, { includeSeconds: true });
-      } else if (BigInt(auction.winnerProfileId) !== 0n && !auction.collected) {
-        auctionStatus = "Auction ended, pending collection";
-      } else if (auction.collected) {
-        auctionStatus = "Art collected";
-      }
-    }
-
-    if (auctionStatus === "Not started" && currentTime < availableSinceTimestamp && (availableSinceTimestamp - currentTime) < 86400) {
-      timeLeft = formatDistance(currentTime * 1000, auctionStart, { includeSeconds: true });
-    }
-
-    return { auctionStatus, timeLeft };
-  };
 
   const scrollToArtworks = () => {
     const artworksSection = document.getElementById("artworks");
