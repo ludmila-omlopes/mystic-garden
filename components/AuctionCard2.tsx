@@ -30,8 +30,8 @@ const AuctionCard2 = ({ auction }: { auction: AuctionWithPublicationId }) => {
     const { data: auctionWinnerProfile, error, loading } = useProfile({ forProfileId: convertProfileIdToHex(auction.winnerProfileId) as ProfileId });
 
     const { auctionStatus, timeLeft } = getAuctionStatusAndTimeLeft(auction);
-    const isVideo = !!auction.metadata.asset.video?.optimized?.uri;
-    const hasCover = !!auction.metadata.asset.cover?.optimized?.uri;
+    const isVideo = !!auction?.metadata?.asset?.video?.optimized?.uri;
+    const hasCover = !!auction?.metadata?.asset?.cover?.optimized?.uri;
 
     const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
     const intPublicationId = parseFromLensHex(auction.id);
