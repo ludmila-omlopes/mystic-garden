@@ -3,7 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import Link from "next/link";
 import Countdown from 'react-countdown';
-import { getPostMediaSource, getProfileAvatarImageUri, getTitle, isGenesisDropArtist, parseFromLensHex } from '@/lib/utils';
+import { cn, getPostMediaSource, getProfileAvatarImageUri, getTitle, isGenesisDropArtist, parseFromLensHex } from '@/lib/utils';
 import { FiPlayCircle } from 'react-icons/fi';
 import ShineBorder from "@/components/magicui/shine-border";
 import useAuctions from '@/app/hooks/useAuctions';
@@ -13,14 +13,45 @@ import { polygon, polygonAmoy } from 'viem/chains';
 import { useReadAuctionsOaGetCollectNft, useReadErc721OwnerOf } from '@/src/generated';
 import SparklesText from './magicui/sparkles-text';
 import { Skeleton } from '@/components/ui/skeleton';
+import AnimatedGradientText from "./magicui/animated-gradient-text";
 
 const formatBonsaiValue = (value: number) => {
   return value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value.toString();
 };
 
-const activeAuctionRenderer = ({ days, hours, minutes }: { days: number; hours: number; minutes: number }) => (
-  <span>{days > 0 ? `${days}d ${hours}h left` : `${hours}h ${minutes}m left`}</span>
-);
+const activeAuctionRenderer = ({ days, hours, minutes, seconds }) => {
+  if (days > 0) {
+    return (
+      <AnimatedGradientText className="font-bold">
+        <span className={cn(
+            `inline animate-gradient bg-gradient-to-r from-[#ffaa40] via-[#4b0082] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+          )}>
+          {days}d {hours}h left
+        </span>
+      </AnimatedGradientText>
+    );
+  } else if (hours > 0) {
+    return (
+      <AnimatedGradientText className="font-bold">
+        <span className={cn(
+            `inline animate-gradient bg-gradient-to-r from-[#ffaa40] via-[#4b0082] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+          )}>
+          {hours}h {minutes}m left
+        </span>
+      </AnimatedGradientText>
+    );
+  } else {
+    return (
+      <AnimatedGradientText className="font-bold">
+        <span className={cn(
+            `inline animate-gradient bg-gradient-to-r from-[#ffaa40] via-[#4b0082] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+          )}>
+          {minutes}m {seconds}s left
+        </span>
+      </AnimatedGradientText>
+    );
+  }
+};
 
 export const AuctionCard = ({ publication }: { publication: Post }) => {
   const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
@@ -108,7 +139,7 @@ export const AuctionCard = ({ publication }: { publication: Post }) => {
         <div className="p-4">
           <div className="text-lg font-bold mb-2">{getTitle(publication)}</div>
           <hr className="my-2" />
-          <div className="mb-4">
+          <div className="flex justify-between items-center mb-4">
             {auctionStatus === "Active auction" ? (
               <>
                 <div>
