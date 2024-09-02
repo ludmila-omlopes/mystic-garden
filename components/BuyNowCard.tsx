@@ -6,7 +6,7 @@ import { getPostMediaSource, getProfileAvatarImageUri, getTitle, isGenesisDropAr
 import { FiPlayCircle } from 'react-icons/fi';
 import ShineBorder from "@/components/magicui/shine-border";
 import { Post, useLastLoggedInProfile } from '@lens-protocol/react-web';
-import { getBuyNowPrice, getSimpleOrMultirecipientFeeCollectOpenActionModule } from '@/lib/publications';
+import { getBuyNowPrice, getBuyNowStatus, getSimpleOrMultirecipientFeeCollectOpenActionModule } from '@/lib/publications';
 import { polygon, polygonAmoy } from 'viem/chains';
 import { useReadErc721OwnerOf } from '@/src/generated';
 import { Skeleton } from './ui/skeleton';
@@ -17,7 +17,6 @@ export const BuyNowCard = ({ publication }: { publication: Post }) => {
   const formattedPrice = price ? `${price} BONSAI` : 'Not for sale';
   const handleName = publication.by?.handle?.localName || 'unknown';
   const isPlayable = publication.metadata.__typename === 'AudioMetadataV3' || publication.metadata.__typename === 'VideoMetadataV3';
-  const isSoldOut = publication?.stats?.collects > 0;
 
   const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
   const collectModule = getSimpleOrMultirecipientFeeCollectOpenActionModule(publication);
@@ -29,6 +28,8 @@ export const BuyNowCard = ({ publication }: { publication: Post }) => {
   });
 
   const { data: ownerProfile, error: profileError, loading: isProfileLoading } = useLastLoggedInProfile({ for: nftOwnerAddress || "0x1234567890123456789012345678901234567890" });
+
+  const buyNowStatus = getBuyNowStatus(publication); 
 
   if (isOwnerLoading || isProfileLoading) {
     return (
@@ -86,7 +87,7 @@ export const BuyNowCard = ({ publication }: { publication: Post }) => {
               <div className="text-xs text-muted-foreground">Price</div>
               <div className="text-base font-bold">{formattedPrice}</div>
             </div>
-            {isSoldOut && ownerProfile && (
+            {ownerProfile && (
               <div className="flex items-center">
                 <div className="text-xs text-muted-foreground mr-2">Owned by</div>
                 <Avatar className="w-6 h-6">
@@ -108,9 +109,9 @@ export const BuyNowCard = ({ publication }: { publication: Post }) => {
         </div>
       </div>
       <div className="p-4">
-        {isSoldOut ? (
+        {buyNowStatus === 'sold out' || buyNowStatus === 'sale ended' ? (
           <Button style={{ width: '100%' }} className='w-full mb-1' disabled>
-            Sold Out
+            {buyNowStatus === 'sold out' ? 'Sold Out' : 'Sale Ended'}
           </Button>
         ) : (
           <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]} className='w-full p-1' borderRadius={10}>
@@ -122,5 +123,4 @@ export const BuyNowCard = ({ publication }: { publication: Post }) => {
       </div>
     </div>
   );
-  
 };
