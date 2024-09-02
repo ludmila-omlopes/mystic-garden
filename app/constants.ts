@@ -42,7 +42,7 @@ export const GENESIS_ARTIST_PROFILE_IDS = [
     '0xf71a',   // internetfase
     '0x020d1f', //deadstartalk
     '0x02152a', //princesstutti
-    '0x01a14e' //definn*
+    '0x015f34' //datartist*
   ];
 
   export const BID_AWARD = 100; // será que coloco proporcional?

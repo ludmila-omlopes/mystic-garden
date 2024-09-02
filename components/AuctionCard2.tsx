@@ -7,11 +7,12 @@ import ShineBorder from "@/components/magicui/shine-border";
 import { FaPlay } from 'react-icons/fa';
 import { AuctionWithPublicationId } from "@/app/types/auction";
 import { getAuctionStatusAndTimeLeft } from "@/lib/publications";
-import { convertProfileIdToHex, getAuctionMediaSource, getProfileAvatarImageUri, isGenesisDropArtist, parseFromLensHex } from "@/lib/utils";
+import { cn, convertProfileIdToHex, getAuctionMediaSource, getProfileAvatarImageUri, isGenesisDropArtist, parseFromLensHex } from "@/lib/utils";
 import SparklesText from "./magicui/sparkles-text";
 import { polygon, polygonAmoy } from "viem/chains";
 import { useReadAuctionsOaGetCollectNft, useReadErc721OwnerOf } from "@/src/generated";
 import { ProfileId, useLastLoggedInProfile, useProfile } from "@lens-protocol/react-web";
+import AnimatedGradientText from "./magicui/animated-gradient-text";
 
 const renderer = ({ days, hours, minutes, seconds, completed }) => {
     if (completed) {
@@ -21,6 +22,40 @@ const renderer = ({ days, hours, minutes, seconds, completed }) => {
         <span>
           {days}d {hours}h {minutes}m {seconds}s left to start
         </span>
+      );
+    }
+  };
+
+  const activeAuctionRenderer = ({ days, hours, minutes, seconds }) => {
+    if (days > 0) {
+      return (
+        <AnimatedGradientText className="font-bold">
+          <span className={cn(
+              `inline animate-gradient bg-gradient-to-r from-[#ffaa40] via-[#4b0082] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+            )}>
+            {days}d {hours}h left
+          </span>
+        </AnimatedGradientText>
+      );
+    } else if (hours > 0) {
+      return (
+        <AnimatedGradientText className="font-bold">
+          <span className={cn(
+              `inline animate-gradient bg-gradient-to-r from-[#ffaa40] via-[#4b0082] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+            )}>
+            {hours}h {minutes}m left
+          </span>
+        </AnimatedGradientText>
+      );
+    } else {
+      return (
+        <AnimatedGradientText className="font-bold">
+          <span className={cn(
+              `inline animate-gradient bg-gradient-to-r from-[#ffaa40] via-[#4b0082] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent`,
+            )}>
+            {minutes}m {seconds}s left
+          </span>
+        </AnimatedGradientText>
       );
     }
   };
@@ -106,15 +141,7 @@ return(
                           <div className="text-xs text-muted-foreground">Highest Bid</div>
                           <div className="text-base font-bold">{auction.winningBid / 1e18} BONSAI</div>
                         </div>
-                        <div className="flex items-center">
-                        <div className="text-xs text-muted-foreground mr-2">Last Bidder</div>
-                        {auctionWinnerProfile && (
-                            <Avatar className="w-6 h-6">
-                                <AvatarImage src={getProfileAvatarImageUri(auctionWinnerProfile)} />
-                                <AvatarFallback>{auctionWinnerProfile.handle?.localName.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                        )}
-                        </div>
+                        <Countdown date={new Date(parseInt(auction.endTimestamp) * 1000)} renderer={activeAuctionRenderer} />
                       </>
                     ) : auctionStatus === "Active but not started" ? (
                       <>

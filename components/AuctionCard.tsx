@@ -152,7 +152,7 @@ export const AuctionCard = ({ publication }: { publication: Post }) => {
       <div className="p-4 mt-auto">
         {auctionStatus === "Active auction" || auctionStatus === "Active but not started" ? (
           <Link href={`/gallery/${auction.id}`} passHref>
-            <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]} className='w-full'>
+            <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]} className='w-full p-1' borderRadius={10}>
               <Button variant="default" size="sm" className="w-full">
                 Place Bid
               </Button>

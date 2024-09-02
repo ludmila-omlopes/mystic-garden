@@ -27,6 +27,7 @@ export default function Explore() {
         }
         const responseData = await response.json();
         const data = responseData.data;
+        console.log("auctions=" + JSON.stringify(data));
         if (data) {
           setAuctionsData(data);
           setallAuctions(data);

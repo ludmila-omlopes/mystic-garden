@@ -7,7 +7,6 @@ import GalleryPost from '@/components/galleryPost';
 import { Switch } from "@/components/ui/switch";
 import { VERIFIED_ARTIST_PROFILE_IDS } from '@/app/constants';
 import { getAllPublicationIds, getBuyNowPrice } from "@/lib/publications";
-import { ListOrdered } from "lucide-react";
 import { ClipLoader } from "react-spinners";
 import { getPostSellType } from "@/lib/utils";
 
