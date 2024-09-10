@@ -1,0 +1,13 @@
+ query ExploreSoldAuctions {
+  collecteds {
+    id
+    collectedPubId
+    collectedProfileId
+    nftRecipient
+    collectNFT
+    tokenId
+    timestamp
+    transactionHash 
+    collectorProfileId
+  	}
+  }

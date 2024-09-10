@@ -6,15 +6,16 @@ import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ReactMarkdown from 'react-markdown';
 import { getPostSellType, isGenesisDropArtist } from '@/lib/utils';
-import { getAllCreatedPublicationsByCreator } from '@/lib/publications';
+import { getAllCreatedPublicationsByCreator, getTotalNumberAndAmountCollectedByProfile } from '@/lib/publications';
 import { AuctionCard } from '@/components/AuctionCard';
 import { BuyNowCard } from '@/components/BuyNowCard';
 import ClipLoader from 'react-spinners/ClipLoader';
 import ShineBorder from '@/components/magicui/shine-border';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 const ProfilePage = ({ params }) => {
-  const ITEMS_PER_PAGE = 40;
+  const ITEMS_PER_PAGE = 12;
   const profileHandle = "lens/" + params.id;
   const [selectedTab, setSelectedTab] = useState('created');
   const [publicationIds, setPublicationIds] = useState<PublicationId[]>([]);
@@ -22,7 +23,8 @@ const ProfilePage = ({ params }) => {
   const [isLoadingPublications, setLoadingPublications] = useState(false);
   const [isLoadingCollectedPublications, setLoadingCollectedPublications] = useState(false);
   const [totalCreated, setTotalCreated] = useState(0);  // State for total created count
-  const [totalCollected, setTotalCollected] = useState(0);  // State for total collected count
+  const [totalCollected, setTotalCollected] = useState<Number>(0);  // State for total collected count
+  const [collectedCursorNext, setCollectedCursorNext] = useState(null); // Cursor for pagination
 
   const { data: profile, error: profileError, loading: profileLoading } = useProfile({ forHandle: profileHandle });
   const profileAvatarUri = (profile?.metadata?.picture && 'optimized' in profile.metadata.picture) ? profile.metadata?.picture?.optimized?.uri  : '';
@@ -34,13 +36,15 @@ const ProfilePage = ({ params }) => {
 
       Promise.all([
         getAllCreatedPublicationsByCreator(profile.id),
+        getTotalNumberAndAmountCollectedByProfile(profile.id),
         fetch(`/api/getCollectedPublicationsByProfile?profileId=${profile.id}`).then(res => res.json())
       ])
-      .then(([createdPublications, collectedData]) => {
+      .then(([createdPublications, totalCollected, collectedData]) => {
         setPublicationIds(createdPublications as PublicationId[]);
         setCollectedPublications(collectedData.publications);
         setTotalCreated(createdPublications.length);  // Set total created count
-        setTotalCollected(collectedData.publications.length);  // Set total collected count
+        setCollectedCursorNext(collectedData.cursorNext);
+        setTotalCollected(totalCollected[0]);  // Set total collected count
       })
       .catch(error => {
         console.error("Error fetching data:", error);
@@ -71,6 +75,22 @@ const ProfilePage = ({ params }) => {
   if (!profile) {
     return <div className="flex justify-center items-center h-screen">Profile not found.</div>;
   }
+
+  const fetchMoreCollectedPublications = async () => {
+    console.log("cursor next: ", collectedCursorNext);
+    if (!collectedCursorNext) 
+      return;
+      
+    setLoadingCollectedPublications(true);
+
+    const response = await fetch(`/api/getCollectedPublicationsByProfile?profileId=${profile.id}&cursorNext=${collectedCursorNext}`);
+    const newData = await response.json();
+    console.log("New Data:", newData);
+
+    setCollectedPublications((prev) => [...prev, ...newData.publications]);
+    setCollectedCursorNext(newData.cursorNext);
+    setLoadingCollectedPublications(false);
+  };
 
   return (
     <div className="w-full">
@@ -118,7 +138,7 @@ const ProfilePage = ({ params }) => {
             <p className="text-sm text-gray-500">Total Created</p>
           </div>
           <div className="text-center">
-            <h2 className="text-xl font-bold">{totalCollected}</h2>
+            <h2 className="text-xl font-bold">{totalCollected.toString()}</h2>
             <p className="text-sm text-gray-500">Total Collected</p>
           </div>
         </div>
@@ -150,23 +170,28 @@ const ProfilePage = ({ params }) => {
             </div>
           </TabsContent>
           <TabsContent value="collected">
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {(!collectedPublications || collectedPublications.length === 0) && !isLoadingCollectedPublications ? (
-                <div>No collected art yet.</div>
-              ) : isLoadingCollectedPublications ? (
-                <div className="flex justify-center items-center w-full h-40"><ClipLoader color="#36d7b7" /></div> 
-              ) : (
-                collectedPublications.map((publication) => (
-                  <div key={publication.id}>
-                    {getPostSellType(publication as Post) === 'auction' ? (
-                      <AuctionCard publication={publication as Post} />
-                    ) : (
-                      <BuyNowCard publication={publication as Post} />
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
+            <InfiniteScroll
+              dataLength={collectedPublications.length}
+              next={fetchMoreCollectedPublications} // Fetch more on scroll
+              hasMore={!!collectedCursorNext} // Continue loading as long as cursorNext exists
+              loader={<ClipLoader color="#36d7b7" />} // Loading spinner
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {collectedPublications.length === 0 && !isLoadingCollectedPublications ? (
+                  <div>No collected art yet.</div>
+                ) : (
+                  collectedPublications.map((publication) => (
+                    <div key={publication.id}>
+                      {getPostSellType(publication as Post) === 'auction' ? (
+                        <AuctionCard publication={publication as Post} />
+                      ) : (
+                        <BuyNowCard publication={publication as Post} />
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </InfiniteScroll>
           </TabsContent>
         </Tabs>
       </section>

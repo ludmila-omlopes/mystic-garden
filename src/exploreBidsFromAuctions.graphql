@@ -1,0 +1,13 @@
+query ExploreBidsFromAuctions($profileIds: [BigInt!]!, $pubIds: [BigInt!]!, $bidderProfileId: [BigInt!]!) {
+  bidPlaceds(where: { profileId_in: $profileIds, pubId_in: $pubIds, bidderProfileId_in: $bidderProfileId }, orderBy: timestamp, orderDirection: desc) {
+    id
+    profileId
+    pubId
+    referrerProfileIds
+    amount
+    bidderOwner
+    bidderProfileId
+    endTimestamp
+    timestamp
+  }
+}

@@ -9,3 +9,7 @@ documents:
   - d:/Lensboard/MysticGarden/src/auctionBidsQuery.graphql
   - d:/Lensboard/MysticGarden/src/exploreBonsaiCreatedAuctions.graphql
   - d:/Lensboard/MysticGarden/src/auctionActiveBidsQuery.graphql
+  - d:/Lensboard/MysticGarden/src/auctionsAndBidsByCollectorId.graphql
+  - d:/Lensboard/MysticGarden/src/exploreSoldAuctions.graphql
+  - d:/Lensboard/MysticGarden/src/exploreBidsFromAuctions.graphql
+  - d:/Lensboard/MysticGarden/src/getCollectedAuctionsByProfile.graphql

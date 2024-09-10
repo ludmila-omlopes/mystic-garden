@@ -1956,7 +1956,11 @@ const merger = new(BareMerger as any)({
 const documentHashMap = {
         "6a46e5843c71146ca364cafd5a44419dd1bbc6ee7591a0597356e91fd6f4ab2b": ActiveBidsQueryDocument,
 "47a48ba8eeea0c0b613b2392f76a00579f2e84f0baef0d02f13b817e0409acad": BidsQueryDocument,
-"fe1dc5e947a2c5de49ebafe6295245aad36cd1b863dba55977dcecda39f0be04": ExploreBonsaiCreatedAuctionsDocument
+"27f758b17f0982280568cfea8e9f06394c8410215c08c3b7606a8fba6776f03a": AuctionsByCollectorIdDocument,
+"7a4fc4a24adef0efeb228157a83afd04ec93711f8e83787d5c9645cd2af7941e": ExploreBidsFromAuctionsDocument,
+"fe1dc5e947a2c5de49ebafe6295245aad36cd1b863dba55977dcecda39f0be04": ExploreBonsaiCreatedAuctionsDocument,
+"37a36c60aaf81302d058b7800ea4091d7917fcc9e0e12af28fba482522c7dabb": ExploreSoldAuctionsDocument,
+"afb35d199b489e5ee0ba7304ed1886edf890d004ab43feaffedbcca7ee666a70": GetCollectedAuctionsByProfileDocument
       }
 additionalEnvelopPlugins.push(usePersistedOperations({
         getPersistedOperation(key) {
@@ -1992,12 +1996,40 @@ additionalEnvelopPlugins.push(usePersistedOperations({
         location: 'BidsQueryDocument.graphql',
         sha256Hash: '47a48ba8eeea0c0b613b2392f76a00579f2e84f0baef0d02f13b817e0409acad'
       },{
+        document: AuctionsByCollectorIdDocument,
+        get rawSDL() {
+          return printWithCache(AuctionsByCollectorIdDocument);
+        },
+        location: 'AuctionsByCollectorIdDocument.graphql',
+        sha256Hash: '27f758b17f0982280568cfea8e9f06394c8410215c08c3b7606a8fba6776f03a'
+      },{
+        document: ExploreBidsFromAuctionsDocument,
+        get rawSDL() {
+          return printWithCache(ExploreBidsFromAuctionsDocument);
+        },
+        location: 'ExploreBidsFromAuctionsDocument.graphql',
+        sha256Hash: '7a4fc4a24adef0efeb228157a83afd04ec93711f8e83787d5c9645cd2af7941e'
+      },{
         document: ExploreBonsaiCreatedAuctionsDocument,
         get rawSDL() {
           return printWithCache(ExploreBonsaiCreatedAuctionsDocument);
         },
         location: 'ExploreBonsaiCreatedAuctionsDocument.graphql',
         sha256Hash: 'fe1dc5e947a2c5de49ebafe6295245aad36cd1b863dba55977dcecda39f0be04'
+      },{
+        document: ExploreSoldAuctionsDocument,
+        get rawSDL() {
+          return printWithCache(ExploreSoldAuctionsDocument);
+        },
+        location: 'ExploreSoldAuctionsDocument.graphql',
+        sha256Hash: '37a36c60aaf81302d058b7800ea4091d7917fcc9e0e12af28fba482522c7dabb'
+      },{
+        document: GetCollectedAuctionsByProfileDocument,
+        get rawSDL() {
+          return printWithCache(GetCollectedAuctionsByProfileDocument);
+        },
+        location: 'GetCollectedAuctionsByProfileDocument.graphql',
+        sha256Hash: 'afb35d199b489e5ee0ba7304ed1886edf890d004ab43feaffedbcca7ee666a70'
       }
     ];
     },
@@ -2067,10 +2099,38 @@ export type BidsQueryQueryVariables = Exact<{
 
 export type BidsQueryQuery = { bidPlaceds: Array<Pick<BidPlaced, 'id' | 'profileId' | 'pubId' | 'referrerProfileIds' | 'amount' | 'bidderOwner' | 'bidderProfileId' | 'endTimestamp' | 'timestamp'>> };
 
+export type AuctionsByCollectorIdQueryVariables = Exact<{
+  profileId: Scalars['BigInt']['input'];
+}>;
+
+
+export type AuctionsByCollectorIdQuery = { collecteds: Array<Pick<Collected, 'id' | 'collectedPubId' | 'collectedProfileId' | 'nftRecipient' | 'collectNFT' | 'tokenId' | 'timestamp' | 'transactionHash'>>, bidPlaceds: Array<Pick<BidPlaced, 'profileId' | 'amount' | 'pubId' | 'referrerProfileIds' | 'bidderOwner' | 'bidderProfileId' | 'endTimestamp' | 'timestamp'>> };
+
+export type ExploreBidsFromAuctionsQueryVariables = Exact<{
+  profileIds: Array<Scalars['BigInt']['input']> | Scalars['BigInt']['input'];
+  pubIds: Array<Scalars['BigInt']['input']> | Scalars['BigInt']['input'];
+  bidderProfileId: Array<Scalars['BigInt']['input']> | Scalars['BigInt']['input'];
+}>;
+
+
+export type ExploreBidsFromAuctionsQuery = { bidPlaceds: Array<Pick<BidPlaced, 'id' | 'profileId' | 'pubId' | 'referrerProfileIds' | 'amount' | 'bidderOwner' | 'bidderProfileId' | 'endTimestamp' | 'timestamp'>> };
+
 export type ExploreBonsaiCreatedAuctionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type ExploreBonsaiCreatedAuctionsQuery = { auctionCreateds: Array<Pick<AuctionCreated, 'id' | 'duration' | 'minBidIncrement' | 'minTimeAfterBid' | 'onlyFollowers' | 'profileId' | 'pubId' | 'reservePrice' | 'tokenName' | 'tokenRoyalty' | 'tokenSymbol' | 'blockTimestamp' | 'availableSinceTimestamp'>> };
+
+export type ExploreSoldAuctionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ExploreSoldAuctionsQuery = { collecteds: Array<Pick<Collected, 'id' | 'collectedPubId' | 'collectedProfileId' | 'nftRecipient' | 'collectNFT' | 'tokenId' | 'timestamp' | 'transactionHash' | 'collectorProfileId'>> };
+
+export type GetCollectedAuctionsByProfileQueryVariables = Exact<{
+  profileId: Scalars['BigInt']['input'];
+}>;
+
+
+export type GetCollectedAuctionsByProfileQuery = { collecteds: Array<Pick<Collected, 'id' | 'collectedPubId' | 'collectedProfileId' | 'nftRecipient' | 'collectNFT' | 'tokenId' | 'timestamp' | 'transactionHash' | 'collectorProfileId'>> };
 
 
 export const ActiveBidsQueryDocument = gql`
@@ -2103,6 +2163,49 @@ export const BidsQueryDocument = gql`
   }
 }
     ` as unknown as DocumentNode<BidsQueryQuery, BidsQueryQueryVariables>;
+export const AuctionsByCollectorIdDocument = gql`
+    query AuctionsByCollectorId($profileId: BigInt!) {
+  collecteds(where: {collectorProfileId: $profileId}) {
+    id
+    collectedPubId
+    collectedProfileId
+    nftRecipient
+    collectNFT
+    tokenId
+    timestamp
+    transactionHash
+  }
+  bidPlaceds(where: {bidderProfileId: $profileId}) {
+    profileId
+    amount
+    pubId
+    referrerProfileIds
+    bidderOwner
+    bidderProfileId
+    endTimestamp
+    timestamp
+  }
+}
+    ` as unknown as DocumentNode<AuctionsByCollectorIdQuery, AuctionsByCollectorIdQueryVariables>;
+export const ExploreBidsFromAuctionsDocument = gql`
+    query ExploreBidsFromAuctions($profileIds: [BigInt!]!, $pubIds: [BigInt!]!, $bidderProfileId: [BigInt!]!) {
+  bidPlaceds(
+    where: {profileId_in: $profileIds, pubId_in: $pubIds, bidderProfileId_in: $bidderProfileId}
+    orderBy: timestamp
+    orderDirection: desc
+  ) {
+    id
+    profileId
+    pubId
+    referrerProfileIds
+    amount
+    bidderOwner
+    bidderProfileId
+    endTimestamp
+    timestamp
+  }
+}
+    ` as unknown as DocumentNode<ExploreBidsFromAuctionsQuery, ExploreBidsFromAuctionsQueryVariables>;
 export const ExploreBonsaiCreatedAuctionsDocument = gql`
     query ExploreBonsaiCreatedAuctions {
   auctionCreateds(
@@ -2126,6 +2229,40 @@ export const ExploreBonsaiCreatedAuctionsDocument = gql`
   }
 }
     ` as unknown as DocumentNode<ExploreBonsaiCreatedAuctionsQuery, ExploreBonsaiCreatedAuctionsQueryVariables>;
+export const ExploreSoldAuctionsDocument = gql`
+    query ExploreSoldAuctions {
+  collecteds {
+    id
+    collectedPubId
+    collectedProfileId
+    nftRecipient
+    collectNFT
+    tokenId
+    timestamp
+    transactionHash
+    collectorProfileId
+  }
+}
+    ` as unknown as DocumentNode<ExploreSoldAuctionsQuery, ExploreSoldAuctionsQueryVariables>;
+export const GetCollectedAuctionsByProfileDocument = gql`
+    query GetCollectedAuctionsByProfile($profileId: BigInt!) {
+  collecteds(where: {collectorProfileId: $profileId}) {
+    id
+    collectedPubId
+    collectedProfileId
+    nftRecipient
+    collectNFT
+    tokenId
+    timestamp
+    transactionHash
+    collectorProfileId
+  }
+}
+    ` as unknown as DocumentNode<GetCollectedAuctionsByProfileQuery, GetCollectedAuctionsByProfileQueryVariables>;
+
+
+
+
 
 
 
@@ -2139,8 +2276,20 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
     BidsQuery(variables: BidsQueryQueryVariables, options?: C): Promise<BidsQueryQuery> {
       return requester<BidsQueryQuery, BidsQueryQueryVariables>(BidsQueryDocument, variables, options) as Promise<BidsQueryQuery>;
     },
+    AuctionsByCollectorId(variables: AuctionsByCollectorIdQueryVariables, options?: C): Promise<AuctionsByCollectorIdQuery> {
+      return requester<AuctionsByCollectorIdQuery, AuctionsByCollectorIdQueryVariables>(AuctionsByCollectorIdDocument, variables, options) as Promise<AuctionsByCollectorIdQuery>;
+    },
+    ExploreBidsFromAuctions(variables: ExploreBidsFromAuctionsQueryVariables, options?: C): Promise<ExploreBidsFromAuctionsQuery> {
+      return requester<ExploreBidsFromAuctionsQuery, ExploreBidsFromAuctionsQueryVariables>(ExploreBidsFromAuctionsDocument, variables, options) as Promise<ExploreBidsFromAuctionsQuery>;
+    },
     ExploreBonsaiCreatedAuctions(variables?: ExploreBonsaiCreatedAuctionsQueryVariables, options?: C): Promise<ExploreBonsaiCreatedAuctionsQuery> {
       return requester<ExploreBonsaiCreatedAuctionsQuery, ExploreBonsaiCreatedAuctionsQueryVariables>(ExploreBonsaiCreatedAuctionsDocument, variables, options) as Promise<ExploreBonsaiCreatedAuctionsQuery>;
+    },
+    ExploreSoldAuctions(variables?: ExploreSoldAuctionsQueryVariables, options?: C): Promise<ExploreSoldAuctionsQuery> {
+      return requester<ExploreSoldAuctionsQuery, ExploreSoldAuctionsQueryVariables>(ExploreSoldAuctionsDocument, variables, options) as Promise<ExploreSoldAuctionsQuery>;
+    },
+    GetCollectedAuctionsByProfile(variables: GetCollectedAuctionsByProfileQueryVariables, options?: C): Promise<GetCollectedAuctionsByProfileQuery> {
+      return requester<GetCollectedAuctionsByProfileQuery, GetCollectedAuctionsByProfileQueryVariables>(GetCollectedAuctionsByProfileDocument, variables, options) as Promise<GetCollectedAuctionsByProfileQuery>;
     }
   };
 }
