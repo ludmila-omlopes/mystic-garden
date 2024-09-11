@@ -33,7 +33,7 @@ export default function Layout({ children }) {
         })(window,document,'script','dataLayer','GTM-KW68FHBG');`}} />
       <noscript dangerouslySetInnerHTML={{__html: `<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KW68FHBG" height="0" width="0" style="display:none;visibility:hidden;"></iframe>`}} />
       </head>
-      <body className={lato.className}>
+      <body className={`${lato.className}`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Web3ModalProvider>
             <LensProvider>

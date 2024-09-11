@@ -20,10 +20,10 @@ export function ModeToggle() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">
           {/* Sun Icon (Light Mode) */}
-          <Sun className={`h-[1.2rem] w-[1.2rem] rotate-0 scale-${theme === 'light' ? '100' : '0'} transition-all`} />
+          <Sun  className={`h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0`} />
           
           {/* Moon Icon (Dark Mode) */}
-          <Moon className={`absolute h-[1.2rem] w-[1.2rem] rotate-${theme === 'dark' ? '0' : '90'} scale-${theme === 'dark' ? '100' : '0'} transition-all`} />
+          <Moon className={`absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100`} />
           
           {/* Heart Icon (Girly Mode) 
           <Heart className={`absolute h-[1.2rem] w-[1.2rem] rotate-0 scale-${theme === 'girly' ? '100' : '0'} transition-all`} /> */}

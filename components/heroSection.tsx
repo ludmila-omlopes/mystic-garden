@@ -25,7 +25,7 @@ export default function HeroSection() {
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * backgroundImages.length)
     setBackground(backgroundImages[randomIndex])
-  }, [])
+  }, [theme])
 
   return (
     <div className="relative h-screen overflow-hidden">
