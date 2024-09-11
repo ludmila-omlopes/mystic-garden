@@ -50,7 +50,7 @@ export default function FeaturedArtistsSection() {
       className="relative w-full py-12 md:py-24 lg:py-32 bg-cover bg-center"
       style={{ backgroundImage: "url(/images/background-image.webp)" }}
     >
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-0 dark:bg-black/50" />
       <div className="container relative z-10 px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2">

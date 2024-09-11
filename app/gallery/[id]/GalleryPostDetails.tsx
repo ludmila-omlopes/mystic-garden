@@ -224,17 +224,18 @@ function GalleryPostDetails({ id}: { id: PublicationId }) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto py-12 px-4 md:px-6 mt-20">
-        <div className="md:col-span-2 flex flex-col gap-4">
+        <div className="md:col-span-2 flex flex-col gap-4 sticky top-24">
           {(mediaSource?.type === 'image' || mediaSource?.type === 'text') && (
             <img src={mediaSource.src || fallbackImage} alt="NFT Image" className="rounded-sm object-cover aspect-square" />
           )}
           {mediaSource?.type === 'video' && (
-            <ReactPlayer url={mediaSource.src} controls className="rounded-sm object-cover aspect-square" />
+            <ReactPlayer url={mediaSource.src} controls playing muted width='100%'
+            height='auto' className="rounded-sm object-cover" />
           )}
           {mediaSource?.type === 'audio' && (
             <div className="flex flex-col items-center">
               <img src={mediaSource?.cover || '/images/fallback-image.jpg'} alt="Cover" className="rounded-sm object-cover aspect-square" />
-              <ReactPlayer url={mediaSource.src} controls className="w-full" />
+              <ReactPlayer height='50px' width='100%' url={mediaSource.src} controls className="w-full" />
             </div>
           )}
         </div>
@@ -263,7 +264,7 @@ function GalleryPostDetails({ id}: { id: PublicationId }) {
               <div>
   <div className="grid mb-4">
     <div>
-      <h3 className="text-s font-thin">
+      <h3 className="text-s">
         {ownerProfile || nftOwnerAddress ? "Last Sold" : "List Price"}: 
         <span className="text-xl font-semibold">{formattedPrice}</span>
       </h3>
