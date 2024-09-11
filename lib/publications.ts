@@ -5,6 +5,42 @@ import { LensClient } from "@lens-protocol/client";
 import { polygon } from 'viem/chains';
 import { AuctionWithPublicationId } from '@/app/types/auction';
 import { formatDistance, formatDistanceToNow } from 'date-fns';
+import { execute, GetCollectedAuctionsByProfileDocument } from '@/.graphclient';
+
+export const getTotalNumberAndAmountCollectedByProfile = async (profileId: string): Promise<Number[]> => {
+  try {
+    // Fetch Buy Now quantities
+    const url = getApiEndpoint('list1on1CollectedByProfile'); 
+    const result = await fetchData(url, { profileId });
+
+    // Parse the result and set default values in case no data is available
+    const list = result?.result ? JSON.parse(result.result) : {};
+    console.log("list=", list);
+    const totalPublicationsBought = (list.total_publications_bought && list.total_publications_bought[0]) ? list.total_publications_bought[0] : 0 ;
+    const totalBuyNowAmount = (list.total_amount_spent && list.total_amount_spent[0]) ? list.total_amount_spent[0] : 0;
+
+    // Fetch auction quantities
+    const collectedAuctionsResult = await execute(GetCollectedAuctionsByProfileDocument, { profileId: String(BigInt(profileId)) });
+    const collectedAuctions = collectedAuctionsResult?.data?.collecteds || [];
+    const totalAuctions = collectedAuctions.length;
+    const totalAuctionsAmount = 0; // TODO
+
+    console.log(totalAuctions, list.total_publications_bought[0], totalBuyNowAmount, totalAuctionsAmount);
+
+    // Calculate totals
+    const totalCollected = Number(totalAuctions) + Number(totalPublicationsBought);
+    const totalAmount = Number(totalBuyNowAmount) + Number(totalAuctionsAmount);
+    console.log(`Total number and amount collected for profile ${profileId}: ${totalCollected} - ${totalAmount}`);
+
+    return [totalCollected, totalAmount];
+
+  } catch (error) {
+    console.error(`Error fetching total number and amount collected for profile ${profileId}: `, error);
+    // Return 0 for both values in case of an error
+    return [0, 0];
+  }
+};
+
 
 export const getAllCreatedPublicationsByCreator = async (profileId: string): Promise<string[]> => {
   try {

@@ -1,0 +1,25 @@
+query AuctionsByCollectorId($profileId: BigInt!)
+{
+  collecteds(where: { collectorProfileId: $profileId }) {
+    id
+    collectedPubId
+    collectedProfileId
+    nftRecipient
+    collectNFT
+    tokenId
+    timestamp
+    transactionHash 
+  }
+    
+  bidPlaceds(where: { bidderProfileId: $profileId }) {
+      profileId
+      amount
+      pubId
+      referrerProfileIds
+      bidderOwner
+      bidderProfileId
+      endTimestamp
+      timestamp
+      
+    }
+  }

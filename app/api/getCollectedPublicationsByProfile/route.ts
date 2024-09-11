@@ -10,12 +10,13 @@ export async function GET(request: NextRequest) {
     try {
         const url = new URL(request.url);
         const profileId = url.searchParams.get('profileId');
+        const cursorNextParam = url.searchParams.get('cursorNext'); // Get cursorNext from the query
 
         if (!profileId) {
             return NextResponse.json({ message: 'No profileId provided.' }, { status: 400 });
         }
 
-        let cursorNext = null;
+        let cursorNext = cursorNextParam || null; 
         let cursorPrev = null;
         let filteredPublications: Post[] = [];
         const bonsaiAddress = BONSAI_ADDRESS;
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
                         return null;  // Skip duplicates
                     }
                     uniqueIds.add(publication.id);  // Mark as seen
+                    
 
                     // If the publication is an auction, fetch additional auction data
                     if (publication.openActionModules.some(module => module.contract?.address === AUCTION_OPEN_ACTION_MODULE_ADDRESS)) {

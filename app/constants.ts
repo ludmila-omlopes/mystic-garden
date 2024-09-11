@@ -42,7 +42,8 @@ export const GENESIS_ARTIST_PROFILE_IDS = [
     '0xf71a',   // internetfase
     '0x020d1f', //deadstartalk
     '0x02152a', //princesstutti
-    '0x015f34' //datartist*
+    '0x015f34', //datartist*
+    '0x054fa2', //@ogunkizmaz
   ];
 
   export const BID_AWARD = 100; // será que coloco proporcional?
@@ -66,6 +67,26 @@ export const GENESIS_ARTIST_PROFILE_IDS = [
     '/images/dropCarla.webp',
     '/images/dropAndres.png',
     '/images/dropAndres.png'
+  ]
+
+  //todo: pegar esses dados online
+  export const HERO_IMAGES_LIGHT  = [
+    { url: '/images/dropMari.webp', artist: 'MazeMari', link: '/gallery/0x01bbee-0x2035' },
+    { url: '/images/dropGremiana.webp', artist: 'cybernovae', link: '/gallery/0x01c90b-0x023f' },
+    { url: '/images/dropAeoife.png', artist: "Aoife O'Dwyer", link: '/gallery/0x021135-0x018e' },
+    { url: '/images/dropJessy.png', artist: 'Princess Je$$yFries', link: '/gallery/0x73b1-0x59b5' },
+  ]
+
+  export const HERO_IMAGES_DARK  = [
+    { url: '/images/dropCristina.webp', artist: 'Cristina Spinei', link: '/gallery/0x1087-0x0ade' },
+    { url: '/images/dropZo.webp', artist: 'Zo', link: '/gallery/0x018ccc-0x2b62' },
+    { url: '/images/dropchloe.jpg', artist: 'Chloe', link: '/gallery/0x042318-0x01db' },
+    { url: '/images/dropTiny.png', artist: 'tinyrainboot', link: '/gallery/0x012a99-0x046c' },
+    { url: '/images/dropGrams.jpg', artist: 'GRAMS', link: '/gallery/0x326c-0x101f' },
+    { url: '/images/dropLosiSShot.png', artist: 'Losi', link: '/gallery/0x01837b-0x0290' },
+    { url: '/images/dropCarla.webp', artist: 'Carla Monni', link: '/gallery/0x6079-0x127c' },
+    { url: '/images/dropAndres.png', artist: 'Andrés Briceño', link: '/gallery/0xf6b0-0x110b' },
+    { url: '/images/dropSoju.gif', artist: 'SOJU', link: '/gallery/0xc4b8-0x032b' },
   ]
 
   export const MYSTIC_DROP_IDS = [

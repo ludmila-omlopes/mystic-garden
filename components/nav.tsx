@@ -65,7 +65,7 @@ export function Nav() {
 
   return (
     <nav className="w-full fixed top-0 left-0 z-50 shadow-md bg-white/80 dark:bg-neutral-950/70">
-      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between px-4 py-3">
+      <div className="container flex flex-col md:flex-row items-center justify-between py-3">
         <div className="flex items-center justify-between w-full md:w-auto">
           <div className="flex items-center gap-6 text-sm">
             <Link href="/" className="flex items-center" prefetch={false}>
@@ -80,9 +80,7 @@ export function Nav() {
               </li>
               <li>
                 <Link href="/drops/mystic" className="hover:text-gray-700 dark:hover:text-gray-300"  prefetch={false}>
-                <ShineBorder color={["#A07CFE", "#FE8FB5", "#FFBE7B"]} className="text-gray-900 dark:text-gray-100 min-w-[15px] m-1 p-1">
                   Mystic Drop
-                  </ShineBorder>
                 </Link>
               </li>
               <li>

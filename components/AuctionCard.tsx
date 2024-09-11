@@ -139,7 +139,7 @@ export const AuctionCard = ({ publication }: { publication: Post }) => {
         <div className="p-4">
           <div className="text-lg font-bold mb-2">{getTitle(publication)}</div>
           <hr className="my-2" />
-          <div className="flex justify-between items-center mb-4">
+          <div className="">
             {auctionStatus === "Active auction" ? (
               <>
                 <div>

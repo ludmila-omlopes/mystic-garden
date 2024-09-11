@@ -261,8 +261,6 @@ export function formatToLensHex(profileId: bigint, publicationId: bigint): strin
   return `${profileIdHex}-${publicationIdHex}`;
 }
 
-
-
 /**
  * Converts a hex format string to BigInt profileId and publicationId.
  * 
@@ -469,4 +467,11 @@ const currentChainId = getChainId(wagmiConfig);
       return { type: 'text', src: FALLBACK_IMAGE_URL, cover: coverUrl };
     }
 
+  }
+
+  export function getProfileName(profile: Profile) {
+    return profile?.metadata?.displayName ||
+      profile?.handle?.suggestedFormatted.localName ||
+      profile?.handle?.localName ||
+      profile?.id.toString();
   }

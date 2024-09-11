@@ -8,6 +8,8 @@ export function getApiEndpoint(endpoint: string): string {
       get1editionsBonsaiByCreator: `${baseUrl}/get1editionsBonsaiByCreator${envSufix}`,
       listProfileIdsLikeHandle: `${baseUrl}/listProfileIdsLikeHandle${envSufix}`,
       getAllPublications: `${baseUrl}/get1AllAuctionsAnd1on1s${envSufix}`,
+      listTotal1on1Collected: `${baseUrl}/listTotal1on1Collected${envSufix}`,
+      list1on1CollectedByProfile: `${baseUrl}/list1on1CollectedByProfile${envSufix}`, //só traz o valor final, e nao os posts
       // Add other endpoints here
     };
   

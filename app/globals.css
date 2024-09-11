@@ -48,6 +48,29 @@
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
   }
+
+   /* Girly theme inspired by Barbie */
+   .girly {
+    --background: 330 100% 95%; /* Soft Pink */
+    --foreground: 330 70% 10%;  /* Deep Pink - cor da fonte*/ 
+    --card: 330 100% 98%;       /* Light Pink */
+    --card-foreground: 330 70% 10%; /* Deep Pink */
+    --popover: 330 100% 98%;    /* Light Pink */
+    --popover-foreground: 330 70% 10%; /* Deep Pink */
+    --primary: 330 80% 40%;     /* Bright Pink */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 330 50% 85%;   /* Pale Pink */
+    --secondary-foreground: 330 80% 40%; /* Bright Pink */
+    --muted: 330 50% 85%;       /* Pale Pink */
+    --muted-foreground: 330 60% 40%; /* Muted Pink */
+    --accent: 330 60% 70%;      /* Medium Pink */
+    --accent-foreground: 330 80% 40%; /* Bright Pink */
+    --destructive: 0 70% 60%;   /* Vibrant Red */
+    --destructive-foreground: 0 0% 100%; /* White */
+    --border: 330 70% 90%;      /* Light Pink */
+    --input: 330 70% 90%;       /* Light Pink */
+    --ring: 330 80% 40%;        /* Bright Pink */
+  }
 }
 
 
