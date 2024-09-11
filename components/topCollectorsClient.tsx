@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLazyProfiles } from '@lens-protocol/react-web';
 import { ProfileId } from '@lens-protocol/metadata';
-import { getProfileAvatarImageUri, getProfileName } from '@/lib/utils';
+import { cn, getProfileAvatarImageUri, getProfileName } from '@/lib/utils';
 import Link from 'next/link';
 
 type Collector = {
@@ -62,7 +62,7 @@ export default function TopCollectors({ collectorsList }: { collectorsList: Coll
             <div>Loading profiles...</div>
           ) : (
             collectors.map((collector, index) => (
-              <Card key={collector.id} className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+              <Card key={collector.id} className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 z-10">
                 <Link href={`/${collector.handle}`}>
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center justify-between">

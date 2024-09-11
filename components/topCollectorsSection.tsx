@@ -1,8 +1,10 @@
 import { execute } from '../.graphclient';
 import { ExploreSoldAuctionsDocument, ExploreBidsFromAuctionsDocument } from '../.graphclient';
-import { convertProfileIdToHex } from "@/lib/utils";
+import { cn, convertProfileIdToHex } from "@/lib/utils";
 import TopCollectorsClient from './topCollectorsClient';
 import { getApiEndpoint } from '@/lib/apiEndpoints';
+import AnimatedGridPattern from "@/components/magicui/animated-grid-pattern";
+import Particles from './magicui/particles';
 
 type Collector = {
     name: string;
@@ -17,9 +19,16 @@ export default async function TopCollectors() {
   const collectors = await fetchCollectors(); // fetch collectors list from The Graph
   
   return (
-    <section className="py-12 bg-gradient-to-br from-primary/5 to-primary/10">
+    <section className="py-12 bg-gradient-to-br from-indigo-100 to-fuchsia-100 dark:from-indigo-950  dark:to-fuchsia-950">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8">Top Collectors</h2>
+        <h2 className="text-3xl sm:text-5xl font-bold text-center mb-8">Top Collectors</h2>
+        <Particles
+        className="absolute y-100 inset-x-0 z-0"
+        quantity={100}
+        ease={80}
+        color={'#f3bb6c'}
+        refresh
+      />
         {<TopCollectorsClient collectorsList={collectors} />}
       </div>
     </section>
