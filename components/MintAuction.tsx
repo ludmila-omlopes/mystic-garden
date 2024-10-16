@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from 'next/navigation';
 import { BONSAI_ADDRESS, REV_WALLET } from '@/app/constants';
-import { uploadFile, uploadBigFile, uploadData, createMetadata, validateChainId, uploadFileFront } from '@/lib/utils';
+import { uploadFile, uploadData, createMetadata, validateChainId, uploadFileFront } from '@/lib/utils';
 import { encodeInitData } from '@/app/api/lib/lensModuleUtils';
 import { AuctionInitData } from '@/lib/parseAuctionData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

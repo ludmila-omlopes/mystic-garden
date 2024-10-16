@@ -4,12 +4,13 @@ import { FALLBACK_IMAGE_URL } from '../../constants';
 import { PublicationId } from '@lens-protocol/metadata';
 import { Post } from '@lens-protocol/react-web';
 import { getPostMediaSource } from '@/lib/utils';
+import { getPublicationsByIds } from "../../api/lensGraphql";
 
 async function fetchPost(id: string): Promise<Post | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/getPublicationsByIds?publicationIds=${id}`);
-    const data = await response.json();
-    return data.data[0] as Post;
+    const { publications: publications, error }  = await getPublicationsByIds([id]);
+
+    return publications[0] as Post;
   } catch (error) {
     console.error('Error fetching publication:', error);
     return null;

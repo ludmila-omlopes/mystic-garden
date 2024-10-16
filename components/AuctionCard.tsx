@@ -8,7 +8,7 @@ import { FiPlayCircle } from 'react-icons/fi';
 import ShineBorder from "@/components/magicui/shine-border";
 import useAuctions from '@/app/hooks/useAuctions';
 import { Post, useLastLoggedInProfile } from '@lens-protocol/react-web';
-import { getAuctionStatusAndTimeLeft } from '@/lib/publications';
+import { getAuctionStatusAndTimeLeft } from '@/lib/publicationUtils';
 import { polygon, polygonAmoy } from 'viem/chains';
 import { useReadAuctionsOaGetCollectNft, useReadErc721OwnerOf } from '@/src/generated';
 import SparklesText from './magicui/sparkles-text';

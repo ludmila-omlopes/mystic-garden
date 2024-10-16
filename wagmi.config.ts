@@ -1,10 +1,11 @@
-import { defineConfig } from '@wagmi/cli'
+/*import { defineConfig } from '@wagmi/cli'
 import { etherscan, react } from '@wagmi/cli/plugins'
 import { erc20Abi, erc721Abi } from 'viem'
 import { polygon } from 'wagmi/chains'
 import dotenv from 'dotenv';
+import { AUCTION_OPEN_ACTION_MODULE_ADDRESS } from './app/constants';
 
-dotenv.config(); // Load environment variables from .env file
+dotenv.config();
 
 export default defineConfig({
   out: 'src/generated.ts',
@@ -25,13 +26,13 @@ export default defineConfig({
       contracts: [
         {
           name: 'AuctionsOA',
-          address: '0x857b5e09d54AD26580297C02e4596537a2d3E329', 
+          address: AUCTION_OPEN_ACTION_MODULE_ADDRESS as Address,
         },
       ],
     }),
     react(),
   ],
-})
+})*/
 
 
 
