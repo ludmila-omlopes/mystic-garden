@@ -126,11 +126,13 @@ export default function ExploreClient({
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-20">
       <h1 className="text-4xl font-bold text-center py-2">Discover Exclusive Buy Now Artworks</h1>
       <div className="text-center py-2">Instantly Own 1/1 Pieces from Lens Artists - No Auctions, Just Collect</div>
-      <div className="my-4 flex flex-col sm:flex-row justify-between items-center w-full">
+      
+      {/* Filters Section */}
+      <div className="my-4 flex flex-col sm:flex-row gap-4 sm:justify-between items-center w-full">
         {/* Filters on the left */}
         <ToggleGroup
           type="multiple"
-          className="flex gap-2"
+          className="flex gap-2 flex-wrap"
           onValueChange={handleFilterChange}
           value={selectedStatuses}
           aria-label="Filter Options"
@@ -150,7 +152,7 @@ export default function ExploreClient({
         </ToggleGroup>
 
         {/* Verified button on the far right */}
-        <div className="ml-auto">
+        <div className="flex justify-center sm:ml-auto">
           <Toggle
             pressed={showCurated}
             onPressedChange={setShowCurated}

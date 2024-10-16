@@ -224,7 +224,7 @@ function GalleryPostDetails({ id}: { id: PublicationId }) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto py-12 px-4 md:px-6 mt-20">
-        <div className="md:col-span-2 flex flex-col gap-4 sticky top-24">
+      <div className="md:col-span-2 flex flex-col gap-4 md:sticky md:top-24">
           {(mediaSource?.type === 'image' || mediaSource?.type === 'text') && (
             <img src={mediaSource.src || fallbackImage} alt="NFT Image" className="rounded-sm object-cover aspect-square" />
           )}
