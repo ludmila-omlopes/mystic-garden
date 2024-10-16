@@ -106,8 +106,8 @@ const MintArt = () => {
   return (
     <main className="w-full max-w-4xl mx-auto py-12 md:py-16 px-4 md:px-6 mt-20">
       <div>
-        <h1 className="text-3xl font-bold">Create New NFT</h1>
-        <p className="text-gray-500 dark:text-gray-400">Upload your artwork and set the details.</p>
+        <h1 className="text-3xl font-bold">Create Your 1/1 Art Listing</h1>
+        <p className="text-gray-500 dark:text-gray-400">Mint Instantly on Lens and Share Your Art with the Entire Social Graph – Choose Auction or Buy Now.</p>
       </div>
 
       <div className="mt-4">
@@ -119,7 +119,7 @@ const MintArt = () => {
             checked={selectedMintType === 'regular'}
             onChange={() => setSelectedMintType('regular')}
           />
-          <span className="ml-2">Regular Mint</span>
+          <span className="ml-2">Buy Now</span>
         </label>
         <label className="inline-flex items-center ml-6">
           <input
@@ -129,7 +129,7 @@ const MintArt = () => {
             checked={selectedMintType === 'auction'}
             onChange={() => setSelectedMintType('auction')}
           />
-          <span className="ml-2">Auction Mint</span>
+          <span className="ml-2">Auction</span>
         </label>
       </div>
 

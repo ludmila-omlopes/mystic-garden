@@ -6,12 +6,12 @@ import { getPostMediaSource, getProfileAvatarImageUri, getTitle, isGenesisDropAr
 import { FiPlayCircle } from 'react-icons/fi';
 import ShineBorder from "@/components/magicui/shine-border";
 import { Post, useLastLoggedInProfile } from '@lens-protocol/react-web';
-import { getBuyNowPrice, getBuyNowStatus, getSimpleOrMultirecipientFeeCollectOpenActionModule } from '@/lib/publications';
+import { getBuyNowPrice, getBuyNowStatus, getSimpleOrMultirecipientFeeCollectOpenActionModule } from '@/lib/publicationUtils';
 import { polygon, polygonAmoy } from 'viem/chains';
 import { useReadErc721OwnerOf } from '@/src/generated';
 import { Skeleton } from './ui/skeleton';
 
-export const BuyNowCard = ({ publication }: { publication: Post }) => {
+export const BuyNowCard = ({ publication }) => {
   const imageSource = getPostMediaSource(publication);
   const price = getBuyNowPrice(publication);
   const formattedPrice = price ? `${price} BONSAI` : 'Not for sale';
@@ -29,7 +29,7 @@ export const BuyNowCard = ({ publication }: { publication: Post }) => {
 
   const { data: ownerProfile, error: profileError, loading: isProfileLoading } = useLastLoggedInProfile({ for: nftOwnerAddress || "0x1234567890123456789012345678901234567890" });
 
-  const buyNowStatus = getBuyNowStatus(publication); 
+  const buyNowStatus = publication.stats.countOpenActions === 0 ? 'available' : 'sold out';
 
   if (isOwnerLoading || isProfileLoading) {
     return (
@@ -109,7 +109,7 @@ export const BuyNowCard = ({ publication }: { publication: Post }) => {
         </div>
       </div>
       <div className="p-4">
-        {buyNowStatus === 'sold out' || buyNowStatus === 'sale ended' ? (
+        {buyNowStatus === 'sold out' ? (
           <Button style={{ width: '100%' }} className='w-full mb-1' disabled>
             {buyNowStatus === 'sold out' ? 'Sold Out' : 'Sale Ended'}
           </Button>

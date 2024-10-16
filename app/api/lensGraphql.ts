@@ -85,11 +85,15 @@ const GET_AUCTIONS = gql`
           }
         }
       }
+      pageInfo {
+        next
+        prev
+      }
     }
   }
 `;
 
-export async function getAuctions() {
+export async function getAuctions(cursor: string | null = null) {
   const variables = {
     request: {
       where: {
@@ -98,7 +102,9 @@ export async function getAuctions() {
             address: auctionsOaAddress
           }
         ]
-      }
+      },
+      limit: "TwentyFive",
+      cursor
     }
   };
 
@@ -138,6 +144,7 @@ const GET_PUBLICATIONS_BY_IDS = gql`
     publications(request: $request) {
       items {
         ... on Post {
+        createdAt
           metadata {
             ... on VideoMetadataV3 {
               id
@@ -156,6 +163,12 @@ const GET_PUBLICATIONS_BY_IDS = gql`
                   }
                 }
               }
+              marketplace {
+                description
+                externalURL
+                animationUrl
+                name
+              }
             }
             ... on ImageMetadataV3 {
               title
@@ -167,6 +180,12 @@ const GET_PUBLICATIONS_BY_IDS = gql`
                     uri
                   }
                 }
+              }
+              marketplace {
+                description
+                externalURL
+                name
+                animationUrl
               }
             }
             ... on AudioMetadataV3 {
@@ -184,6 +203,18 @@ const GET_PUBLICATIONS_BY_IDS = gql`
                     uri
                   }
                 }
+              }
+              marketplace {
+                description
+                externalURL
+                name
+                animationUrl
+              }
+            }
+            ... on TextOnlyMetadataV3 {
+              content
+              marketplace {
+                name
               }
             }
           }
@@ -205,6 +236,9 @@ const GET_PUBLICATIONS_BY_IDS = gql`
               endsAt
               collectLimit
               followerOnly
+              collectNft
+              recipient
+              referralFee
             }
             ... on MultirecipientFeeCollectOpenActionSettings {
               type
@@ -223,9 +257,68 @@ const GET_PUBLICATIONS_BY_IDS = gql`
               endsAt
               collectLimit
               followerOnly
+              collectNft
+              referralFee
+              recipients {
+                recipient
+                split
+              }
+            }
+            ... on UnknownOpenActionModuleSettings {
+              initializeCalldata
+              initializeResultData
+              verified
+              signlessApproved
+              sponsoredApproved
+              type
+              collectNft
+              contract {
+                address
+                chainId
+              }
             }
           }
           isHidden
+          by {
+            id
+            handle {
+              fullHandle
+              localName
+              ownedBy
+            }
+            metadata {
+              displayName
+              picture {
+                ... on ImageSet {
+                  optimized {
+                    height
+                    mimeType
+                    uri
+                    width
+                  }
+                }
+                ... on NftImage {
+                  image {
+                    optimized {
+                      height
+                      mimeType
+                      uri
+                      width
+                    }
+                  }
+                  collection {
+                    address
+                    chainId
+                  }
+                  tokenId
+                }
+              }
+            }
+          }
+          stats {
+            countOpenActions
+          }
+            id
         }
       }
       pageInfo {
@@ -245,12 +338,26 @@ export async function getPublicationsByIds(publicationIds: string[]) {
     }
   };
 
-  const { data } = await client.query({
-    query: GET_PUBLICATIONS_BY_IDS,
-    variables
-  });
+  try {
+    const { data } = await client.query({
+      query: GET_PUBLICATIONS_BY_IDS,
+      variables,
+      fetchPolicy: 'no-cache' // Disable caching
+    });
 
-  return data;
+    return {
+      publications: data.publications.items,
+      pageInfo: data.publications.pageInfo,
+    };
+
+  } catch (error) {
+    console.error('Error fetching publications:', error);
+    return {
+      publications: [],
+      pageInfo: null,
+      error: "Error fetching publications: " + error
+    };
+  }
 }
 
 const GET_AUCTIONS_BY_IDS = gql`
@@ -507,6 +614,29 @@ export async function getPublicationsActedBy(ProfileId: ProfileId, cursor: strin
     query: GET_PUBLICATIONS_ACTED_BY,
     variables,
     fetchPolicy: 'no-cache' // Disable caching
+  });
+
+  return data;
+}
+
+const GET_PROFILE_ID_BY_HANDLE = gql`
+    query Profile($request: ProfileRequest!) {
+      profile(request: $request) {
+        id
+      }
+    }
+`;
+
+export async function getProfileIdByHandle(handle: string) {
+  const variables = {
+    request: {
+      forHandle: 'lens/'+ handle,
+    }
+  };
+
+  const { data } = await client.query({
+    query: GET_PROFILE_ID_BY_HANDLE,
+    variables
   });
 
   return data;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useReadErc721OwnerOf } from '@/src/generated';
-import { getSimpleOrMultirecipientFeeCollectOpenActionModule } from '@/lib/publications';
+import { getSimpleOrMultirecipientFeeCollectOpenActionModule } from '@/lib/publicationUtils';
 import { polygon, polygonAmoy } from 'wagmi/chains';
 import { useLastLoggedInProfile, Profile, Post } from '@lens-protocol/react-web';
 

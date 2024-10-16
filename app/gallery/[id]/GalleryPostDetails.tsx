@@ -21,7 +21,7 @@ import ReactPlayer from 'react-player';
 import { getChainId, switchChain, getBalance } from '@wagmi/core';
 import { wagmiConfig } from '@/app/web3modal-provider';
 import { PublicationId } from '@lens-protocol/metadata';
-import { getSimpleOrMultirecipientFeeCollectOpenActionModule } from '@/lib/publications';
+import { getSimpleOrMultirecipientFeeCollectOpenActionModule } from '@/lib/publicationUtils';
 
 function getMediaSource(post: Post): { type: 'image' | 'video' | 'audio' | 'text', src: string, cover?: string } | null {
   if (!post?.metadata) {

@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
 import { getPointsByWallet } from '@/lib/pointsSystem';
 import { getPublicationAsset, isVerifiedProfile, isGenesisDropArtist } from '@/lib/utils'; // Import the function
-import { getAllCreatedPublicationsByCreator } from '@/lib/publications'; // Import the function
+import { getAllCreatedPublicationsByCreator } from '@/lib/publicationUtils';
 import { PublicationId } from '@lens-protocol/metadata';
 import { Button } from '@/components/ui/button';
 import { BugIcon } from '@/components/icons';
@@ -19,25 +19,6 @@ import { red } from '@mui/material/colors';
 import MysticIcon from '@/components/mysticIcon';
 
 const ITEMS_PER_PAGE = 10;
-
-function ActivityIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
-    </svg>
-  );
-}
 
 function DollarSignIcon(props) {
   return (
@@ -55,25 +36,6 @@ function DollarSignIcon(props) {
     >
       <line x1="12" x2="12" y1="2" y2="22" />
       <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-    </svg>
-  );
-}
-
-function HeartIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
     </svg>
   );
 }

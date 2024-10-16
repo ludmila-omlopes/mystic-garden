@@ -9,7 +9,7 @@ import {
   MediaAudioMimeType,
   MediaVideoMimeType,
 } from '@lens-protocol/metadata';
-import { Post, Profile } from '@lens-protocol/react-web';
+import { OpenActionModuleType, Post, Profile } from '@lens-protocol/react-web';
 import { AUCTION_OPEN_ACTION_MODULE_ADDRESS, GENESIS_ARTIST_PROFILE_IDS, VERIFIED_ARTIST_PROFILE_IDS, WEBSITE_THUMBNAIL } from '@/app/constants'; // Import the array of curated profile IDs
 import { FALLBACK_IMAGE_URL } from "@/app/constants";
 import { getChainId, switchChain } from "@wagmi/core";
@@ -19,6 +19,8 @@ import { ThirdwebStorage } from "@thirdweb-dev/storage";
 import { createThirdwebClient } from "thirdweb";
 import { upload } from "thirdweb/storage";
 import { AuctionWithPublicationId } from "@/app/types/auction";
+import {UnknownOpenActionModuleSettings} from "@lens-protocol/react-web";
+import { UploadableFile } from "thirdweb/dist/types/storage/upload/types";
 
 const requiredChainId = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? polygon.id : polygonAmoy.id;
 const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB per chunk
@@ -34,7 +36,7 @@ export const getTitle = (publication) => {
     return 'Untitled';
   }
 
-  const title = publication.metadata.marketplace?.name || publication.metadata.title;
+  const title = publication.metadata.marketplace?.name;
   const description = publication.metadata.content;
 
   if (title && !title.toLowerCase().startsWith("image by") && !title.toLowerCase().startsWith("video by") && !title.toLowerCase().startsWith("post by") && !title.toLowerCase().startsWith("text by") && !title.toLowerCase().startsWith("audio by")) {
@@ -233,7 +235,7 @@ export function getPostSellType(post: Post): 'auction' | 'buy_now' | 'none' {
 
   const openActionModule = post.openActionModules[0];
 
-  if (openActionModule.__typename === 'UnknownOpenActionModuleSettings' && openActionModule.contract.address === AUCTION_OPEN_ACTION_MODULE_ADDRESS) {
+  if (openActionModule.type === OpenActionModuleType.UnknownOpenActionModule && openActionModule.contract.address === AUCTION_OPEN_ACTION_MODULE_ADDRESS) {
     return 'auction';
   }
 
@@ -391,7 +393,7 @@ const currentChainId = getChainId(wagmiConfig);
 
     const uris = await upload({
       client,
-      files: [fileBuffer],
+      files: [file],
     });
 
     if (Array.isArray(uris)) {
@@ -474,4 +476,12 @@ const currentChainId = getChainId(wagmiConfig);
       profile?.handle?.suggestedFormatted.localName ||
       profile?.handle?.localName ||
       profile?.id.toString();
+  }
+
+  export function splitIntoChunks(arr: string[], chunkSize: number): string[][] {
+    const result: string[][] = [];
+    for (let i = 0; i < arr.length; i += chunkSize) {
+      result.push(arr.slice(i, i + chunkSize));
+    }
+    return result;
   }
