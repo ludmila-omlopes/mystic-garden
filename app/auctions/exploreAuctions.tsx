@@ -112,10 +112,13 @@ export default function ExploreAuctions({ auctions: initialAuctions, initialCurs
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-20">
       <h1 className="text-4xl font-bold text-center py-2">Bid on Exclusive 1/1 Auctions</h1>
       <div className="text-center py-2">Participate in Live Auctions from Top Lens Artists - Own Rare Art through Competitive Bidding</div>
-      <div className="my-4 flex flex-col sm:flex-row justify-between items-center">
+      
+      {/* Filter Section */}
+      <div className="my-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Status Filter */}
         <ToggleGroup
           type="multiple"
-          className="flex gap-2"
+          className="flex gap-2 flex-wrap"
           onValueChange={handleStatusChange}
           aria-label="Auction Status Filter"
           value={selectedStatuses}
@@ -133,7 +136,9 @@ export default function ExploreAuctions({ auctions: initialAuctions, initialCurs
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-        <div className="flex items-center ml-auto">
+        
+        {/* Curated Toggle */}
+        <div className="flex justify-center sm:ml-auto">
           <Toggle
             pressed={showCurated}
             onPressedChange={handleToggleChange}
@@ -146,8 +151,10 @@ export default function ExploreAuctions({ auctions: initialAuctions, initialCurs
           </Toggle>
         </div>
       </div>
+      
       <Separator />
 
+      {/* Auction List */}
       <InfiniteScroll
         dataLength={auctionsData.length}
         endMessage='No more posts.'
@@ -161,6 +168,7 @@ export default function ExploreAuctions({ auctions: initialAuctions, initialCurs
           ))}
         </div>
       </InfiniteScroll>
+
       {error && <div>Error: {error.message}</div>}
     </div>
   );
