@@ -215,6 +215,11 @@ export async function getPublications(publicationIds: string[], verified: boolea
   // Step 5: Fetch publications for those 40 IDs
   const publications = await getPublicationsByIds(idsToFetch);
 
+  // Remove items where item.metadata is of type TextOnlyMetadataV3
+  publications.publications = publications.publications.filter((publication) => {
+    return publication.metadata.__typename !== "TextOnlyMetadataV3";
+  });
+
   // Step 6: Order the fetched publications by "created at" descending
   const orderedPublications = publications.publications.sort((a, b) => {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
