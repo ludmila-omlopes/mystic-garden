@@ -85,7 +85,7 @@ export function Nav() {
               </li>
               <li>
                 <Link href="/explore" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
-                  Explore
+                  Buy Now
                 </Link>
               </li>
               <li>
@@ -118,7 +118,7 @@ export function Nav() {
                     </li>
                     <li>
                       <Link href="/explore" className="hover:text-gray-700 dark:hover:text-gray-300" prefetch={false}>
-                        Explore
+                        Buy Now
                       </Link>
                     </li>
                     <li>
