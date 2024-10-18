@@ -79,11 +79,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 }
 
 export default async function GalleryPage({ params }) {
-  const post = await fetchPost(params.id);
 
-  if (!post) {
-    return <div>Post not found!</div>;
-  }
 
   return <GalleryPostDetails id={params.id} />;
 }

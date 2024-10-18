@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useCreatePost, useCurrencies, OpenActionType, useLazyModuleMetadata, Erc20, BroadcastingErrorReason, SessionType } from '@lens-protocol/react-web';
+import { useCreatePost, useCurrencies, OpenActionType, useLazyModuleMetadata, Erc20, BroadcastingErrorReason, SessionType, Session } from '@lens-protocol/react-web';
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +16,9 @@ import { CREATE_NEW_AWARD } from '@/app/constants';
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from '@lens-protocol/react-web';
+import { useLensClient } from '@/app/hooks/useLensClient';
 
-const MintAuction = ({ isAuthenticated, sessionData, title, description, file, fileName, coverFile }) => {
+const MintAuction = ({ isAuthenticated, userSessionData, title, description, file, fileName, coverFile, addLinkInDescription }) => {
   const { execute, error: createPostError, loading: createPostLoading } = useCreatePost();
   const { data: currencies } = useCurrencies();
   const [reservePrice, setReservePrice] = useState('');
@@ -35,6 +36,9 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
   const [progressMessage, setProgressMessage] = useState('');
   const { toast } = useToast();
   const { data: thisSessionData } = useSession();
+  const sessionData = userSessionData as Session;
+
+  const client = useLensClient();
 
   const durationMapping = {
     '24h': 24 * 60 * 60,
@@ -96,7 +100,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
     setErrorMessage('');
 
     try {
-      if (!sessionData?.authenticated) {
+      if (!sessionData?.authenticated || !(sessionData.type === SessionType.WithProfile)) {
         throw new Error('User not logged in on Lens');
       }
 
@@ -114,6 +118,15 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
       if (!fileUrl) {
         throw new Error('File upload failed');
+      }
+
+      if(addLinkInDescription)
+      {
+        const nextPubId = await client.publication.predictNextOnChainPublicationId({
+          from: sessionData.profile.id,
+        });
+
+        description = description + "\n\n" + "⭐ Bid at Mystic Garden: https://mysticgarden.xyz/gallery/" + nextPubId;
       }
 
       setProgressMessage('Creating metadata...');
@@ -179,6 +192,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
       });
 
       if (result.isFailure()) {
+        console.error('Failed to create post', result.error.name);
         switch (result.error.name) {
           case 'BroadcastingError':
             window.alert('There was an error broadcasting the transaction: ' + result.error.message);
@@ -241,7 +255,7 @@ const MintAuction = ({ isAuthenticated, sessionData, title, description, file, f
 
     } catch (error) {
       const errorMessage = (error instanceof Error) ? error.message : 'There was an error minting the art. Refresh the page and try again.';
-      console.error('Error:', errorMessage);
+      console.error('Error:', errorMessage, error);
       window.alert('Error:' + errorMessage);
 
       // Log the error to an external service

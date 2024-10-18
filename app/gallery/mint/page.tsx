@@ -25,6 +25,7 @@ const MintArt = () => {
   const [fileName, setFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [isVideoOrAudio, setIsVideoOrAudio] = useState(false);
+  const [addLinkInDescription, setAddLinkInDescription] = useState(false); // New state for checkbox
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -180,6 +181,17 @@ const MintArt = () => {
           <Label htmlFor="description">Description</Label>
           <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe your NFT" rows={4} />
         </div>
+        {/* Checkbox to add a link in the description */}
+        <div>
+          <label className="inline-flex items-center">
+            <input
+              type="checkbox"
+              checked={addLinkInDescription}
+              onChange={() => setAddLinkInDescription(!addLinkInDescription)}
+            />
+            <Label className="ml-2 my-2">Add a link to the auction in the description</Label>
+          </label>
+        </div>
       </div>
 
       {selectedMintType === 'regular' ? (
@@ -191,16 +203,18 @@ const MintArt = () => {
           file={file}
           fileName={fileName}
           coverFile={coverFile}
+          addLinkInDescription={addLinkInDescription}
         />
       ) : (
         <MintAuction
           isAuthenticated={isAuthenticated && address}
-          sessionData={sessionData}
+          userSessionData={sessionData}
           title={title}
           description={description}
           file={file}
           fileName={fileName}
           coverFile={coverFile}
+          addLinkInDescription={addLinkInDescription} 
         />
       )}
     </main>

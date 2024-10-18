@@ -13,8 +13,9 @@ import { createMetadata } from '@/lib/utils';
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 import { uploadFile, uploadData } from '@/lib/utils';
+import { useLensClient } from '@/app/hooks/useLensClient';
 
-const MintRegular = ({ isAuthenticated, sessionData, title, description, file, fileName, coverFile }) => {
+const MintRegular = ({ isAuthenticated, sessionData, title, description, file, fileName, coverFile, addLinkInDescription }) => {
   const { execute, error: createPostError, loading: createPostLoading } = useCreatePost();
   const { data: currencies } = useCurrencies();
   const [price, setPrice] = useState('');
@@ -25,6 +26,7 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
   const [errorMessage, setErrorMessage] = useState('');
   const { toast } = useToast();
   const bonsaiCurrency = currencies?.find((c) => c.symbol === 'BONSAI');
+  const client = useLensClient();
 
   const validateFields = () => {
     if (!title || !description || !file) {
@@ -70,6 +72,14 @@ const MintRegular = ({ isAuthenticated, sessionData, title, description, file, f
 
       if (!fileUrl) {
         throw new Error('File upload failed');
+      }
+
+      if(addLinkInDescription) {
+        const nextPubId = await client.publication.predictNextOnChainPublicationId({
+          from: sessionData.profile.id,
+        });
+
+        description = description + "\n\n" + "⭐ Collect on Mystic Garden paying 0 fees: https://mysticgarden.xyz/gallery/" + nextPubId;
       }
 
       setProgress(50);
